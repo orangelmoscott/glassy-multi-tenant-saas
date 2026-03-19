@@ -16,10 +16,15 @@ const tenantSchema = new mongoose.Schema({
         enum: ['active', 'inactive', 'past_due', 'trial'], 
         default: 'trial' 
     },
-    plan: { type: String, enum: ['free', 'starter', 'professional'], default: 'free' },
+    plan: { 
+        type: String, 
+        enum: ['starter', 'basico', 'profesional', 'empresa'], 
+        default: 'starter' 
+    },
     
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     createdAt: { type: Date, default: Date.now }
 });
+
 
 module.exports = mongoose.model('Tenant', tenantSchema);

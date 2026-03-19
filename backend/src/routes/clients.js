@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
 const { authenticate, authorize } = require('../middlewares/auth');
+const { checkClientLimit } = require('../middlewares/planGuard');
 
 /**
  * GET /clients — Listar solo mis clientes (Aislamiento Multi-tenant)
  */
 router.get('/', authenticate, async (req, res) => {
     try {
-        // SEGURIDAD SAAS: Solo mostramos clientes que pertenecen al tenantId del usuario
         const clients = await Client.find({ tenantId: req.user.tenantId }).sort({ companyName: 1 });
         res.send(clients);
     } catch (error) {
@@ -17,11 +17,10 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 /**
- * POST /clients — Crear cliente en mi Tenant
+ * POST /clients — Crear cliente en mi Tenant (Protegido por Plan SaaS)
  */
-router.post('/', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+router.post('/', authenticate, authorize(['owner', 'admin']), checkClientLimit, async (req, res) => {
     try {
-        // SEGURIDAD SAAS: Inyectamos el tenantId del usuario al crear el cliente
         const clientData = {
             ...req.body,
             tenantId: req.user.tenantId

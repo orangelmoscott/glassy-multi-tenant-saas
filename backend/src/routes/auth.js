@@ -86,8 +86,10 @@ router.post('/login', async (req, res) => {
             role: user.role,
             companyName: user.tenantId.name,
             tenantId: user.tenantId._id,
+            plan: user.tenantId.plan,
             userId: user._id
         });
+
     } catch (error) {
         res.status(500).send({ message: 'Error en el servidor de autenticación' });
     }
