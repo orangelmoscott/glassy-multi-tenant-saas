@@ -29,7 +29,7 @@ const RegisterCompany = () => {
         setError(null);
         try {
             // URL del backend de Glassy (asumiendo que corre en el mismo host o env variable)
-            const response = await axios.post('http://localhost:4001/auth/register-company', formData);
+            const response = await axios.post('https://glassy-backend.onrender.com/auth/register-company', formData);
             if (response.status === 201) {
                 setSuccess(true);
                 setTimeout(() => navigate('/login'), 2000);
