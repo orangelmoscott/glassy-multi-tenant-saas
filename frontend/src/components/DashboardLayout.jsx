@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Calendar, FileText, Settings, LogOut, 
   Menu, X, Bell, LayoutDashboard, ChevronRight,
-  TrendingUp, CreditCard, Sparkles
+  TrendingUp, CreditCard, Sparkles, Building
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 
