@@ -1,0 +1,24 @@
+# Dependencias
+node_modules/
+.npm
+**/.env
+**/.DS_Store
+
+# React / Vite
+dist/
+dist-ssr/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
