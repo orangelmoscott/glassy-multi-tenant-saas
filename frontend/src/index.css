@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0ea5e9;
+  --secondary: #0c4a6e;
+  --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+@layer base {
+  body {
+    @apply antialiased text-slate-900 bg-[#f0f9ff];
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-glassy {
+    @apply px-6 py-2.5 rounded-full font-medium transition-all duration-300 active:scale-95 shadow-lg flex items-center gap-2;
+  }
+  
+  .btn-primary {
+    @apply btn-glassy bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:shadow-blue-200/50 hover:-translate-y-0.5;
+  }
+  
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl transition-all duration-500 hover:shadow-2xl;
+  }
+}
+
+/* Custom styles for animations */
+.glow-effect {
+  @apply relative overflow-hidden;
+}
+
+.glow-effect::after {
+  content: '';
+  @apply absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 transition-all duration-1000;
+}
+
+.glow-effect:hover::after {
+  @apply left-full;
+}

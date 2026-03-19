@@ -1,0 +1,57 @@
+/**
+ * server.js — GLASSY SAAS CORE (Multi-tenant Architecture)
+ * 1. Professional branding and scalable infrastructure
+ * 2. JWT Data Isolation for individual cleaning companies
+ * 3. Base64 Enterprise Assets
+ */
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+// Middlewares locales
+const { authenticate } = require('./src/middlewares/auth');
+
+// Rutas locales
+const authRoutes = require('./src/routes/auth');
+const clientRoutes = require('./src/routes/clients');
+const tenantRoutes = require('./src/routes/tenant');
+
+const app = express();
+
+// ==============================
+// CONFIGURACIÓN GLOBAL
+// ==============================
+app.use(cors());
+app.use(bodyParser.json({ limit: '5mb' })); // Permitir logos en Base64 de buen tamaño
+
+// CONECTAR A LA BASE DE DATOS (Mismo Clúster, Nueva Base de Datos SaaS)
+mongoose.connect(process.env.MONGO_URI_SAAS)
+    .then(() => console.log('✅ Glassy conectado a MongoDB'))
+    .catch(err => console.error('❌ Error de BD en Glassy:', err.message));
+
+// ==============================
+// RUTAS PRINCIPALES
+// ==============================
+app.use('/auth', authRoutes);
+app.use('/clients', clientRoutes);
+app.use('/tenant', tenantRoutes);
+
+// Ruta de Salud del SaaS
+app.get('/', (req, res) => {
+    res.send({ status: 'Glassy SaaS Platform Online', version: '1.0.0' });
+});
+
+// Middleware de manejo de errores profesional 404
+app.use((req, res) => {
+    res.status(404).send({ message: 'Ruta del SaaS no encontrada' });
+});
+
+// ==============================
+// LANZAMIENTO
+// ==============================
+const PORT = process.env.PORT || 4001;
+app.listen(PORT, () => {
+    console.log(`🚀 Glassy SaaS ejecutándose en el puerto ${PORT}`);
+});
