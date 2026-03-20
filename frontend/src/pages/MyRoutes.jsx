@@ -63,46 +63,46 @@ const MyRoutes = () => {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto space-y-8">
+            <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
                 {/* Mobile Friendly Header */}
-                <div className="bg-slate-900 p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
+                <div className="bg-slate-900 p-6 md:p-8 rounded-[30px] md:rounded-[40px] text-white shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
                     <div className="relative z-10">
-                        <h1 className="text-3xl font-extrabold flex items-center gap-3">
-                            <Calendar className="text-blue-400" /> Mi Ruta de Hoy
+                        <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-3">
+                            <Calendar className="text-blue-400" size={24} /> Mi Ruta
                         </h1>
-                        <p className="text-slate-400 mt-2 font-medium">Tienes <span className="text-white font-bold">{assignments.length}</span> servicios pendientes.</p>
+                        <p className="text-slate-400 mt-1 font-medium text-sm">Pendientes: <span className="text-white font-bold">{assignments.length}</span> servicios.</p>
                     </div>
                 </div>
 
                 {/* Assignment List */}
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                     {loading ? (
-                        [1,2].map(i => <div key={i} className="h-32 bg-slate-100 rounded-3xl animate-pulse"></div>)
+                        [1,2].map(i => <div key={i} className="h-28 bg-slate-100 rounded-3xl animate-pulse"></div>)
                     ) : (
                         assignments.map(job => (
                             <motion.div 
                                 key={job._id}
                                 layout
-                                initial={{ opacity: 0, y: 20 }}
+                                initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white p-6 rounded-[30px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all cursor-pointer"
+                                className="bg-white p-4 md:p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all cursor-pointer active:scale-[0.98]"
                                 onClick={() => setSelectedJob(job)}
                             >
-                                <div className="flex items-center gap-6">
-                                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                        <MapPin size={24} />
+                                <div className="flex items-center gap-4 md:gap-6">
+                                    <div className="w-12 h-12 md:w-14 md:h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+                                        <MapPin size={22} />
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-slate-800 text-lg">{job.clientId?.companyName}</h3>
-                                        <div className="flex items-center gap-4 mt-1">
-                                            <span className="text-xs font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest"><Clock size={12}/> Pendiente</span>
-                                            <span className="text-xs font-bold text-blue-600">{job.clientId?.address}</span>
+                                    <div className="overflow-hidden">
+                                        <h3 className="font-bold text-slate-800 text-base md:text-lg truncate">{job.clientId?.companyName}</h3>
+                                        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 mt-1">
+                                            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest"><Clock size={10}/> Pendiente</span>
+                                            <span className="text-xs font-bold text-blue-600 truncate max-w-[200px]">{job.clientId?.address}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:text-blue-500 transition-all">
-                                    <ChevronRight size={20} />
+                                <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:text-blue-500 transition-all">
+                                    <ChevronRight size={18} />
                                 </div>
                             </motion.div>
                         ))

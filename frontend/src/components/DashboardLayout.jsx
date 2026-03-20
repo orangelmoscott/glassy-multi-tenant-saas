@@ -1,160 +1,134 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Users, Calendar, FileText, Settings, LogOut, 
-  Menu, X, Bell, LayoutDashboard, ChevronRight,
-  TrendingUp, CreditCard, Sparkles, Building, HardHat
+  Users, Calendar, BarChart3, Settings, 
+  LogOut, LayoutDashboard, Menu, X, 
+  CreditCard, HardHat, FileText, MapPin
 } from 'lucide-react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DashboardLayout = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [tenantData, setTenantData] = useState(null);
-  const [userRole, setUserRole] = useState('cristalero');
-  const navigate = useNavigate();
-  const location = useLocation();
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    
+    const userString = localStorage.getItem('glassy_user');
+    const user = userString ? JSON.parse(userString) : { role: 'worker', username: 'Usuario' };
+    const isOwner = user.role === 'owner' || user.role === 'admin';
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
-    if (!user.token) {
-      // navigate('/login');
-    }
-    setUserRole(user.role || 'cristalero');
-    setTenantData({
-      companyName: user.companyName || 'Empresa Test',
-      plan: user.plan || 'starter',
-      logo: user.logo || null
-    });
-  }, []);
+    const menuItems = [
+        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'] },
+        { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['owner', 'admin'] },
+        { icon: HardHat, label: 'Operarios', path: '/app/workers', roles: ['owner', 'admin'] },
+        { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['owner', 'admin'] },
+        { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker'] },
+        { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'] },
+        { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
+    ];
 
-  const menuItems = userRole === 'owner' || userRole === 'admin' 
-    ? [
-        { title: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/app' },
-        { title: 'Clientes', icon: <Users size={20} />, path: '/app/clients' },
-        { title: 'Operarios', icon: <HardHat size={20} />, path: '/app/workers' },
-        { title: 'Rutas', icon: <Calendar size={20} />, path: '/app/assignments' },
-        { title: 'Facturación', icon: <FileText size={20} />, path: '/app/billing' },
-      ]
-    : [
-        { title: 'Mis Rutas', icon: <Calendar size={20} />, path: '/app/my-routes' },
-        { title: 'Perfil', icon: <Users size={20} />, path: '/app/settings' },
-      ];
+    const handleLogout = () => {
+        localStorage.removeItem('glassy_user');
+        navigate('/login');
+    };
 
-  const handleLogout = () => {
-    localStorage.removeItem('glassy_user');
-    navigate('/');
-  };
+    const filteredMenu = menuItems.filter(item => item.roles.includes(user.role));
 
-  return (
-    <div className="flex h-screen bg-[#f8fafc] overflow-hidden">
-      {/* Sidebar */}
-      <motion.aside 
-        initial={false}
-        animate={{ width: sidebarOpen ? 280 : 80 }}
-        className="bg-slate-900 text-white flex flex-col relative z-50 shadow-2xl"
-      >
-        <div className="p-4 py-8 flex items-center gap-3">
-            <div className={`w-10 h-10 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-xl flex items-center justify-center shrink-0 shadow-lg`}>
-                <span className="text-white font-bold text-xl">G</span>
-            </div>
-            {sidebarOpen && <span className="text-2xl font-bold tracking-tight">Glassy</span>}
-        </div>
-
-        <nav className="flex-1 mt-6 px-3 space-y-1">
-          {menuItems.map((item) => (
-            <Link
-              key={item.title}
-              to={item.path}
-              className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all relative group
-                ${location.pathname === item.path ? 'bg-blue-600 text-white shadow-lg' : 'hover:bg-white/5 text-slate-400 hover:text-white'}
-              `}
-            >
-              <div className="shrink-0">{item.icon}</div>
-              {sidebarOpen && (
-                <div className="flex items-center justify-between w-full">
-                  <span className="font-medium whitespace-nowrap">{item.title}</span>
-                  {item.locked && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                      <TrendingUp size={14} className="text-amber-400" />
-                    </motion.div>
-                  )}
+    return (
+        <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-x-hidden">
+            {/* Mobile Header */}
+            <header className="md:hidden bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-[60] shadow-sm">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black shadow-md">G</div>
+                    <span className="font-extrabold text-slate-900 tracking-tight">Glassy</span>
                 </div>
-              )}
-              {!sidebarOpen && (
-                <div className="absolute left-20 bg-slate-800 text-white px-3 py-1.5 rounded-lg text-sm invisible group-hover:visible whitespace-nowrap z-50">
-                   {item.title}
-                </div>
-              )}
-            </Link>
-          ))}
-        </nav>
+                <button 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+                  className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                >
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
 
-        {/* Plan Status Section */}
-        {sidebarOpen && (
-            <div className="m-4 p-4 rounded-2xl bg-white/5 border border-white/10 mt-auto mb-8">
-                <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Plan actual</span>
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${tenantData?.plan === 'starter' ? 'bg-slate-700 text-slate-300' : 'bg-blue-500 text-white'}`}>
-                        {tenantData?.plan}
-                    </span>
-                </div>
-                {tenantData?.plan === 'starter' && (
-                    <button className="w-full bg-gradient-to-r from-amber-500 to-orange-400 text-white text-xs font-bold py-2.5 rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2">
-                        <Sparkles size={14} /> Upgrade a Pro
-                    </button>
+            {/* Sidebar (Desktop) & Menu (Mobile Overlay) */}
+            <AnimatePresence>
+                {(isMobileMenuOpen || !window.matchMedia('(max-width: 768px)').matches) && (
+                    <motion.aside 
+                        initial={{ x: -300 }}
+                        animate={{ x: 0 }}
+                        exit={{ x: -300 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className={`
+                            fixed md:sticky top-0 left-0 z-50 h-[100dvh] w-72 bg-white border-r border-slate-100 p-8 flex flex-col shadow-2xl md:shadow-none
+                            ${isMobileMenuOpen ? 'flex' : 'hidden md:flex'}
+                        `}
+                    >
+                        <div className="hidden md:flex items-center gap-3 mb-10">
+                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">G</div>
+                            <span className="text-2xl font-black text-slate-900 tracking-tighter italic">Glassy</span>
+                        </div>
+
+                        <nav className="flex-1 space-y-2">
+                            {filteredMenu.map((item) => (
+                                <Link 
+                                    key={item.path} 
+                                    to={item.path}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`
+                                        flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300
+                                        ${location.pathname === item.path 
+                                            ? 'bg-blue-600 text-white shadow-xl shadow-blue-100' 
+                                            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}
+                                    `}
+                                >
+                                    <item.icon size={22} strokeWidth={2.5} />
+                                    <span>{item.label}</span>
+                                </Link>
+                            ))}
+                        </nav>
+
+                        <div className="pt-8 border-t border-slate-50 space-y-4">
+                            <div className="bg-slate-50 p-4 rounded-2xl flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 font-bold border border-slate-100 uppercase shadow-sm">
+                                    {user.username?.charAt(0)}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-bold text-slate-900 truncate">{user.username}</p>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{user.role}</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-red-400 hover:bg-red-50 hover:text-red-500 transition-all"
+                            >
+                                <LogOut size={22} strokeWidth={2.5} />
+                                <span>Salir del Sistema</span>
+                            </button>
+                        </div>
+                    </motion.aside>
                 )}
-            </div>
-        )}
+            </AnimatePresence>
 
-        <div className="p-4 border-t border-white/5 space-y-2">
-            <Link to="/app/settings" className="w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
-                <Settings size={20} />
-                {sidebarOpen && <span>Configuración</span>}
-            </Link>
-            <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-950/20 rounded-xl transition-all">
-                <LogOut size={20} />
-                {sidebarOpen && <span>Cerrar Sesión</span>}
-            </button>
+            {/* Backdrop Overlay for Mobile Menu */}
+            <AnimatePresence>
+              {isMobileMenuOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
+                  />
+              )}
+            </AnimatePresence>
+
+            {/* Main Content Area */}
+            <main className="flex-1 p-4 md:p-12 overflow-y-auto w-full">
+                <div className="max-w-6xl mx-auto w-full">
+                    {children}
+                </div>
+            </main>
         </div>
-      </motion.aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col relative overflow-hidden">
-        {/* Header */}
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-40">
-          <button 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 lg:hidden"
-          >
-            <Menu size={24} />
-          </button>
-          
-          <div className="flex items-center gap-6 ml-auto">
-             <div className="hidden sm:flex flex-col items-end">
-                <span className="text-sm font-bold text-slate-800">{tenantData?.companyName}</span>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Gestión Central</span>
-             </div>
-             <Link to="/app/settings" className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden hover:ring-4 ring-blue-500/10 transition-all">
-                {tenantData?.logo ? (
-                  <img src={tenantData.logo} alt="Logo" className="w-full h-full object-contain" />
-                ) : (
-                  <Building size={20} className="text-slate-400" />
-                )}
-             </Link>
-             <div className="w-px h-8 bg-slate-200"></div>
-             <div className="p-2 text-slate-400 cursor-pointer hover:text-blue-500">
-                <Bell size={22} />
-             </div>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-10 relative">
-          {children}
-        </div>
-      </main>
-    </div>
-  );
+    );
 };
 
 export default DashboardLayout;
