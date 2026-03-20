@@ -35,6 +35,23 @@ router.post('/', authenticate, authorize(['owner', 'admin']), checkClientLimit, 
 });
 
 /**
+ * PATCH /clients/:id — Actualizar datos de un cliente
+ */
+router.patch('/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+    try {
+        const client = await Client.findOneAndUpdate(
+            { _id: req.params.id, tenantId: req.user.tenantId },
+            { $set: req.body },
+            { new: true }
+        );
+        if (!client) return res.status(404).send({ message: 'Cliente no encontrado' });
+        res.send({ message: 'Cliente actualizado con éxito', client });
+    } catch (error) {
+        res.status(500).send({ message: 'Error al actualizar cliente' });
+    }
+});
+
+/**
  * DELETE /clients/:id — Eliminar cliente de mi empresa
  */
 router.delete('/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {

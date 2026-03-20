@@ -40,7 +40,8 @@ router.get('/:id/invoice', authenticate, async (req, res) => {
 router.get('/', authenticate, async (req, res) => {
     try {
         const assignments = await Assignment.find({ tenantId: req.user.tenantId })
-            .populate('clientId', 'companyName address phone')
+            .populate('clientId', 'companyName address phone serviceType')
+            .populate('workerId', 'fullName username')
             .sort({ date: -1 });
         res.send(assignments);
     } catch (error) {
