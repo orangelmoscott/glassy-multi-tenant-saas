@@ -225,6 +225,7 @@ const Clients = () => {
                                     <option value="mensual">Limpieza Mensual</option>
                                     <option value="quincenal">Limpieza Quincenal</option>
                                     <option value="semanal">Limpieza Semanal</option>
+                                    <option value="puntual">Servicio Puntual</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
