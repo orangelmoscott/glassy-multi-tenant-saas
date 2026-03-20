@@ -55,7 +55,7 @@ router.get('/my', authenticate, async (req, res) => {
     try {
         const assignments = await Assignment.find({ 
             tenantId: req.user.tenantId, 
-            workerId: req.user.id,
+            workerId: req.user.userId,
             status: { $ne: 'completado' } // Solo pendientes para el operario
         })
         .populate('clientId', 'companyName address phone')
@@ -75,13 +75,13 @@ router.post('/', authenticate, async (req, res) => {
         
         const newAssignment = new Assignment({
             tenantId: req.user.tenantId,
-            userId: req.user.id, // El que crea la ruta (Admin/Owner)
+            userId: req.user.userId, // El que crea la ruta (Admin/Owner)
             clientId,
             date: date || new Date(),
             notes,
             workerId, // Usuario con rol cristalero
             price: price || 0,
-            createdBy: req.user.id
+            createdBy: req.user.userId
         });
 
         await newAssignment.save();
