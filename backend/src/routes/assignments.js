@@ -85,7 +85,7 @@ router.post('/', authenticate, async (req, res) => {
         });
 
         await newAssignment.save();
-        const populated = await newAssignment.populate([
+        const populated = await Assignment.findById(newAssignment._id).populate([
             { path: 'clientId', select: 'companyName address' },
             { path: 'workerId', select: 'fullName username' }
         ]);

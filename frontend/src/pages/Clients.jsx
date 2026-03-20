@@ -56,9 +56,19 @@ const Clients = () => {
             const res = await axios.post('https://glassy-backend.onrender.com/clients', formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setClients([...clients, res.data]);
+            // El backend envía { message, client }
+            setClients([...clients, res.data.client]);
             setShowAddForm(false);
-            setFormData({ companyName: '', nif: '', email: '', phone: '', address: '', frequency: 'mensual', basePrice: 0 });
+            setFormData({ 
+                companyName: '', 
+                nif: '', 
+                email: '', 
+                phone: '', 
+                address: '', 
+                serviceType: 'tienda', 
+                frequency: 'mensual', 
+                basePrice: 0 
+            });
         } catch (err) {
             if (err.response?.status === 403 && err.response?.data?.upgradeSuggested) {
                 setIsPricingModalOpen(true);
@@ -76,6 +86,18 @@ const Clients = () => {
         (c?.companyName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
         (c?.email?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     );
+
+    const handleDeleteClient = async (id) => {
+        if (!window.confirm('¿Estás seguro de eliminar este cliente? Se perderá su historial.')) return;
+        try {
+            await axios.delete(`https://glassy-backend.onrender.com/clients/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setClients(clients.filter(c => c._id !== id));
+        } catch (err) {
+            alert('Error al eliminar cliente');
+        }
+    };
 
     const fetchClientDetails = async (client) => {
         setSelectedClient(client);
@@ -180,10 +202,15 @@ const Clients = () => {
                                         <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
                                             <Users size={24} />
                                         </div>
-                                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg"><Edit2 size={16}/></button>
-                                            <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={16}/></button>
-                                        </div>
+                                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                             <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg"><Edit2 size={16}/></button>
+                                             <button 
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteClient(client._id); }}
+                                                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                                             >
+                                                <Trash2 size={16}/>
+                                             </button>
+                                         </div>
                                     </div>
                                     <h3 className="text-xl font-bold text-slate-800 mb-1 leading-tight">{client.companyName}</h3>
                                     <p className="text-sm text-slate-400 mb-4">{client.email || 'Sin email'}</p>

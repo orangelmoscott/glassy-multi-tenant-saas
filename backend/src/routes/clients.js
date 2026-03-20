@@ -34,4 +34,20 @@ router.post('/', authenticate, authorize(['owner', 'admin']), checkClientLimit, 
     }
 });
 
+/**
+ * DELETE /clients/:id — Eliminar cliente de mi empresa
+ */
+router.delete('/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+    try {
+        const deleted = await Client.findOneAndDelete({ 
+            _id: req.params.id, 
+            tenantId: req.user.tenantId 
+        });
+        if (!deleted) return res.status(404).send({ message: 'Cliente no encontrado' });
+        res.send({ message: 'Cliente eliminado correctamente' });
+    } catch (error) {
+        res.status(500).send({ message: 'Error al eliminar cliente' });
+    }
+});
+
 module.exports = router;

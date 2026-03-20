@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { LayoutDashboard } from 'lucide-react';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -12,18 +13,18 @@ import Workers from './pages/Workers';
 import MyRoutes from './pages/MyRoutes';
 import Billing from './pages/Billing';
 
-// Dashboard Placeholder
-const DashboardHome = () => (
-  <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-    <div className="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center text-blue-600 shadow-xl">
-        <LayoutDashboard size={48} />
-    </div>
-    <h1 className="text-4xl font-extrabold text-slate-900">Bienvenido a su Panel Glassy</h1>
-    <p className="text-slate-500 max-w-md">Selecciona un módulo en la barra lateral para empezar a gestionar tu empresa de limpieza.</p>
-  </div>
-);
-
-import { LayoutDashboard } from 'lucide-react';
+// Guardia de Ruta de Alta Ingeniería
+const ProtectedRoute = ({ children, allowedRoles }) => {
+    const userString = localStorage.getItem('glassy_user');
+    if (!userString) return <Navigate to="/login" replace />;
+    
+    const user = JSON.parse(userString);
+    if (allowedRoles && !allowedRoles.includes(user.role)) {
+        // Redirigir según el rol si no tiene permiso (Isolation total)
+        return <Navigate to={user.role === 'worker' ? "/app/my-routes" : "/app/clients"} replace />;
+    }
+    return children;
+};
 
 function App() {
   return (
@@ -34,14 +35,16 @@ function App() {
         <Route path="/register" element={<RegisterCompany />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Rutas Protegidas de la Empresa (Dashboard) */}
-        <Route path="/app" element={<Clients />} />
-        <Route path="/app/clients" element={<Clients />} />
-        <Route path="/app/settings" element={<CompanySettings />} />
-        <Route path="/app/workers" element={<Workers />} />
-        <Route path="/app/assignments" element={<Assignments />} />
-        <Route path="/app/my-routes" element={<MyRoutes />} />
-        <Route path="/app/billing" element={<Billing />} />
+        {/* Rutas de Gestión Administrativa (Solo Owner/Admin) */}
+        <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
+        <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
+        <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
+        <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
+        <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
+        <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Billing /></ProtectedRoute>} />
+
+        {/* Rutas de Campo (Mis Rutas - Acceso Universal pero contenido filtrado por backend) */}
+        <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />
 
         {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />

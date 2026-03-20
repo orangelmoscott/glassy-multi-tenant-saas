@@ -7,77 +7,100 @@ const PDFDocument = require('pdfkit');
  */
 const generateInvoicePDF = (data) => {
     return new Promise((resolve, reject) => {
-        const doc = new PDFDocument({ margin: 50 });
+        const doc = new PDFDocument({ 
+            margin: 50,
+            size: 'A4',
+            info: { Title: 'Factura Glassy Service', Author: 'Glassy SaaS' }
+        });
+        
         let buffers = [];
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', () => resolve(Buffer.concat(buffers)));
 
         const { tenant, client, assignment } = data;
 
+        // --- HELPER PARA LÍNEAS ---
+        const hr = (y) => doc.moveTo(50, y).lineTo(550, y).lineWidth(1).stroke('#F3F4F6');
+
         // --- HEADER ---
         if (tenant.logo) {
             try {
-                // Convertir Base64 a Buffer si llega como data URL
                 const base64Data = tenant.logo.split(',')[1] || tenant.logo;
-                doc.image(Buffer.from(base64Data, 'base64'), 50, 45, { width: 80 });
+                doc.image(Buffer.from(base64Data, 'base64'), 50, 45, { width: 60 });
             } catch (e) {
-                console.error('Error rendering logo:', e);
+                console.error('Error logo PDF:', e);
             }
         }
 
-        doc.fillColor('#444444')
-            .fontSize(20)
-            .text(tenant.name || 'Empresa de Limpieza', 150, 50, { align: 'right' })
-            .fontSize(10)
-            .text(tenant.address || '', 150, 75, { align: 'right' })
-            .text(`NIF: ${tenant.nif || ''}`, 150, 90, { align: 'right' })
-            .text(`${tenant.email || ''} | ${tenant.phone || ''}`, 150, 105, { align: 'right' })
-            .moveDown();
+        doc.fillColor('#111827').fontSize(16).font('Helvetica-Bold').text(tenant.name || 'Empresa de Limpieza', 200, 45, { align: 'right' });
+        doc.fillColor('#6B7280').fontSize(9).font('Helvetica')
+           .text(tenant.address || '', 200, 65, { align: 'right' })
+           .text(`NIF: ${tenant.nif || ''}`, 200, 78, { align: 'right' })
+           .text(`${tenant.email || ''} | ${tenant.phone || ''}`, 200, 91, { align: 'right' });
 
-        // --- DIVIDER ---
-        doc.moveTo(50, 140).lineTo(550, 140).stroke('#eeeeee');
+        hr(120);
 
-        // --- CLIENT & INVOICE INFO ---
-        doc.fontSize(12).fillColor('#111827').font('Helvetica-Bold').text('CLIENTE:', 50, 160);
-        doc.fontSize(10).font('Helvetica').text(client.companyName, 50, 175);
-        doc.text(client.address, 50, 190);
-        doc.text(`NIF: ${client.nif || 'N/A'}`, 50, 205);
+        // --- INFO BLOQUES ---
+        doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica-Bold').text('CLIENTE', 50, 140);
+        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold').text(client.companyName, 50, 152);
+        doc.fillColor('#4B5563').fontSize(9).font('Helvetica').text(client.address, 50, 168, { width: 250 });
+        doc.text(`NIF/CIF: ${client.nif || 'N/A'}`, 50, 185);
 
-        doc.fontSize(12).font('Helvetica-Bold').text('ORDEN DE SERVICIO:', 400, 160, { align: 'right' });
-        doc.fontSize(10).font('Helvetica').text(`Nº: GLASSY-${assignment._id.toString().slice(-6).toUpperCase()}`, 400, 175, { align: 'right' });
-        doc.text(`Fecha: ${new Date(assignment.date).toLocaleDateString()}`, 400, 190, { align: 'right' });
+        doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica-Bold').text('ORDEN DE SERVICIO', 350, 140, { align: 'right' });
+        doc.fillColor('#111827').fontSize(10).font('Helvetica-Bold').text(`Nº RECIBO: ${assignment._id.toString().slice(-8).toUpperCase()}`, 350, 152, { align: 'right' });
+        doc.fillColor('#4B5563').fontSize(9).font('Helvetica').text(`Fecha: ${new Date(assignment.date).toLocaleDateString('es-ES')}`, 350, 168, { align: 'right' });
+        doc.text(`Estado: ${assignment.status.toUpperCase()}`, 350, 182, { align: 'right' });
 
-        // --- TABLE HEADER ---
-        doc.rect(50, 240, 500, 20).fill('#f9fafb').stroke('#eeeeee');
-        doc.fontSize(10).fillColor('#374151').font('Helvetica-Bold')
-            .text('DESCRIPCIÓN', 60, 245)
-            .text('UNID.', 350, 245, { align: 'right' })
-            .text('PRECIO UN.', 420, 245, { align: 'right' })
-            .text('TOTAL', 500, 245, { align: 'right' });
+        // --- TABLA DE SERVICIOS ---
+        const tableY = 240;
+        doc.rect(50, tableY, 500, 25).fill('#F9FAF ForeB').stroke('#F3F4F6');
+        doc.fillColor('#374151').fontSize(9).font('Helvetica-Bold')
+           .text('DESCRIPCIÓN DEL SERVICIO', 65, tableY + 8)
+           .text('CANT.', 350, tableY + 8, { width: 50, align: 'center' })
+           .text('PRECIO', 410, tableY + 8, { width: 60, align: 'right' })
+           .text('TOTAL', 485, tableY + 8, { width: 60, align: 'right' });
 
-        // --- TABLE ITEM ---
-        doc.fontSize(10).fillColor('#111827').font('Helvetica')
-            .text('Servicio de Limpieza de Cristales Especializado', 60, 275)
-            .text('1', 350, 275, { align: 'right' })
-            .text(`${assignment.price}€`, 420, 275, { align: 'right' })
-            .text(`${assignment.price}€`, 500, 275, { align: 'right' });
+        // Item Row
+        const itemY = tableY + 35;
+        doc.fillColor('#111827').fontSize(10).font('Helvetica')
+           .text('Limpieza de Cristales Profesional y Mantenimiento', 65, itemY)
+           .text('1', 350, itemY, { width: 50, align: 'center' })
+           .text(`${assignment.price.toFixed(2)}€`, 410, itemY, { width: 60, align: 'right' })
+           .text(`${assignment.price.toFixed(2)}€`, 485, itemY, { width: 60, align: 'right' });
 
-        // --- SUMMARY ---
-        const summaryY = 400;
-        doc.rect(350, summaryY, 200, 80).stroke('#eeeeee');
-        doc.text('Base Imponible:', 360, summaryY + 15);
-        doc.text(`${assignment.price}€`, 540, summaryY + 15, { align: 'right' });
-        doc.text('I.V.A (21%):', 360, summaryY + 35);
-        doc.text(`${(assignment.price * 0.21).toFixed(2)}€`, 540, summaryY + 35, { align: 'right' });
-        
-        doc.fontSize(12).font('Helvetica-Bold').text('TOTAL FACTURA:', 360, summaryY + 60);
-        doc.text(`${(assignment.price * 1.21).toFixed(2)}€`, 540, summaryY + 60, { align: 'right' });
+        hr(itemY + 25);
+
+        // --- TOTALES ---
+        const summaryY = itemY + 60;
+        const subtotal = assignment.price;
+        const tax = subtotal * 0.21;
+        const total = subtotal + tax;
+
+        doc.fillColor('#4B5563').fontSize(10).font('Helvetica').text('Subtotal Base:', 350, summaryY, { align: 'right' });
+        doc.fillColor('#111827').text(`${subtotal.toFixed(2)}€`, 545, summaryY, { align: 'right' });
+
+        doc.fillColor('#4B5563').text('IVA (21%):', 350, summaryY + 20, { align: 'right' });
+        doc.fillColor('#111827').text(`${tax.toFixed(2)}€`, 545, summaryY + 20, { align: 'right' });
+
+        doc.rect(350, summaryY + 45, 200, 40).fill('#111827');
+        doc.fillColor('#FFFFFF').fontSize(12).font('Helvetica-Bold').text('TOTAL A PAGAR:', 360, summaryY + 58);
+        doc.fontSize(14).text(`${total.toFixed(2)}€`, 540, summaryY + 58, { align: 'right' });
+
+        // --- FIRMA CLIENTE ---
+        if (assignment.signature) {
+            doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica-Bold').text('VALIDACIÓN DIGITAL (FIRMA CLIENTE)', 50, summaryY + 45);
+            try {
+                const sigData = assignment.signature.split(',')[1] || assignment.signature;
+                doc.image(Buffer.from(sigData, 'base64'), 50, summaryY + 60, { height: 60 });
+            } catch (e) {
+                doc.text('Firma no disponible visualmente.', 50, summaryY + 60);
+            }
+        }
 
         // --- FOOTER ---
-        doc.fontSize(8).fillColor('#9ca3af')
-            .text('Gracias por confiar en nuestros servicios de precisión.', 50, 680, { align: 'center' })
-            .font('Helvetica-Bold')
-            .text(`FORMA DE PAGO SEGURO: ${tenant.bankDetails || 'Pendiente'}`, 50, 700, { align: 'center' });
+        doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica')
+           .text(`FORMA DE PAGO: ${tenant.bankDetails || 'Contactar con administración'}`, 50, 720, { align: 'center' })
+           .text('Gracias por su confianza. Este documento es un comprobante de servicio profesional.', 50, 735, { align: 'center' });
 
         doc.end();
     });
