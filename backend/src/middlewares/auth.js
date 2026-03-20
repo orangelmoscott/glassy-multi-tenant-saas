@@ -7,8 +7,11 @@ const jwt = require('jsonwebtoken');
  * 3. Inyecta req.user para que todas las rutas lo usen.
  */
 function authenticate(req, res, next) {
-    const token = req.headers.authorization;
-    if (!token) return res.status(401).send({ message: 'Acceso denegado: Se requiere Token' });
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).send({ message: 'Acceso denegado: Se requiere Token' });
+
+    // Extraer token quitando "Bearer " si existe
+    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
 
     try {
         const decoded = jwt.verify(token, process.env.SECRET_KEY);

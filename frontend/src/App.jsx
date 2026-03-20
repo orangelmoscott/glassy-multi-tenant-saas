@@ -10,6 +10,7 @@ import CompanySettings from './pages/CompanySettings';
 import Assignments from './pages/Assignments';
 import Workers from './pages/Workers';
 import MyRoutes from './pages/MyRoutes';
+import Billing from './pages/Billing';
 
 // Dashboard Placeholder
 const DashboardHome = () => (
@@ -40,9 +41,7 @@ function App() {
         <Route path="/app/workers" element={<Workers />} />
         <Route path="/app/assignments" element={<Assignments />} />
         <Route path="/app/my-routes" element={<MyRoutes />} />
-        
-        {/* Próximamente: Facturación */}
-        <Route path="/app/billing" element={<div className="p-10 text-center font-bold text-slate-400">Próximamente: Finanzas y Facturación</div>} />
+        <Route path="/app/billing" element={<Billing />} />
 
         {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
