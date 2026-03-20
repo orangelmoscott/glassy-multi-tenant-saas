@@ -18,7 +18,7 @@ const Assignments = () => {
     const [formData, setFormData] = useState({
         clientId: '',
         workerId: '', // Cambiado de workerName a workerId real
-        scheduledDate: '',
+        date: '',
         price: 0,
         notes: ''
     });
@@ -148,14 +148,14 @@ const Assignments = () => {
                                                 <User size={16} className="text-blue-500" /> {as.workerId?.fullName || 'Sin asignar'}
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-bold text-slate-800">{new Date(as.scheduledDate).toLocaleDateString()}</span>
-                                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                                                    <Clock size={10} /> Pendiente
-                                                </span>
-                                            </div>
-                                        </td>
+                                         <td className="px-8 py-6">
+                                             <div className="flex flex-col">
+                                                 <span className="text-sm font-bold text-slate-800">{new Date(as.date).toLocaleDateString()}</span>
+                                                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                                                     <Clock size={10} /> Pendiente
+                                                 </span>
+                                             </div>
+                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border ${getStatusColor(as.status)}`}>
                                                 {as.status}
@@ -202,14 +202,22 @@ const Assignments = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-xl p-10 shadow-3xl">
                              <h2 className="text-2xl font-extrabold text-slate-800 mb-8">Programar Nueva Ruta</h2>
                              <form onSubmit={handleCreate} className="space-y-6">
-                                <div className="space-y-2">
+                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cliente Receptor</label>
                                     <select 
                                         required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                        onChange={(e) => setFormData({...formData, clientId: e.target.value})}
+                                        onChange={(e) => {
+                                            const clientId = e.target.value;
+                                            const client = clients.find(c => c._id === clientId);
+                                            setFormData({
+                                                ...formData, 
+                                                clientId, 
+                                                price: client ? client.basePrice : 0 
+                                            });
+                                        }}
                                     >
                                         <option value="">Selecciona un cliente...</option>
-                                        {clients.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
+                                        {clients.map(c => <option key={c._id} value={c._id}>{c.companyName} ({c.basePrice}€)</option>)}
                                     </select>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -224,14 +232,16 @@ const Assignments = () => {
                                         </select>
                                      </div>
                                      <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Servicio (€)</label>
-                                        <input type="number" placeholder="0.00" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, price: e.target.value})} />
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Automático (€)</label>
+                                        <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600">
+                                            {formData.price || '0.00'}€
+                                        </div>
                                      </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
-                                    <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, scheduledDate: e.target.value})} />
-                                </div>
+                                 <div className="space-y-2">
+                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
+                                     <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                                 </div>
                                 <div className="flex gap-4 pt-4">
                                     <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Cancelar</button>
                                     <button className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95">Asignar Ruta</button>

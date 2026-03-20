@@ -11,6 +11,7 @@ const assignmentSchema = new mongoose.Schema({
         default: 'pendiente'
     },
     notes: { type: String, default: '' },
+    price: { type: Number, default: 0 }, // Precio al momento del servicio
     signature: { type: String, default: null }, // Firma digital Base64
     completedAt: { type: Date },
     

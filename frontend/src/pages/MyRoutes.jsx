@@ -139,15 +139,24 @@ const MyRoutes = () => {
 
                             {/* Job Details */}
                             <div className="p-8 space-y-6 flex-1 overflow-y-auto">
-                                <div className="grid grid-cols-2 gap-4">
-                                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Precio Servicio</p>
-                                         <p className="text-xl font-black text-slate-900">{selectedJob.price}€</p>
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                         <div>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Precio Servicio</p>
+                                            <p className="text-xl font-black text-slate-900">{selectedJob.price}€</p>
+                                         </div>
+                                         <a 
+                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.clientId?.address)}`}
+                                            target="_blank" rel="noopener noreferrer"
+                                            className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all"
+                                         >
+                                             <MapPin size={24} />
+                                         </a>
                                      </div>
                                      <a href={`tel:${selectedJob.clientId?.phone}`} className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-center gap-3">
-                                         <Phone className="text-blue-600" />
+                                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white"><Phone size={20} /></div>
                                          <div>
-                                            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none">Llamar</p>
+                                            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest leading-none">Llamar Cliente</p>
                                             <p className="text-sm font-bold text-blue-700">{selectedJob.clientId?.phone || 'Sin tel.'}</p>
                                          </div>
                                      </a>

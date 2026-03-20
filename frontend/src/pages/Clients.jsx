@@ -22,6 +22,7 @@ const Clients = () => {
         email: '',
         phone: '',
         address: '',
+        serviceType: 'tienda', // Agregado: Requerido por el esquema backend
         frequency: 'mensual',
         basePrice: 0
     });
@@ -206,16 +207,31 @@ const Clients = () => {
                                 <input type="text" placeholder="NIF" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, nif: e.target.value})} />
                                 <input type="text" placeholder="Teléfono" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                             </div>
+                            <input 
+                                type="text" placeholder="Dirección Exacta (Para el mapa del operario)" required
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500"
+                                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                            />
                             <input type="email" placeholder="Email" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                            
                             <div className="grid grid-cols-2 gap-4">
-                                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, frequency: e.target.value})} >
-                                    <option value="mensual">Mensual</option>
-                                    <option value="quincenal">Quincenal</option>
-                                    <option value="puntual">Puntual</option>
+                                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, serviceType: e.target.value})} >
+                                    <option value="tienda">Tienda / Local</option>
+                                    <option value="oficina">Oficina</option>
+                                    <option value="restaurante">Restaurante</option>
+                                    <option value="hogar">Ubicación Privada / Hogar</option>
                                 </select>
-                                <input type="number" placeholder="Precio Base (€)" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, basePrice: e.target.value})} />
+                                <select className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, frequency: e.target.value})} >
+                                    <option value="mensual">Limpieza Mensual</option>
+                                    <option value="quincenal">Limpieza Quincenal</option>
+                                    <option value="semanal">Limpieza Semanal</option>
+                                </select>
                             </div>
-                            <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold mt-4 hover:bg-slate-800 shadow-xl">Guardar Cliente en Glassy</button>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Precio Fijo del Servicio (€)</label>
+                                <input type="number" placeholder="Precio Base (€)" required className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500" onChange={(e) => setFormData({...formData, basePrice: e.target.value})} />
+                            </div>
+                            <button className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold mt-4 hover:bg-slate-800 shadow-xl transition-all active:scale-95">Guardar Cliente Estratégico</button>
                         </form>
                     </motion.div>
                 </div>
