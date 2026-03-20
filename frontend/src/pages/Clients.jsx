@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Users, UserPlus, Search, Filter, MoreVertical, 
-  Trash2, Edit2, FileText, TrendingUp, AlertCircle, CheckCircle2
+  Trash2, Edit2, FileText, TrendingUp, AlertCircle, CheckCircle2, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';

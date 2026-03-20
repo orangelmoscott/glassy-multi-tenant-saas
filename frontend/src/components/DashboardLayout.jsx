@@ -3,22 +3,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, Calendar, FileText, Settings, LogOut, 
   Menu, X, Bell, LayoutDashboard, ChevronRight,
-  TrendingUp, CreditCard, Sparkles, Building
+  TrendingUp, CreditCard, Sparkles, Building, HardHat
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [tenantData, setTenantData] = useState(null);
+  const [userRole, setUserRole] = useState('cristalero');
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Mock de datos de sesión - En real vendría del AuthContext o localStorage
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     if (!user.token) {
       // navigate('/login');
     }
+    setUserRole(user.role || 'cristalero');
     setTenantData({
       companyName: user.companyName || 'Empresa Test',
       plan: user.plan || 'starter',
@@ -26,12 +27,18 @@ const DashboardLayout = ({ children }) => {
     });
   }, []);
 
-  const menuItems = [
-    { title: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/app' },
-    { title: 'Clientes', icon: <Users size={20} />, path: '/app/clients' },
-    { title: 'Rutas', icon: <Calendar size={20} />, path: '/app/assignments', locked: ['starter', 'basico'].includes(tenantData?.plan) },
-    { title: 'Facturación', icon: <FileText size={20} />, path: '/app/billing' },
-  ];
+  const menuItems = userRole === 'owner' || userRole === 'admin' 
+    ? [
+        { title: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/app' },
+        { title: 'Clientes', icon: <Users size={20} />, path: '/app/clients' },
+        { title: 'Operarios', icon: <HardHat size={20} />, path: '/app/workers' },
+        { title: 'Rutas', icon: <Calendar size={20} />, path: '/app/assignments' },
+        { title: 'Facturación', icon: <FileText size={20} />, path: '/app/billing' },
+      ]
+    : [
+        { title: 'Mis Rutas', icon: <Calendar size={20} />, path: '/app/my-routes' },
+        { title: 'Perfil', icon: <Users size={20} />, path: '/app/settings' },
+      ];
 
   const handleLogout = () => {
     localStorage.removeItem('glassy_user');

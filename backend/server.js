@@ -18,6 +18,7 @@ const authRoutes = require('./src/routes/auth');
 const clientRoutes = require('./src/routes/clients');
 const tenantRoutes = require('./src/routes/tenant');
 const assignmentRoutes = require('./src/routes/assignments');
+const userRoutes = require('./src/routes/users');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use('/auth', authRoutes);
 app.use('/clients', clientRoutes);
 app.use('/tenant', tenantRoutes);
 app.use('/assignments', assignmentRoutes);
+app.use('/users', userRoutes);
 
 // Ruta de Salud del SaaS
 app.get('/', (req, res) => {

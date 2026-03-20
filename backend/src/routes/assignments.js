@@ -49,30 +49,72 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 /**
- * POST | Crear nueva asignación
+ * GET | Sus propias asignaciones (Acceso para Cristaleros)
+ */
+router.get('/my', authenticate, async (req, res) => {
+    try {
+        const assignments = await Assignment.find({ 
+            tenantId: req.user.tenantId, 
+            workerId: req.user.id,
+            status: { $ne: 'completado' } // Solo pendientes para el operario
+        })
+        .populate('clientId', 'companyName address phone')
+        .sort({ date: 1 });
+        res.send(assignments);
+    } catch (error) {
+        res.status(500).send({ message: 'Error al obtener tus asignaciones' });
+    }
+});
+
+/**
+ * POST | Crear nueva asignación (Asignar a un operario específico)
  */
 router.post('/', authenticate, async (req, res) => {
     try {
-        const { clientId, date, notes, workerName, price } = req.body;
+        const { clientId, date, notes, workerId, price } = req.body;
         
         const newAssignment = new Assignment({
             tenantId: req.user.tenantId,
+            userId: req.user.id, // El que crea la ruta (Admin/Owner)
             clientId,
             date: date || new Date(),
             notes,
-            // Agregamos workerName y price aunque no estén en el modelo base original, 
-            // los manejamos dinámicamente o actualizamos el modelo.
-            workerName: workerName || 'Sin asignar',
+            workerId, // Usuario con rol cristalero
             price: price || 0,
             createdBy: req.user.id
         });
 
         await newAssignment.save();
-        const populated = await newAssignment.populate('clientId', 'companyName address');
+        const populated = await newAssignment.populate([
+            { path: 'clientId', select: 'companyName address' },
+            { path: 'workerId', select: 'fullName username' }
+        ]);
         res.status(201).send(populated);
     } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'Error al crear la asignación' });
+    }
+});
+
+/**
+ * PATCH | Completar Trabajo con Firma Digital
+ */
+router.patch('/:id/complete', authenticate, async (req, res) => {
+    try {
+        const { signature, notes } = req.body;
+        const assignment = await Assignment.findOneAndUpdate(
+            { _id: req.params.id, tenantId: req.user.tenantId },
+            { 
+                status: 'completado', 
+                signature, 
+                notes: notes || 'Servicio finalizado con firma del cliente.',
+                completedAt: new Date()
+            },
+            { new: true }
+        );
+        res.send({ message: 'Servicio validado con firma', assignment });
+    } catch (error) {
+        res.status(500).send({ message: 'Error al validar servicio' });
     }
 });
 

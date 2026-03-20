@@ -4,12 +4,15 @@ const assignmentSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
     date: { type: Date, required: true },
+    workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: {
         type: String,
         enum: ['pendiente', 'en_ruta', 'completado'],
         default: 'pendiente'
     },
     notes: { type: String, default: '' },
+    signature: { type: String, default: null }, // Firma digital Base64
+    completedAt: { type: Date },
     
     // SaaS Multi-tenancy
     tenantId: { 

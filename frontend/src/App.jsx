@@ -6,8 +6,10 @@ import LandingPage from './pages/LandingPage';
 import RegisterCompany from './pages/RegisterCompany';
 import Login from './pages/Login';
 import Clients from './pages/Clients';
-import Settings from './pages/Settings';
+import CompanySettings from './pages/CompanySettings';
 import Assignments from './pages/Assignments';
+import Workers from './pages/Workers';
+import MyRoutes from './pages/MyRoutes';
 
 // Dashboard Placeholder
 const DashboardHome = () => (
@@ -34,8 +36,10 @@ function App() {
         {/* Rutas Protegidas de la Empresa (Dashboard) */}
         <Route path="/app" element={<Clients />} />
         <Route path="/app/clients" element={<Clients />} />
-        <Route path="/app/settings" element={<Settings />} />
+        <Route path="/app/settings" element={<CompanySettings />} />
+        <Route path="/app/workers" element={<Workers />} />
         <Route path="/app/assignments" element={<Assignments />} />
+        <Route path="/app/my-routes" element={<MyRoutes />} />
         
         {/* Próximamente: Facturación */}
         <Route path="/app/billing" element={<div className="p-10 text-center font-bold text-slate-400">Próximamente: Finanzas y Facturación</div>} />

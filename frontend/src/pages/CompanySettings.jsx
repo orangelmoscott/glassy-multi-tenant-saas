@@ -8,7 +8,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 
-const Settings = () => {
+const CompanySettings = () => {
     const [tenant, setTenant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -241,4 +241,4 @@ const Settings = () => {
     );
 };
 
-export default Settings;
+export default CompanySettings;

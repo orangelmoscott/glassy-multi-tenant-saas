@@ -12,11 +12,12 @@ import DashboardLayout from '../components/DashboardLayout';
 const Assignments = () => {
     const [assignments, setAssignments] = useState([]);
     const [clients, setClients] = useState([]);
+    const [workers, setWorkers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [formData, setFormData] = useState({
         clientId: '',
-        workerName: '',
+        workerId: '', // Cambiado de workerName a workerId real
         scheduledDate: '',
         price: 0,
         notes: ''
@@ -31,12 +32,14 @@ const Assignments = () => {
 
     const fetchData = async () => {
         try {
-            const [assignRes, clientRes] = await Promise.all([
+            const [assignRes, clientRes, workerRes] = await Promise.all([
                 axios.get('https://glassy-backend.onrender.com/assignments', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('https://glassy-backend.onrender.com/clients', { headers: { Authorization: `Bearer ${token}` } })
+                axios.get('https://glassy-backend.onrender.com/clients', { headers: { Authorization: `Bearer ${token}` } }),
+                axios.get('https://glassy-backend.onrender.com/users/workers', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setAssignments(assignRes.data);
             setClients(clientRes.data);
+            setWorkers(workerRes.data);
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -142,7 +145,7 @@ const Assignments = () => {
                                         </td>
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                                <User size={16} className="text-blue-500" /> {as.workerName}
+                                                <User size={16} className="text-blue-500" /> {as.workerId?.fullName || 'Sin asignar'}
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
@@ -211,8 +214,14 @@ const Assignments = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                      <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Operario</label>
-                                        <input type="text" placeholder="Nombre cristalero" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, workerName: e.target.value})} />
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Operario Asignado</label>
+                                        <select 
+                                            required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
+                                            onChange={(e) => setFormData({...formData, workerId: e.target.value})}
+                                        >
+                                            <option value="">Elige un cristalero...</option>
+                                            {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                                        </select>
                                      </div>
                                      <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Servicio (€)</label>
