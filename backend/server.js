@@ -17,6 +17,7 @@ const { authenticate } = require('./src/middlewares/auth');
 const authRoutes = require('./src/routes/auth');
 const clientRoutes = require('./src/routes/clients');
 const tenantRoutes = require('./src/routes/tenant');
+const assignmentRoutes = require('./src/routes/assignments');
 
 const app = express();
 
@@ -37,6 +38,7 @@ mongoose.connect(process.env.MONGO_URI_SAAS)
 app.use('/auth', authRoutes);
 app.use('/clients', clientRoutes);
 app.use('/tenant', tenantRoutes);
+app.use('/assignments', assignmentRoutes);
 
 // Ruta de Salud del SaaS
 app.get('/', (req, res) => {

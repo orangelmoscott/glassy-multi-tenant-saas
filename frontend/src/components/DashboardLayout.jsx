@@ -100,10 +100,10 @@ const DashboardLayout = ({ children }) => {
         )}
 
         <div className="p-4 border-t border-white/5 space-y-2">
-            <button className="w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+            <Link to="/app/settings" className="w-full flex items-center gap-4 px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
                 <Settings size={20} />
                 {sidebarOpen && <span>Configuración</span>}
-            </button>
+            </Link>
             <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-950/20 rounded-xl transition-all">
                 <LogOut size={20} />
                 {sidebarOpen && <span>Cerrar Sesión</span>}
@@ -127,13 +127,13 @@ const DashboardLayout = ({ children }) => {
                 <span className="text-sm font-bold text-slate-800">{tenantData?.companyName}</span>
                 <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Gestión Central</span>
              </div>
-             <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden">
+             <Link to="/app/settings" className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden hover:ring-4 ring-blue-500/10 transition-all">
                 {tenantData?.logo ? (
                   <img src={tenantData.logo} alt="Logo" className="w-full h-full object-contain" />
                 ) : (
                   <Building size={20} className="text-slate-400" />
                 )}
-             </div>
+             </Link>
              <div className="w-px h-8 bg-slate-200"></div>
              <div className="p-2 text-slate-400 cursor-pointer hover:text-blue-500">
                 <Bell size={22} />

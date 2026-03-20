@@ -6,6 +6,8 @@ import LandingPage from './pages/LandingPage';
 import RegisterCompany from './pages/RegisterCompany';
 import Login from './pages/Login';
 import Clients from './pages/Clients';
+import Settings from './pages/Settings';
+import Assignments from './pages/Assignments';
 
 // Dashboard Placeholder
 const DashboardHome = () => (
@@ -30,11 +32,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         
         {/* Rutas Protegidas de la Empresa (Dashboard) */}
-        <Route path="/app" element={<Clients />} /> {/* Redirigimos por ahora a Clientes para que vea acción */}
+        <Route path="/app" element={<Clients />} />
         <Route path="/app/clients" element={<Clients />} />
+        <Route path="/app/settings" element={<Settings />} />
+        <Route path="/app/assignments" element={<Assignments />} />
         
-        {/* Próximamente: Rutas y Facturación */}
-        <Route path="/app/assignments" element={<div className="p-10 text-center font-bold text-slate-400">Próximamente: Gestión de Rutas (Plan Pro)</div>} />
+        {/* Próximamente: Facturación */}
         <Route path="/app/billing" element={<div className="p-10 text-center font-bold text-slate-400">Próximamente: Finanzas y Facturación</div>} />
 
         {/* Redirección por defecto */}
