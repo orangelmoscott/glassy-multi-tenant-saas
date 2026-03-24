@@ -40,17 +40,17 @@ const MyRoutes = () => {
     const handleComplete = async () => {
         const isLastVisit = !selectedJob ? false : ((selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1));
         
-        if (isLastVisit && (!sigPad.current || sigPad.current.isEmpty())) {
-            alert('Por favor, ingresa la firma del cliente para finalizar el servicio mensual.');
+        if (!sigPad.current || sigPad.current.isEmpty()) {
+            alert('Por favor, ingresa la firma del cliente para validar la limpieza.');
             return;
         }
 
-        const signatureBase64 = isLastVisit ? sigPad.current.getTrimmedCanvas().toDataURL('image/png') : null;
+        const signatureBase64 = sigPad.current.getTrimmedCanvas().toDataURL('image/png');
         
         try {
             await axios.patch(`https://glassy-backend.onrender.com/assignments/${selectedJob._id}/complete`, {
                 signature: signatureBase64,
-                notes: isLastVisit ? 'Trabajo mensual finalizado y validado.' : 'Visita registrada con éxito.'
+                notes: isLastVisit ? 'Trabajo mensual finalizado y validado.' : 'Visita registrada con validación de firma.'
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -58,7 +58,6 @@ const MyRoutes = () => {
             if (isLastVisit) {
                 setAssignments(assignments.filter(a => a._id !== selectedJob._id));
             } else {
-                // Update local visually avoiding refetch
                 setAssignments(assignments.map(a => a._id === selectedJob._id ? {
                       ...a, 
                       visitsDone: (a.visitsDone || 0) + 1,
@@ -209,44 +208,36 @@ const MyRoutes = () => {
                                      </a>
                                 </div>
 
-                                {/* Signature Section ONLY IF LAST VISIT */}
-                                {((selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1)) ? (
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <PenTool size={16} /> Firma Mensual del Cliente
-                                        </h3>
-                                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[30px] p-2 overflow-hidden relative group">
-                                             <SignatureCanvas 
-                                                ref={sigPad}
-                                                penColor='#2563eb'
-                                                canvasProps={{ className: 'w-full h-64 cursor-crosshair bg-white rounded-[25px]' }}
-                                             />
-                                             <button 
-                                                onClick={clearSignature}
-                                                className="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-lg text-red-500 border border-slate-100 shadow-sm"
-                                             >
-                                                 <Trash2 size={16} />
-                                             </button>
-                                        </div>
-                                        <p className="text-center text-[10px] text-slate-400 font-medium">Firma final del mes para autorizar facturación.</p>
+                                {/* Signature Section ALWAYS VISIBLE */}
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <PenTool size={16} /> Validación de Trabajo (Firma)
+                                    </h3>
+                                    <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[30px] p-2 overflow-hidden relative group">
+                                         <SignatureCanvas 
+                                            ref={sigPad}
+                                            penColor='#2563eb'
+                                            canvasProps={{ className: 'w-full h-64 cursor-crosshair bg-white rounded-[25px]' }}
+                                         />
+                                         <button 
+                                            onClick={clearSignature}
+                                            className="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-lg text-red-500 border border-slate-100 shadow-sm"
+                                         >
+                                             <Trash2 size={16} />
+                                         </button>
                                     </div>
-                                ) : (
-                                    <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 text-center">
-                                        <CheckCircle className="mx-auto text-blue-400 mb-2" size={32} />
-                                        <p className="text-sm font-bold text-slate-600">Visita Incremental ({ (selectedJob.visitsDone || 0) + 1 } de {selectedJob.expectedVisits || 1})</p>
-                                        <p className="text-[10px] text-slate-400 mt-1">Concluye esta visita, no requiere firma aún.</p>
-                                    </div>
-                                )}
+                                    <p className="text-center text-[10px] text-slate-400 font-medium">Requerido en cada limpieza: Al firmar, el cliente valida el trabajo realizado.</p>
+                                </div>
                             </div>
 
                             {/* Action Footer */}
                             <div className="p-8 bg-slate-50 border-t border-slate-100 flex gap-4">
-                                <button onClick={() => setSelectedJob(null)} className="flex-1 py-4 font-bold text-slate-400">Posponer</button>
+                                <button onClick={() => setSelectedJob(null)} className="flex-1 py-4 font-bold text-slate-400 hover:text-slate-600">Posponer</button>
                                 <button 
                                     onClick={handleComplete}
                                     className="flex-[2] bg-blue-600 text-white py-5 rounded-2xl font-extrabold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Save size={20} /> { ((selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1)) ? 'Validar Fin de Mes' : 'Registrar Visita' }
+                                    <CheckCircle size={20} /> {(selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1) ? 'Validar Fin de Mes' : `Registrar Visita (${(selectedJob.visitsDone || 0) + 1}/${selectedJob.expectedVisits || 1})`}
                                 </button>
                             </div>
                         </motion.div>

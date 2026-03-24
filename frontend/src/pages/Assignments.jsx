@@ -201,9 +201,6 @@ const Assignments = () => {
                                                 >
                                                     <Send size={18} />
                                                 </button>
-                                                <button className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-blue-600 transition-all">
-                                                    <ChevronRight size={20} />
-                                                </button>
                                             </div>
                                         </td>
                                     </tr>

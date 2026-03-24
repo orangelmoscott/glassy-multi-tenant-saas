@@ -22,6 +22,10 @@ const assignmentSchema = new mongoose.Schema({
     
     expectedVisits: { type: Number, default: 1 }, // Cantidad de visitas al mes (1, 2 o 4)
     visitsDone: { type: Number, default: 0 }, // Visitas realizadas
+    visitLogs: [{
+        signature: String,
+        date: { type: Date, default: Date.now }
+    }],
     
     // SaaS Multi-tenancy
     tenantId: { 

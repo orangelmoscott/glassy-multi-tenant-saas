@@ -200,11 +200,15 @@ router.patch('/:id/complete', authenticate, async (req, res) => {
 
         assignment.visitsDone = (assignment.visitsDone || 0) + 1;
         assignment.notes = notes || assignment.notes;
+        
+        if (signature) {
+            assignment.visitLogs.push({ signature, date: new Date() });
+        }
 
         // Si es la última visita esperada, pedimos que se complete la ruta
         if (assignment.visitsDone >= (assignment.expectedVisits || 1)) {
             assignment.status = 'completado';
-            assignment.signature = signature;
+            assignment.signature = signature; // Firma principal de la asignación
             assignment.completedAt = new Date();
         } else {
             // Si no, cambiamos a en_ruta para indicar que ya empezó sus ciclos
