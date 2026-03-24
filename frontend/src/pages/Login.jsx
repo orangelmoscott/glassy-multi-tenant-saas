@@ -28,9 +28,17 @@ const Login = () => {
                     role: response.data.role,
                     tenantId: response.data.tenantId,
                     companyName: response.data.companyName || 'Mi Empresa',
-                    plan: response.data.plan || 'starter'
+                    plan: response.data.plan || 'starter',
+                    userId: response.data.userId,
+                    fullName: response.data.fullName || response.data.username
                 }));
-                navigate('/app');
+
+                // Redirigir según rol: cristaleros a sus rutas, admin/owner al panel
+                if (response.data.role === 'cristalero') {
+                    navigate('/app/my-routes');
+                } else {
+                    navigate('/app/clients');
+                }
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Credenciales incorrectas');

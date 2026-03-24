@@ -63,7 +63,23 @@ const MyRoutes = () => {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto space-y-4 md:space-y-8">
+            <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 pb-10">
+                {/* Perfil del Operario */}
+                <div className="bg-white p-6 md:p-8 rounded-[30px] md:rounded-[40px] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <div className="flex items-center gap-5">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl md:rounded-[25px] flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-blue-200">
+                            {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username?.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">{user.fullName || user.username}</h2>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest">{user.role}</span>
+                                <span className="text-slate-400 font-bold text-sm">{user.companyName}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Mobile Friendly Header */}
                 <div className="bg-slate-900 p-6 md:p-8 rounded-[30px] md:rounded-[40px] text-white shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>

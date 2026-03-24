@@ -20,7 +20,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     const user = JSON.parse(userString);
     if (allowedRoles && !allowedRoles.includes(user.role)) {
         // Redirigir según el rol si no tiene permiso (Isolation total)
-        return <Navigate to={user.role === 'worker' ? "/app/my-routes" : "/app/clients"} replace />;
+        // 'cristalero' es el rol de operario en la BD
+        const isWorker = user.role === 'worker' || user.role === 'cristalero';
+        return <Navigate to={isWorker ? "/app/my-routes" : "/app/clients"} replace />;
     }
     return children;
 };
@@ -46,7 +48,7 @@ function App() {
         <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Billing /></ProtectedRoute>} />
 
         {/* Canales de Campo (Operarios) */}
-        <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />
+        <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'cristalero', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />
 
         {/* Global Redirector */}
         <Route path="*" element={<Navigate to="/" replace />} />

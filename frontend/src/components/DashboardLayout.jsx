@@ -13,7 +13,7 @@ const DashboardLayout = ({ children }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     
     const userString = localStorage.getItem('glassy_user');
-    const user = userString ? JSON.parse(userString) : { role: 'worker', username: 'Usuario' };
+    const user = userString ? JSON.parse(userString) : { role: 'cristalero', username: 'Usuario' };
     const isOwner = user.role === 'owner' || user.role === 'admin';
 
     const menuItems = [
@@ -21,7 +21,7 @@ const DashboardLayout = ({ children }) => {
         { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['owner', 'admin'] },
         { icon: HardHat, label: 'Operarios', path: '/app/workers', roles: ['owner', 'admin'] },
         { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['owner', 'admin'] },
-        { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker'] },
+        { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker', 'cristalero'] },
         { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'] },
         { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
     ];
