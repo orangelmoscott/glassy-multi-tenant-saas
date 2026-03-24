@@ -3,6 +3,7 @@ const router = express.Router();
 const Assignment = require('../models/Assignment');
 const Tenant = require('../models/Tenant');
 const Client = require('../models/Client');
+const Counter = require('../models/Counter');
 const { authenticate } = require('../middlewares/auth');
 const { generateInvoicePDF } = require('../utils/pdfGenerator');
 
@@ -18,6 +19,18 @@ router.get('/:id/invoice', authenticate, async (req, res) => {
 
         const tenant = await Tenant.findById(req.user.tenantId);
         
+        // Asignar número de factura si no tiene
+        if (!assignment.invoiceNumber) {
+            const counter = await Counter.findOneAndUpdate(
+                { id: `invoice_${req.user.tenantId}`, tenantId: req.user.tenantId },
+                { $inc: { seq: 1 } },
+                { new: true, upsert: true }
+            );
+            // Numeración ej. 001, 002...
+            assignment.invoiceNumber = String(counter.seq).padStart(3, '0');
+            await assignment.save();
+        }
+
         // Generar PDF con los datos reales
         const pdfBuffer = await generateInvoicePDF({
             tenant: tenant,
@@ -57,11 +70,41 @@ router.get('/my', authenticate, async (req, res) => {
         const assignments = await Assignment.find({ 
             tenantId: req.user.tenantId, 
             workerId: req.user.userId,
-            status: { $ne: 'completado' } // Solo pendientes para el operario
+            status: { $ne: 'completado' }
         })
-        .populate('clientId', 'companyName address phone')
-        .sort({ date: 1 });
-        res.send(assignments);
+        .populate('clientId')
+        .sort({ date: 1 })
+        .lean();
+
+        // Calcular progreso para el cristalero
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const monthlyAssignments = await Assignment.find({
+            tenantId: req.user.tenantId,
+            date: { $gte: startOfMonth }
+        }).lean();
+
+        const enhanced = assignments.map(a => {
+            const clientAssignments = monthlyAssignments.filter(ma => ma.clientId.toString() === a.clientId._id.toString());
+            const completed = clientAssignments.filter(ma => ma.status === 'completado').length;
+            
+            let expected = 1;
+            if (a.clientId.frequency === 'semanal') expected = 4;
+            if (a.clientId.frequency === 'quincenal') expected = 2;
+
+            return {
+                ...a,
+                progressInfo: {
+                    completed,
+                    expected,
+                    text: `${completed}/${expected} este mes`
+                }
+            };
+        });
+
+        res.send(enhanced);
     } catch (error) {
         res.status(500).send({ message: 'Error al obtener tus asignaciones' });
     }
@@ -72,7 +115,7 @@ router.get('/my', authenticate, async (req, res) => {
  */
 router.post('/', authenticate, async (req, res) => {
     try {
-        const { clientId, date, notes, workerId, price } = req.body;
+        const { clientId, date, notes, workerId, price, extraServices } = req.body;
         
         const newAssignment = new Assignment({
             tenantId: req.user.tenantId,
@@ -82,6 +125,7 @@ router.post('/', authenticate, async (req, res) => {
             notes,
             workerId, // Usuario con rol cristalero
             price: price || 0,
+            extraServices: extraServices || [],
             createdBy: req.user.userId
         });
 

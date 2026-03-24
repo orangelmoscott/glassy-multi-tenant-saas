@@ -12,6 +12,11 @@ const assignmentSchema = new mongoose.Schema({
     },
     notes: { type: String, default: '' },
     price: { type: Number, default: 0 }, // Precio al momento del servicio
+    extraServices: [{
+        description: { type: String, required: true },
+        price: { type: Number, required: true }
+    }],
+    invoiceNumber: { type: String, default: null },
     signature: { type: String, default: null }, // Firma digital Base64
     completedAt: { type: Date },
     

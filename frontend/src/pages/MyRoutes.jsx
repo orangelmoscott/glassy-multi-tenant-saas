@@ -112,8 +112,13 @@ const MyRoutes = () => {
                                     <div className="overflow-hidden">
                                         <h3 className="font-bold text-slate-800 text-base md:text-lg truncate">{job.clientId?.companyName}</h3>
                                         <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-4 mt-1">
+                                            {job.progressInfo && (
+                                                <span className="text-[10px] font-black w-fit px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 uppercase tracking-widest flex items-center gap-1">
+                                                    <Calendar size={10}/> {job.progressInfo.text}
+                                                </span>
+                                            )}
                                             <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest"><Clock size={10}/> Pendiente</span>
-                                            <span className="text-xs font-bold text-blue-600 truncate max-w-[200px]">{job.clientId?.address}</span>
+                                            <span className="text-xs font-bold text-slate-500 truncate max-w-[200px]">{job.clientId?.address}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -153,22 +158,37 @@ const MyRoutes = () => {
                                 </button>
                             </div>
 
-                            {/* Job Details */}
-                            <div className="p-8 space-y-6 flex-1 overflow-y-auto">
-                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                     <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
-                                         <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Precio Servicio</p>
-                                            <p className="text-xl font-black text-slate-900">{selectedJob.price}€</p>
-                                         </div>
-                                         <a 
-                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.clientId?.address)}`}
-                                            target="_blank" rel="noopener noreferrer"
-                                            className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all"
-                                         >
-                                             <MapPin size={24} />
-                                         </a>
-                                     </div>
+                             {/* Job Details */}
+                             <div className="p-8 space-y-6 flex-1 overflow-y-auto">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                          <div>
+                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Precio Servicio Base</p>
+                                             <p className="text-xl font-black text-slate-900">{selectedJob.price}€</p>
+                                          </div>
+                                          <a 
+                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.clientId?.address)}`}
+                                             target="_blank" rel="noreferrer"
+                                             className="w-10 h-10 bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl flex items-center justify-center transition-all"
+                                          ><MapPin size={20}/></a>
+                                      </div>
+
+                                      {/* Contenedor de Extras */}
+                                      {selectedJob.extraServices && selectedJob.extraServices.length > 0 && (
+                                          <div className="col-span-1 md:col-span-2 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-2">
+                                              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Servicios Extras Añadidos</p>
+                                              {selectedJob.extraServices.map((extra, idx) => (
+                                                  <div key={idx} className="flex justify-between items-center text-sm font-bold text-blue-900">
+                                                      <span>+ {extra.description}</span>
+                                                      <span>{extra.price.toFixed(2)}€</span>
+                                                  </div>
+                                              ))}
+                                              <div className="pt-2 mt-2 border-t border-blue-100 flex justify-between items-center text-sm font-black text-blue-900">
+                                                  <span>NUEVO TOTAL A COBRAR (S/ IVA):</span>
+                                                  <span className="text-lg">{(selectedJob.price + selectedJob.extraServices.reduce((a, b) => a + b.price, 0)).toFixed(2)}€</span>
+                                              </div>
+                                          </div>
+                                      )}
                                      <a href={`tel:${selectedJob.clientId?.phone}`} className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-center gap-3">
                                          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white"><Phone size={20} /></div>
                                          <div>

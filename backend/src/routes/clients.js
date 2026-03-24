@@ -9,9 +9,44 @@ const { checkClientLimit } = require('../middlewares/planGuard');
  */
 router.get('/', authenticate, async (req, res) => {
     try {
-        const clients = await Client.find({ tenantId: req.user.tenantId }).sort({ companyName: 1 });
-        res.send(clients);
+        const clients = await Client.find({ tenantId: req.user.tenantId })
+            .sort({ companyName: 1 })
+            .lean(); // usar lean para poder inyectar propiedades
+
+        // Calcular progreso del mes actual
+        const Assignment = require('../models/Assignment');
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+
+        const monthlyAssignments = await Assignment.find({
+            tenantId: req.user.tenantId,
+            date: { $gte: startOfMonth }
+        }).lean();
+
+        const enhancedClients = clients.map(client => {
+            const clientAssignments = monthlyAssignments.filter(a => a.clientId.toString() === client._id.toString());
+            const completed = clientAssignments.filter(a => a.status === 'completado').length;
+            const totalAssigned = clientAssignments.length;
+            
+            // Lógica base esperada según frecuencia
+            let expected = 1; // mensual
+            if (client.frequency === 'semanal') expected = 4;
+            if (client.frequency === 'quincenal') expected = 2;
+            
+            return {
+                ...client,
+                monthlyProgress: {
+                    completed,
+                    totalAssigned, // Programadas hasta ahora en el sistema
+                    expected // Lo ideal según el contrato
+                }
+            };
+        });
+
+        res.send(enhancedClients);
     } catch (error) {
+        console.error(error);
         res.status(500).send({ message: 'Error al obtener clientes' });
     }
 });

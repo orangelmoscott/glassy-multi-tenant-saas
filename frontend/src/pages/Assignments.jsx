@@ -20,8 +20,10 @@ const Assignments = () => {
         workerId: '', // Cambiado de workerName a workerId real
         date: '',
         price: 0,
-        notes: ''
+        notes: '',
+        extraServices: []
     });
+    const [extraServiceData, setExtraServiceData] = useState({ description: '', price: '' });
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -55,6 +57,9 @@ const Assignments = () => {
             });
             setAssignments([res.data, ...assignments]);
             setShowAddModal(false);
+            setFormData({
+                clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
+            });
         } catch (err) {
             alert('Error al crear ruta');
         }
@@ -162,7 +167,12 @@ const Assignments = () => {
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 font-extrabold text-slate-800">
-                                            {as.price}€
+                                            <div className="flex flex-col gap-1">
+                                                <span>{(as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)).toFixed(2)}€</span>
+                                                {as.extraServices && as.extraServices.length > 0 && (
+                                                    <span className="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full w-fit flex items-center gap-1">+ Extras</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -242,6 +252,61 @@ const Assignments = () => {
                                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
                                      <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, date: e.target.value})} />
                                  </div>
+
+                                 {/* Panel de Servicios Extra */}
+                                 <div className="space-y-2 pt-4 border-t border-slate-100">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">¿Añadir Servicio Extra? (Opcional)</label>
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Detalle (Ej. Limpieza a fondo)" 
+                                            className="flex-[2] px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
+                                            value={extraServiceData.description}
+                                            onChange={(e) => setExtraServiceData({...extraServiceData, description: e.target.value})}
+                                        />
+                                        <input 
+                                            type="number" 
+                                            placeholder="Precio €" 
+                                            className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
+                                            value={extraServiceData.price}
+                                            onChange={(e) => setExtraServiceData({...extraServiceData, price: e.target.value})}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            className="px-4 py-3 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors font-bold"
+                                            onClick={() => {
+                                                if (extraServiceData.description && extraServiceData.price) {
+                                                    setFormData({
+                                                        ...formData,
+                                                        extraServices: [...formData.extraServices, {
+                                                            description: extraServiceData.description,
+                                                            price: parseFloat(extraServiceData.price)
+                                                        }]
+                                                    });
+                                                    setExtraServiceData({ description: '', price: '' });
+                                                }
+                                            }}
+                                        >
+                                            <Plus size={20} />
+                                        </button>
+                                    </div>
+                                    
+                                    {/* Lista de Extras Añadidos */}
+                                    {formData.extraServices.length > 0 && (
+                                        <div className="mt-3 space-y-2">
+                                            {formData.extraServices.map((ex, idx) => (
+                                                <div key={idx} className="flex items-center justify-between text-sm px-4 py-2 bg-blue-50 text-blue-800 rounded-lg">
+                                                    <span className="font-bold">{ex.description}</span>
+                                                    <span className="font-extrabold">+{ex.price}€</span>
+                                                </div>
+                                            ))}
+                                            <div className="text-right text-sm font-black text-slate-900 mt-2 pr-2">
+                                                Total Extra: +{formData.extraServices.reduce((sum, item) => sum + item.price, 0).toFixed(2)}€
+                                            </div>
+                                        </div>
+                                    )}
+                                 </div>
+
                                 <div className="flex gap-4 pt-4">
                                     <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Cancelar</button>
                                     <button className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95">Asignar Ruta</button>

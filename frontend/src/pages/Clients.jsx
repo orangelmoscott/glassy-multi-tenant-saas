@@ -187,13 +187,26 @@ const Clients = () => {
                                 </p>
                                 
                                 <div className="space-y-4 pt-6 border-t border-slate-50">
-                                    <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-400">
-                                        <span>Plan Mensual:</span>
-                                        <span className="text-slate-900 font-black">{client.basePrice}€</span>
+                                    <div className="flex flex-col gap-1 text-xs font-bold uppercase tracking-widest text-slate-400">
+                                        <div className="flex justify-between mb-2">
+                                            <span>Plan ({client.frequency}):</span>
+                                            <span className="text-slate-900 font-black">{client.basePrice}€</span>
+                                        </div>
+                                        {client.monthlyProgress && (
+                                            <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-2">
+                                                <div className="flex justify-between text-[10px] text-slate-500 font-bold">
+                                                    <span>Progreso del Mes</span>
+                                                    <span className="text-blue-600 font-black tracking-widest">{client.monthlyProgress.completed} / {client.monthlyProgress.expected}</span>
+                                                </div>
+                                                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                                                    <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min((client.monthlyProgress.completed / client.monthlyProgress.expected) * 100, 100)}%` }}></div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                     <button 
                                         onClick={() => fetchClientDetails(client)}
-                                        className="w-full py-3.5 rounded-2xl bg-slate-50 font-black text-xs text-slate-600 uppercase tracking-widest border border-slate-100 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                                        className="w-full py-3.5 rounded-2xl bg-white font-black text-[10px] text-slate-600 uppercase tracking-widest border border-slate-200 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
                                     >
                                         Ver Historial Global
                                     </button>
