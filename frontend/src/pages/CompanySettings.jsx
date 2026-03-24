@@ -215,9 +215,9 @@ const CompanySettings = () => {
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Número de Cuenta / IBAN</label>
                                     <input 
-                                        type="text" value={tenant.bankDetails || ''} placeholder="ES00 0000 0000 0000 0000 0000"
+                                        type="text" value={tenant.bankAccount || ''} placeholder="ES00 0000 0000 0000 0000 0000"
                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
-                                        onChange={(e) => setTenant({ ...tenant, bankDetails: e.target.value })}
+                                        onChange={(e) => setTenant({ ...tenant, bankAccount: e.target.value })}
                                     />
                                     <p className="text-[10px] text-slate-400 ml-1">Este número se imprimirá al pie de tus facturas para que tus clientes sepan dónde pagar.</p>
                                 </div>

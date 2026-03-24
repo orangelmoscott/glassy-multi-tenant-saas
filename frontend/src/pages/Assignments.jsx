@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Calendar, Clock, User, MapPin, Plus, 
-  ChevronRight, Filter, Search, MoreHorizontal, 
-  CheckCircle2, AlertCircle, RefreshCcw, Tag, Download,
-  ExternalLink
+  Calendar, CheckCircle2, Clock, MapPin, 
+  MoreHorizontal, Plus, Search, User, FileText, 
+  Trash2, Edit2, Play, Download, ChevronRight, X, Phone, Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -81,6 +80,18 @@ const Assignments = () => {
             link.remove();
         } catch (err) {
             alert('Error al generar PDF. Asegúrate de tener datos de empresa configurados.');
+        }
+    };
+
+    const handleEmailInvoice = async (id) => {
+        if (!window.confirm('¿Enviar factura ahora al email del cliente?')) return;
+        try {
+            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${id}/send-invoice`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert(res.data.message);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error al enviar email');
         }
     };
 
@@ -182,6 +193,13 @@ const Assignments = () => {
                                                     title="Descargar Factura PDF"
                                                 >
                                                     <Download size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailInvoice(as._id)}
+                                                    className="p-2.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-xl transition-all group/btn"
+                                                    title="Enviar por Email"
+                                                >
+                                                    <Send size={18} />
                                                 </button>
                                                 <button className="p-2.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-blue-600 transition-all">
                                                     <ChevronRight size={20} />

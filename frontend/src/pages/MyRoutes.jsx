@@ -35,27 +35,43 @@ const MyRoutes = () => {
         }
     };
 
-    const clearSignature = () => sigPad.current.clear();
+    const clearSignature = () => sigPad.current?.clear && sigPad.current.clear();
 
     const handleComplete = async () => {
-        if (sigPad.current.isEmpty()) {
-            alert('Por favor, el cliente debe firmar para validar el servicio.');
+        const isLastVisit = !selectedJob ? false : ((selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1));
+        
+        if (isLastVisit && (!sigPad.current || sigPad.current.isEmpty())) {
+            alert('Por favor, ingresa la firma del cliente para finalizar el servicio mensual.');
             return;
         }
 
-        const signatureBase64 = sigPad.current.getTrimmedCanvas().toDataURL('image/png');
+        const signatureBase64 = isLastVisit ? sigPad.current.getTrimmedCanvas().toDataURL('image/png') : null;
         
         try {
             await axios.patch(`https://glassy-backend.onrender.com/assignments/${selectedJob._id}/complete`, {
                 signature: signatureBase64,
-                notes: 'Trabajo finalizado y validado por el cliente.'
+                notes: isLastVisit ? 'Trabajo mensual finalizado y validado.' : 'Visita registrada con éxito.'
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            setAssignments(assignments.filter(a => a._id !== selectedJob._id));
+            if (isLastVisit) {
+                setAssignments(assignments.filter(a => a._id !== selectedJob._id));
+            } else {
+                // Update local visually avoiding refetch
+                setAssignments(assignments.map(a => a._id === selectedJob._id ? {
+                      ...a, 
+                      visitsDone: (a.visitsDone || 0) + 1,
+                      progressInfo: {
+                          ...a.progressInfo,
+                          text: `${(a.visitsDone || 0) + 1}/${a.expectedVisits || 1} este mes`
+                      }
+                  } : a));
+            }
+            
             setIsSigning(false);
             setSelectedJob(null);
+            alert(isLastVisit ? 'Servicio completado' : 'Visita Registrada exitosamente');
         } catch (err) {
             alert('Error al validar el servicio.');
         }
@@ -161,10 +177,10 @@ const MyRoutes = () => {
                              {/* Job Details */}
                              <div className="p-8 space-y-6 flex-1 overflow-y-auto">
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                      <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between col-span-1 md:col-span-2">
                                           <div>
-                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Precio Servicio Base</p>
-                                             <p className="text-xl font-black text-slate-900">{selectedJob.price}€</p>
+                                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Destino de la Ruta</p>
+                                             <p className="text-xl font-black text-slate-900">{selectedJob.clientId?.companyName}</p>
                                           </div>
                                           <a 
                                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.clientId?.address)}`}
@@ -176,17 +192,12 @@ const MyRoutes = () => {
                                       {/* Contenedor de Extras */}
                                       {selectedJob.extraServices && selectedJob.extraServices.length > 0 && (
                                           <div className="col-span-1 md:col-span-2 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-2">
-                                              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Servicios Extras Añadidos</p>
+                                              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2">Servicios Extras Requeridos</p>
                                               {selectedJob.extraServices.map((extra, idx) => (
                                                   <div key={idx} className="flex justify-between items-center text-sm font-bold text-blue-900">
                                                       <span>+ {extra.description}</span>
-                                                      <span>{extra.price.toFixed(2)}€</span>
                                                   </div>
                                               ))}
-                                              <div className="pt-2 mt-2 border-t border-blue-100 flex justify-between items-center text-sm font-black text-blue-900">
-                                                  <span>NUEVO TOTAL A COBRAR (S/ IVA):</span>
-                                                  <span className="text-lg">{(selectedJob.price + selectedJob.extraServices.reduce((a, b) => a + b.price, 0)).toFixed(2)}€</span>
-                                              </div>
                                           </div>
                                       )}
                                      <a href={`tel:${selectedJob.clientId?.phone}`} className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex items-center gap-3">
@@ -198,26 +209,34 @@ const MyRoutes = () => {
                                      </a>
                                 </div>
 
-                                {/* Signature Section */}
-                                <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <PenTool size={16} /> Firma del Cliente
-                                    </h3>
-                                    <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[30px] p-2 overflow-hidden relative group">
-                                         <SignatureCanvas 
-                                            ref={sigPad}
-                                            penColor='#2563eb'
-                                            canvasProps={{ className: 'w-full h-64 cursor-crosshair bg-white rounded-[25px]' }}
-                                         />
-                                         <button 
-                                            onClick={clearSignature}
-                                            className="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-lg text-red-500 border border-slate-100 shadow-sm"
-                                         >
-                                             <Trash2 size={16} />
-                                         </button>
+                                {/* Signature Section ONLY IF LAST VISIT */}
+                                {((selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1)) ? (
+                                    <div className="space-y-4">
+                                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                            <PenTool size={16} /> Firma Mensual del Cliente
+                                        </h3>
+                                        <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[30px] p-2 overflow-hidden relative group">
+                                             <SignatureCanvas 
+                                                ref={sigPad}
+                                                penColor='#2563eb'
+                                                canvasProps={{ className: 'w-full h-64 cursor-crosshair bg-white rounded-[25px]' }}
+                                             />
+                                             <button 
+                                                onClick={clearSignature}
+                                                className="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-lg text-red-500 border border-slate-100 shadow-sm"
+                                             >
+                                                 <Trash2 size={16} />
+                                             </button>
+                                        </div>
+                                        <p className="text-center text-[10px] text-slate-400 font-medium">Firma final del mes para autorizar facturación.</p>
                                     </div>
-                                    <p className="text-center text-[10px] text-slate-400 font-medium">Al firmar, el cliente valida la correcta limpieza de los cristales.</p>
-                                </div>
+                                ) : (
+                                    <div className="p-6 bg-blue-50/50 rounded-2xl border border-blue-100 text-center">
+                                        <CheckCircle className="mx-auto text-blue-400 mb-2" size={32} />
+                                        <p className="text-sm font-bold text-slate-600">Visita Incremental ({ (selectedJob.visitsDone || 0) + 1 } de {selectedJob.expectedVisits || 1})</p>
+                                        <p className="text-[10px] text-slate-400 mt-1">Concluye esta visita, no requiere firma aún.</p>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Action Footer */}
@@ -227,7 +246,7 @@ const MyRoutes = () => {
                                     onClick={handleComplete}
                                     className="flex-[2] bg-blue-600 text-white py-5 rounded-2xl font-extrabold shadow-xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Save size={20} /> Validar Servicio
+                                    <Save size={20} /> { ((selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1)) ? 'Validar Fin de Mes' : 'Registrar Visita' }
                                 </button>
                             </div>
                         </motion.div>

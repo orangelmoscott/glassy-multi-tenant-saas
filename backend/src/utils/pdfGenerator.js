@@ -42,9 +42,13 @@ const generateInvoicePDF = (data) => {
 
         // --- INFO BLOQUES ---
         doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica-Bold').text('CLIENTE', 50, 140);
-        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold').text(client.companyName, 50, 152);
-        doc.fillColor('#4B5563').fontSize(9).font('Helvetica').text(client.address, 50, 168, { width: 250 });
-        doc.text(`NIF/CIF: ${client.nif || 'N/A'}`, 50, 185);
+        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold').text(client.companyName, 50, 155);
+        doc.fillColor('#4B5563').fontSize(9).font('Helvetica').text(client.address || '', 50, 170, { width: 250 });
+        let nextClientY = doc.y + 5;
+        doc.text(`NIF/CIF: ${client.nif || 'N/A'}`, 50, nextClientY);
+        if (client.phone) {
+            doc.text(`Tel: ${client.phone}`, 50, doc.y + 2);
+        }
 
         doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica-Bold').text('ORDEN DE SERVICIO / FACTURA', 350, 140, { align: 'right', width: 190 });
         
@@ -66,24 +70,28 @@ const generateInvoicePDF = (data) => {
         
         // Servicio Base
         doc.fillColor('#111827').fontSize(10).font('Helvetica');
-        doc.text('Limpieza de Cristales Profesional y Mantenimiento', 65, currentY);
-        doc.text('1', 350, currentY, { width: 50, align: 'center' });
-        doc.text(`${assignment.price.toFixed(2)}€`, 410, currentY, { width: 60, align: 'right' });
-        doc.text(`${assignment.price.toFixed(2)}€`, 485, currentY, { width: 60, align: 'right' });
+        let initialY = currentY;
+        doc.text('Limpieza de Cristales Profesional y Mantenimiento', 65, initialY, { width: 270 });
+        const nextBaseY = doc.y; // Grab Y after wrapping
+        doc.text('1', 350, initialY, { width: 50, align: 'center' });
+        doc.text(`${assignment.price.toFixed(2)}€`, 410, initialY, { width: 60, align: 'right' });
+        doc.text(`${assignment.price.toFixed(2)}€`, 485, initialY, { width: 60, align: 'right' });
         
-        currentY += 20;
+        currentY = nextBaseY + 15;
 
         // Servicios Extra
         let totalExtra = 0;
         if (assignment.extraServices && assignment.extraServices.length > 0) {
             assignment.extraServices.forEach(extra => {
                 doc.fillColor('#4B5563').fontSize(9).font('Helvetica');
-                doc.text(`+ ${extra.description}`, 65, currentY);
-                doc.text('1', 350, currentY, { width: 50, align: 'center' });
-                doc.text(`${extra.price.toFixed(2)}€`, 410, currentY, { width: 60, align: 'right' });
-                doc.text(`${extra.price.toFixed(2)}€`, 485, currentY, { width: 60, align: 'right' });
+                let startExtraY = currentY;
+                doc.text(`+ ${extra.description}`, 65, startExtraY, { width: 270 });
+                let afterExtraY = doc.y;
+                doc.text('1', 350, startExtraY, { width: 50, align: 'center' });
+                doc.text(`${extra.price.toFixed(2)}€`, 410, startExtraY, { width: 60, align: 'right' });
+                doc.text(`${extra.price.toFixed(2)}€`, 485, startExtraY, { width: 60, align: 'right' });
                 totalExtra += extra.price;
-                currentY += 20;
+                currentY = afterExtraY + 15;
             });
         }
 
@@ -120,7 +128,7 @@ const generateInvoicePDF = (data) => {
 
         // --- FOOTER ---
         doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica')
-           .text(`FORMA DE PAGO: ${tenant.bankDetails || 'Contactar con administración'}`, 50, 720, { align: 'center' })
+           .text(`FORMA DE PAGO: ${tenant.bankAccount || 'Contactar con administración'}`, 50, 720, { align: 'center' })
            .text('Gracias por su confianza. Este documento es un comprobante de servicio profesional.', 50, 735, { align: 'center' });
 
         doc.end();

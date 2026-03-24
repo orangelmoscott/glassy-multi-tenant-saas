@@ -20,6 +20,9 @@ const assignmentSchema = new mongoose.Schema({
     signature: { type: String, default: null }, // Firma digital Base64
     completedAt: { type: Date },
     
+    expectedVisits: { type: Number, default: 1 }, // Cantidad de visitas al mes (1, 2 o 4)
+    visitsDone: { type: Number, default: 0 }, // Visitas realizadas
+    
     // SaaS Multi-tenancy
     tenantId: { 
         type: mongoose.Schema.Types.ObjectId, 

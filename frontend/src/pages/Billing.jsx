@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   FileText, Download, Filter, Search, 
   TrendingUp, CreditCard, Calendar, CheckCircle,
-  AlertCircle, ChevronRight
+  AlertCircle, ChevronRight, Send
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -50,6 +50,18 @@ const Billing = () => {
             link.remove();
         } catch (err) {
             alert('Error al generar PDF. Asegúrate de tener datos de empresa configurados.');
+        }
+    };
+
+    const handleEmailInvoice = async (id) => {
+        if (!window.confirm('¿Enviar factura ahora al email del cliente?')) return;
+        try {
+            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${id}/send-invoice`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert(res.data.message);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error al enviar email');
         }
     };
 
@@ -150,12 +162,20 @@ const Billing = () => {
                                             <td className="px-8 py-6 text-right font-black text-slate-900">
                                                 {(as.price * 1.21).toFixed(2)}€
                                             </td>
-                                            <td className="px-8 py-6 text-right">
+                                            <td className="px-8 py-6 text-right flex items-center justify-end gap-2">
                                                 <button 
                                                     onClick={() => handleDownloadPDF(as._id)}
-                                                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-200"
+                                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                    title="Descargar Factura PDF"
                                                 >
-                                                    <Download size={14} /> Factura PDF
+                                                    <Download size={14} /> PDF
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEmailInvoice(as._id)}
+                                                    className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                                                    title="Enviar Factura por Email"
+                                                >
+                                                    <Send size={14} /> Email
                                                 </button>
                                             </td>
                                         </tr>

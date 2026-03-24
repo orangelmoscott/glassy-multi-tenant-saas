@@ -21,6 +21,7 @@ const Clients = () => {
     const [formData, setFormData] = useState({
         companyName: '',
         email: '',
+        phone: '',
         nif: '',
         basePrice: 0,
         address: '',
@@ -88,6 +89,7 @@ const Clients = () => {
         setFormData({
             companyName: c.companyName,
             email: c.email,
+            phone: c.phone || '',
             nif: c.nif,
             basePrice: c.basePrice,
             address: c.address,
@@ -100,7 +102,7 @@ const Clients = () => {
     const closeModal = () => {
         setShowAddForm(false);
         setEditingClient(null);
-        setFormData({ companyName: '', email: '', nif: '', basePrice: 0, address: '', serviceType: 'tienda', frequency: 'mensual' });
+        setFormData({ companyName: '', email: '', phone: '', nif: '', basePrice: 0, address: '', serviceType: 'tienda', frequency: 'mensual' });
     };
 
     const [selectedClient, setSelectedClient] = useState(null);
@@ -204,12 +206,20 @@ const Clients = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <button 
-                                        onClick={() => fetchClientDetails(client)}
-                                        className="w-full py-3.5 rounded-2xl bg-white font-black text-[10px] text-slate-600 uppercase tracking-widest border border-slate-200 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-                                    >
-                                        Ver Historial Global
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => window.location.href='/app/assignments'}
+                                            className="w-full py-3.5 rounded-2xl bg-blue-600 font-black text-[10px] text-white uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
+                                        >
+                                            + Asignar
+                                        </button>
+                                        <button 
+                                            onClick={() => fetchClientDetails(client)}
+                                            className="w-full py-3.5 rounded-2xl bg-white font-black text-[10px] text-slate-600 uppercase tracking-widest border border-slate-200 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                                        >
+                                            Historial
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         ))
@@ -238,6 +248,7 @@ const Clients = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <input type="text" placeholder="NIF" value={formData.nif} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" onChange={(e) => setFormData({...formData, nif: e.target.value})} />
                                     <input type="email" placeholder="Email de Facturación" value={formData.email} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" onChange={(e) => setFormData({...formData, email: e.target.value})} />
+                                    <input type="text" placeholder="Teléfono" value={formData.phone} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none col-span-2" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Dirección Física (Exacta para GPS)</label>

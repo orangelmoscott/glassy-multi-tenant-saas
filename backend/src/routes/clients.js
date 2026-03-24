@@ -26,8 +26,9 @@ router.get('/', authenticate, async (req, res) => {
 
         const enhancedClients = clients.map(client => {
             const clientAssignments = monthlyAssignments.filter(a => a.clientId.toString() === client._id.toString());
-            const completed = clientAssignments.filter(a => a.status === 'completado').length;
-            const totalAssigned = clientAssignments.length;
+            
+            // Consideramos visitsDone nativo para el progreso
+            const completed = clientAssignments.reduce((sum, a) => sum + (a.visitsDone || (a.status === 'completado' ? 1 : 0)), 0);
             
             // Lógica base esperada según frecuencia
             let expected = 1; // mensual
@@ -38,8 +39,8 @@ router.get('/', authenticate, async (req, res) => {
                 ...client,
                 monthlyProgress: {
                     completed,
-                    totalAssigned, // Programadas hasta ahora en el sistema
-                    expected // Lo ideal según el contrato
+                    totalAssigned: expected, // Simplificado, ahora el target es estricto
+                    expected
                 }
             };
         });
