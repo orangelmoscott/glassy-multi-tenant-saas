@@ -28,23 +28,52 @@ const Assignments = () => {
         notes: ''
     });
 
+    const [formData, setFormData] = useState({
+        clientId: '',
+        workerId: '',
+        date: '',
+        price: '',
+        notes: '',
+        extraServices: []
+    });
+
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [filterMonth, filterYear, filterWorkerId]);
+
+    const fetchAssignments = async () => {
+        try {
+            const queryParams = new URLSearchParams();
+            queryParams.append('isDeleted', 'false'); // Filter out deleted assignments
+            if (filterWorkerId) {
+                queryParams.append('workerId', filterWorkerId);
+            }
+            queryParams.append('month', filterMonth);
+            queryParams.append('year', filterYear);
+
+            const res = await axios.get(`https://glassy-backend.onrender.com/assignments?${queryParams.toString()}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAssignments(res.data);
+        } catch (err) {
+            console.error("Error fetching assignments:", err);
+            // Handle error appropriately
+        }
+    };
 
     const fetchData = async () => {
+        setLoading(true);
         try {
-            const [assignRes, clientRes, workerRes] = await Promise.all([
-                axios.get('https://glassy-backend.onrender.com/assignments', { headers: { Authorization: `Bearer ${token}` } }),
-                axios.get('https://glassy-backend.onrender.com/clients', { headers: { Authorization: `Bearer ${token}` } }),
+            const [clientRes, workerRes] = await Promise.all([
+                axios.get('https://glassy-backend.onrender.com/clients?isDeleted=false', { headers: { Authorization: `Bearer ${token}` } }), // Filter out deleted clients
                 axios.get('https://glassy-backend.onrender.com/users/workers', { headers: { Authorization: `Bearer ${token}` } })
             ]);
-            setAssignments(assignRes.data);
             setClients(clientRes.data);
             setWorkers(workerRes.data);
+            await fetchAssignments(); // Fetch assignments with current filters
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -72,6 +101,7 @@ const Assignments = () => {
             setFormData({
                 clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
             });
+            fetchAssignments(); // Refresh assignments after create/update
         } catch (err) {
             alert('Error al procesar servicio');
         }
@@ -287,11 +317,12 @@ const Assignments = () => {
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {assignments
-                                    .filter(as => !as.isDeleted)
+                                    .filter(as => as.isDeleted !== true)
                                     .filter(as => !filterWorkerId || (as.workerId?._id === filterWorkerId || as.workerId === filterWorkerId))
                                     .filter(as => {
                                         const d = new Date(as.date);
-                                        return (d.getMonth() + 1) === filterMonth && d.getFullYear() === filterYear;
+                                        // Usamos UTC para evitar desfases de zona horaria si la fecha se guarda como 2024-03-01T00:00:00Z
+                                        return (d.getUTCMonth() + 1) === filterMonth && d.getUTCFullYear() === filterYear;
                                     })
                                     .map((as) => (
                                     <tr key={as._id} className="hover:bg-slate-50/30 transition-colors group">

@@ -9,7 +9,10 @@ const { checkClientLimit } = require('../middlewares/planGuard');
  */
 router.get('/', authenticate, async (req, res) => {
     try {
-        const clients = await Client.find({ tenantId: req.user.tenantId, isDeleted: false })
+        const clients = await Client.find({ 
+            tenantId: req.user.tenantId, 
+            isDeleted: { $ne: true } 
+        })
             .sort({ companyName: 1 })
             .lean(); // usar lean para poder inyectar propiedades
 

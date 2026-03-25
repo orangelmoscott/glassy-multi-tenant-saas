@@ -104,7 +104,13 @@ router.post('/:id/send-invoice', authenticate, async (req, res) => {
 });
 router.get('/', authenticate, async (req, res) => {
     try {
-        const assignments = await Assignment.find({ tenantId: req.user.tenantId })
+        const assignments = await Assignment.find({ 
+            tenantId: req.user.tenantId,
+            $or: [
+                { isDeleted: { $exists: false } },
+                { isDeleted: { $ne: true } }
+            ]
+        })
             .populate('clientId', 'companyName address phone serviceType')
             .populate('workerId', 'fullName username')
             .sort({ date: -1 });
