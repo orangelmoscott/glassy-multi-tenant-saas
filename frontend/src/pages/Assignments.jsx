@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  Calendar, CheckCircle2, Clock, MapPin, 
+  Calendar, CheckCircle, CheckCircle2, Clock, MapPin, 
   MoreHorizontal, Plus, Search, User, FileText, 
-  Trash2, Edit2, Play, Download, ChevronRight, X, Phone, Send
+  Trash2, Edit2, Play, Download, ChevronRight, X, Phone, Send,
+  RefreshCcw, Info, AlertCircle, PenTool
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
