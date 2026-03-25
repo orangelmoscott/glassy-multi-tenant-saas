@@ -23,6 +23,14 @@ const Assignments = () => {
         extraServices: []
     });
     const [extraServiceData, setExtraServiceData] = useState({ description: '', price: '' });
+    const [filterWorkerId, setFilterWorkerId] = useState('');
+    const [showRouteModal, setShowRouteModal] = useState(false);
+    const [routeData, setRouteData] = useState({
+        workerId: '',
+        date: '',
+        clientIds: [], // Multi select
+        notes: ''
+    });
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -60,7 +68,38 @@ const Assignments = () => {
                 clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
             });
         } catch (err) {
-            alert('Error al crear ruta');
+            alert('Error al crear servicio');
+        }
+    };
+
+    const handleCreateRoute = async (e) => {
+        e.preventDefault();
+        if (routeData.clientIds.length === 0) return alert('Selecciona al menos un cliente');
+        
+        try {
+            setLoading(true);
+            const promises = routeData.clientIds.map(clientId => {
+                const client = clients.find(c => c._id === clientId);
+                return axios.post('https://glassy-backend.onrender.com/assignments', {
+                    clientId,
+                    workerId: routeData.workerId,
+                    date: routeData.date,
+                    notes: routeData.notes,
+                    price: client ? client.basePrice : 0
+                }, { headers: { Authorization: `Bearer ${token}` } });
+            });
+            
+            const results = await Promise.all(promises);
+            const newAssignments = results.map(r => r.data);
+            
+            setAssignments([...newAssignments, ...assignments]);
+            setShowRouteModal(false);
+            setRouteData({ workerId: '', date: '', clientIds: [], notes: '' });
+            alert('Ruta completa asignada exitosamente');
+        } catch (err) {
+            alert('Error al asignar ruta completa');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -107,27 +146,45 @@ const Assignments = () => {
         <DashboardLayout>
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                            <Calendar className="text-blue-600" size={32} /> Rutas y Trabajo
-                        </h1>
-                        <p className="text-slate-500 mt-1 font-medium italic">Organiza la limpieza de cristales de tu equipo.</p>
-                    </div>
-                    
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+                <div className="space-y-1">
+                    <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">Rutas y Servicios</h1>
+                    <p className="text-slate-500 font-medium">Gestión de cronogramas y asignación por cristaleros.</p>
+                </div>
+                <div className="flex gap-4">
                     <button 
-                        onClick={() => setShowAddModal(true)}
+                        onClick={() => setShowRouteModal(true)} 
+                        className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-blue-50"
+                    >
+                        <User size={20} /> Asignar Ruta por Cristalero
+                    </button>
+                    <button 
+                        onClick={() => setShowAddModal(true)} 
                         className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all hover:scale-105 shadow-xl shadow-blue-200 active:scale-95"
                     >
-                        <Plus size={20} /> Nueva Ruta
+                        <Plus size={20} /> Asignar Servicio
                     </button>
                 </div>
+            </div>
 
+            <div className="space-y-8 mb-10">
                 {/* Filters & Stats */}
                 <div className="grid md:grid-cols-4 gap-4">
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
                          <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg">{assignments.length}</div>
                          <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Rutas</div>
+                    </div>
+                    
+                    <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                        <User className="text-slate-400 ml-2" />
+                        <select 
+                            className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm"
+                            value={filterWorkerId}
+                            onChange={(e) => setFilterWorkerId(e.target.value)}
+                        >
+                            <option value="">Filtrar todas las rutas (Toda la Empresa)</option>
+                            {workers.map(w => <option key={w._id} value={w._id}>Ver solo ruta de: {w.fullName}</option>)}
+                        </select>
                     </div>
                 </div>
 
@@ -146,7 +203,9 @@ const Assignments = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {assignments.map((as) => (
+                                {assignments
+                                    .filter(as => !filterWorkerId || (as.workerId?._id === filterWorkerId || as.workerId === filterWorkerId))
+                                    .map((as) => (
                                     <tr key={as._id} className="hover:bg-slate-50/30 transition-colors group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
@@ -268,6 +327,16 @@ const Assignments = () => {
                                      <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, date: e.target.value})} />
                                  </div>
 
+                                 <div className="space-y-2">
+                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Notas / Instrucciones para el Cristalero</label>
+                                     <textarea 
+                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-medium text-sm min-h-[100px]"
+                                         placeholder="Ej: El cliente prefiere que se empiece por la fachada trasera o tiene un código de acceso..."
+                                         value={formData.notes}
+                                         onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                                     />
+                                 </div>
+
                                  {/* Panel de Servicios Extra */}
                                  <div className="space-y-2 pt-4 border-t border-slate-100">
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">¿Añadir Servicio Extra? (Opcional)</label>
@@ -331,6 +400,86 @@ const Assignments = () => {
                     </div>
                 )}
             </AnimatePresence>
+            {/* Modal de Asignar Ruta Completa (Bulk) */}
+            <AnimatePresence>
+                {showRouteModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-2xl p-10 shadow-3xl overflow-y-auto max-h-[90vh]">
+                             <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-2xl font-extrabold text-slate-800 uppercase tracking-tight">Crear Ruta Completa para Cristalero</h2>
+                                <button onClick={() => setShowRouteModal(false)} className="p-2 hover:bg-slate-100 rounded-full"><X/></button>
+                             </div>
+                             
+                             <form onSubmit={handleCreateRoute} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                     <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cristalero de la Ruta</label>
+                                        <select 
+                                            required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
+                                            value={routeData.workerId}
+                                            onChange={(e) => setRouteData({...routeData, workerId: e.target.value})}
+                                        >
+                                            <option value="">Selecciona quién hará la ruta...</option>
+                                            {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                                        </select>
+                                     </div>
+                                     <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha de Inicio</label>
+                                        <input 
+                                            type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" 
+                                            value={routeData.date}
+                                            onChange={(e) => setRouteData({...routeData, date: e.target.value})} 
+                                        />
+                                     </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Seleccionar Clientes para la Ruta (Múltiples)</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[200px] overflow-y-auto p-4 bg-slate-50/50 rounded-[30px] border border-slate-100">
+                                        {clients.map(c => (
+                                            <div 
+                                                key={c._id} 
+                                                onClick={() => {
+                                                    const currentIds = routeData.clientIds;
+                                                    if (currentIds.includes(c._id)) {
+                                                        setRouteData({...routeData, clientIds: currentIds.filter(id => id !== c._id)});
+                                                    } else {
+                                                        setRouteData({...routeData, clientIds: [...currentIds, c._id]});
+                                                    }
+                                                }}
+                                                className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${routeData.clientIds.includes(c._id) ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-100 text-slate-700 hover:border-blue-200'}`}
+                                            >
+                                                <span className="font-bold text-xs truncate max-w-[150px]">{c.companyName}</span>
+                                                {routeData.clientIds.includes(c._id) && <CheckCircle2 size={16} />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-medium px-2">Seleccionados: <span className="text-blue-600 font-bold">{routeData.clientIds.length}</span> clientes.</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nota General para esta Ruta</label>
+                                     <textarea 
+                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-medium text-sm min-h-[100px]"
+                                         placeholder="Opcional. Estas notas aparecerán en cada cliente seleccionado."
+                                         value={routeData.notes}
+                                         onChange={(e) => setRouteData({...routeData, notes: e.target.value})}
+                                     />
+                                </div>
+
+                                <button 
+                                    type="submit" 
+                                    disabled={loading}
+                                    className="w-full bg-blue-600 text-white py-5 rounded-[25px] font-black text-lg shadow-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    {loading ? 'Generando Ruta...' : `Confirmar Ruta (${routeData.clientIds.length} Clientes)`}
+                                </button>
+                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            </div>
         </DashboardLayout>
     );
 };

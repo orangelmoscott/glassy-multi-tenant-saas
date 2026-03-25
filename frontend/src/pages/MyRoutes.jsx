@@ -206,9 +206,22 @@ const MyRoutes = () => {
                                             <p className="text-sm font-bold text-blue-700">{selectedJob.clientId?.phone || 'Sin tel.'}</p>
                                          </div>
                                      </a>
-                                </div>
+                                 </div>
 
-                                {/* Signature Section ALWAYS VISIBLE */}
+                                 {/* Admin/Client Notes */}
+                                 {selectedJob.notes && (
+                                     <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 space-y-2">
+                                         <div className="flex items-center gap-2 text-amber-600 py-1">
+                                             <FileText size={16} />
+                                             <span className="text-[10px] font-black uppercase tracking-widest">Instrucciones Especiales</span>
+                                         </div>
+                                         <p className="text-sm font-medium text-amber-800 leading-relaxed italic">
+                                            "{selectedJob.notes}"
+                                         </p>
+                                     </div>
+                                 )}
+
+                                 {/* Signature Section ALWAYS VISIBLE */}
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                                         <PenTool size={16} /> Validación de Trabajo (Firma)
