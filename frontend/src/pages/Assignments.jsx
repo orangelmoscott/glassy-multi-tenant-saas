@@ -14,21 +14,16 @@ const Assignments = () => {
     const [workers, setWorkers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [formData, setFormData] = useState({
-        clientId: '',
-        workerId: '', // Cambiado de workerName a workerId real
-        date: '',
-        price: 0,
-        notes: '',
-        extraServices: []
-    });
     const [extraServiceData, setExtraServiceData] = useState({ description: '', price: '' });
     const [filterWorkerId, setFilterWorkerId] = useState('');
+    const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
+    const [filterYear, setFilterYear] = useState(new Date().getFullYear());
     const [showRouteModal, setShowRouteModal] = useState(false);
+    const [editingId, setEditingId] = useState(null);
     const [routeData, setRouteData] = useState({
         workerId: '',
         date: '',
-        clientIds: [], // Multi select
+        clientIds: [],
         notes: ''
     });
 
@@ -56,19 +51,28 @@ const Assignments = () => {
         }
     };
 
-    const handleCreate = async (e) => {
+    const handleCreateOrUpdate = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('https://glassy-backend.onrender.com/assignments', formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setAssignments([res.data, ...assignments]);
+            if (editingId) {
+                const res = await axios.put(`https://glassy-backend.onrender.com/assignments/${editingId}`, formData, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setAssignments(assignments.map(a => a._id === editingId ? res.data : a));
+                alert('Asignación actualizada');
+            } else {
+                const res = await axios.post('https://glassy-backend.onrender.com/assignments', formData, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setAssignments([res.data, ...assignments]);
+            }
             setShowAddModal(false);
+            setEditingId(null);
             setFormData({
                 clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
             });
         } catch (err) {
-            alert('Error al crear servicio');
+            alert('Error al procesar servicio');
         }
     };
 
@@ -159,7 +163,13 @@ const Assignments = () => {
                         <User size={20} /> Asignar Ruta por Cristalero
                     </button>
                     <button 
-                        onClick={() => setShowAddModal(true)} 
+                        onClick={() => {
+                            setEditingId(null);
+                            setFormData({
+                                clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
+                            });
+                            setShowAddModal(true);
+                        }} 
                         className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all hover:scale-105 shadow-xl shadow-blue-200 active:scale-95"
                     >
                         <Plus size={20} /> Asignar Servicio
@@ -171,19 +181,39 @@ const Assignments = () => {
                 {/* Filters & Stats */}
                 <div className="grid md:grid-cols-4 gap-4">
                     <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                         <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg">{assignments.length}</div>
-                         <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Rutas</div>
+                         <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg">{assignments.filter(a => !a.isDeleted).length}</div>
+                         <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Activas</div>
                     </div>
                     
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2">
+                        <select 
+                            className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm p-2"
+                            value={filterMonth}
+                            onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                        >
+                            {Array.from({length: 12}, (_, i) => (
+                                <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
+                            ))}
+                        </select>
+                        <select 
+                            className="bg-transparent outline-none font-bold text-slate-600 text-sm p-2"
+                            value={filterYear}
+                            onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                        >
+                            <option value={2025}>2025</option>
+                            <option value={2026}>2026</option>
+                        </select>
+                    </div>
+
                     <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                        <User className="text-slate-400 ml-2" />
+                        <User className="text-slate-400 ml-2" size={18} />
                         <select 
                             className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm"
                             value={filterWorkerId}
                             onChange={(e) => setFilterWorkerId(e.target.value)}
                         >
-                            <option value="">Filtrar todas las rutas (Toda la Empresa)</option>
-                            {workers.map(w => <option key={w._id} value={w._id}>Ver solo ruta de: {w.fullName}</option>)}
+                            <option value="">Filtrar todos los cristaleros (Toda la Empresa)</option>
+                            {workers.map(w => <option key={w._id} value={w._id}>Trabajos de: {w.fullName}</option>)}
                         </select>
                     </div>
                 </div>
@@ -195,39 +225,56 @@ const Assignments = () => {
                             <thead>
                                 <tr className="bg-slate-50/50">
                                     <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Cliente / Ubicación</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Asignado a</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Fecha Programada</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Operario & Progreso</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Fecha</th>
                                     <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Estado</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Precio</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"></th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Total (€)</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {assignments
+                                    .filter(as => !as.isDeleted)
                                     .filter(as => !filterWorkerId || (as.workerId?._id === filterWorkerId || as.workerId === filterWorkerId))
+                                    .filter(as => {
+                                        const d = new Date(as.date);
+                                        return (d.getMonth() + 1) === filterMonth && d.getFullYear() === filterYear;
+                                    })
                                     .map((as) => (
                                     <tr key={as._id} className="hover:bg-slate-50/30 transition-colors group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors relative">
                                                     <MapPin size={20} />
+                                                    {as.notes && <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white" title="Tiene notas"></div>}
                                                 </div>
                                                 <div>
                                                     <div className="font-bold text-slate-800">{as.clientId?.companyName || 'Cliente Desc.'}</div>
-                                                    <div className="text-xs text-slate-400 mt-0.5">{as.clientId?.address || 'Sin dirección'}</div>
+                                                    <div className="text-xs text-slate-400 mt-0.5 max-w-[200px] truncate">{as.clientId?.address || 'Sin dirección'}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                                <User size={16} className="text-blue-500" /> {as.workerId?.fullName || 'Sin asignar'}
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                                                    <User size={14} className="text-blue-500" /> {as.workerId?.fullName || 'Sin asignar'}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-blue-500 rounded-full" 
+                                                            style={{ width: `${Math.min(((as.visitsDone || 0) / (as.expectedVisits || 1)) * 100, 100)}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{as.visitsDone || 0}/{as.expectedVisits || 1}</span>
+                                                </div>
                                             </div>
                                         </td>
                                          <td className="px-8 py-6">
                                              <div className="flex flex-col">
                                                  <span className="text-sm font-bold text-slate-800">{new Date(as.date).toLocaleDateString()}</span>
                                                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                                                     <Clock size={10} /> Pendiente
+                                                     <Clock size={10} /> {as.status === 'completado' ? 'Finalizado' : 'En curso'}
                                                  </span>
                                              </div>
                                          </td>
@@ -246,19 +293,58 @@ const Assignments = () => {
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                {as.status === 'completado' && (
+                                                    <>
+                                                        <button 
+                                                            onClick={() => handleDownloadPDF(as._id)}
+                                                            className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all group/btn"
+                                                            title="Descargar Factura PDF"
+                                                        >
+                                                            <Download size={18} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleEmailInvoice(as._id)}
+                                                            className="p-2.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-xl transition-all group/btn"
+                                                            title="Enviar por Email"
+                                                        >
+                                                            <Send size={18} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                
                                                 <button 
-                                                    onClick={() => handleDownloadPDF(as._id)}
-                                                    className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all group/btn"
-                                                    title="Descargar Factura PDF"
+                                                    onClick={() => {
+                                                        setEditingId(as._id);
+                                                        setFormData({
+                                                            clientId: as.clientId?._id,
+                                                            workerId: as.workerId?._id,
+                                                            date: as.date.split('T')[0],
+                                                            price: as.price,
+                                                            notes: as.notes || '',
+                                                            extraServices: as.extraServices || []
+                                                        });
+                                                        setShowAddModal(true);
+                                                    }}
+                                                    className="p-2.5 bg-slate-50 text-slate-400 hover:bg-slate-600 hover:text-white rounded-xl transition-all"
+                                                    title="Editar Asignación"
                                                 >
-                                                    <Download size={18} />
+                                                    <PenTool size={18} />
                                                 </button>
+
                                                 <button 
-                                                    onClick={() => handleEmailInvoice(as._id)}
-                                                    className="p-2.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-xl transition-all group/btn"
-                                                    title="Enviar por Email"
+                                                    onClick={async () => {
+                                                        if (!window.confirm('¿Seguro que deseas eliminar esta asignación?')) return;
+                                                        try {
+                                                            await axios.delete(`https://glassy-backend.onrender.com/assignments/${as._id}`, { headers: { Authorization: `Bearer ${token}` } });
+                                                            setAssignments(assignments.filter(a => a._id !== as._id));
+                                                        } catch (err) {
+                                                            alert('Error al eliminar');
+                                                        }
+                                                    }}
+                                                    className="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all"
+                                                    title="Eliminar"
                                                 >
-                                                    <Send size={18} />
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </td>
@@ -284,47 +370,49 @@ const Assignments = () => {
                 {showAddModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-xl p-10 shadow-3xl">
-                             <h2 className="text-2xl font-extrabold text-slate-800 mb-8">Programar Nueva Ruta</h2>
-                             <form onSubmit={handleCreate} className="space-y-6">
-                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cliente Receptor</label>
-                                    <select 
-                                        required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                        onChange={(e) => {
-                                            const clientId = e.target.value;
-                                            const client = clients.find(c => c._id === clientId);
-                                            setFormData({
-                                                ...formData, 
-                                                clientId, 
-                                                price: client ? client.basePrice : 0 
-                                            });
-                                        }}
-                                    >
-                                        <option value="">Selecciona un cliente...</option>
-                                        {clients.map(c => <option key={c._id} value={c._id}>{c.companyName} ({c.basePrice}€)</option>)}
-                                    </select>
-                                </div>
+                             <h2 className="text-2xl font-extrabold text-slate-800 mb-8">{editingId ? 'Editar Asignación' : 'Programar Nueva Ruta'}</h2>
+                             <form onSubmit={handleCreateOrUpdate} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
+                                     <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cliente</label>
+                                        <select 
+                                            required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
+                                            value={formData.clientId}
+                                            onChange={(e) => {
+                                                const clientId = e.target.value;
+                                                const client = clients.find(c => c._id === clientId);
+                                                setFormData({
+                                                    ...formData, 
+                                                    clientId, 
+                                                    price: client ? client.basePrice : 0 
+                                                });
+                                            }}
+                                        >
+                                            <option value="">Selecciona un cliente...</option>
+                                            {clients.map(c => <option key={c._id} value={c._id}>{c.companyName} ({c.basePrice}€)</option>)}
+                                        </select>
+                                     </div>
                                      <div className="space-y-2">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Operario Asignado</label>
                                         <select 
                                             required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
+                                            value={formData.workerId}
                                             onChange={(e) => setFormData({...formData, workerId: e.target.value})}
                                         >
                                             <option value="">Elige un cristalero...</option>
                                             {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
                                         </select>
                                      </div>
-                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Automático (€)</label>
-                                        <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600">
-                                            {formData.price || '0.00'}€
-                                        </div>
-                                     </div>
                                 </div>
                                  <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Automático (€)</label>
+                                    <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600">
+                                        {formData.price || '0.00'}€
+                                    </div>
+                                 </div>
+                                 <div className="space-y-2">
                                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
-                                     <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                                     <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
                                  </div>
 
                                  <div className="space-y-2">
@@ -393,7 +481,12 @@ const Assignments = () => {
 
                                 <div className="flex gap-4 pt-4">
                                     <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Cancelar</button>
-                                    <button className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95">Asignar Ruta</button>
+                                    <button 
+                                     type="submit" 
+                                     className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95"
+                                 >
+                                     {editingId ? 'Guardar Cambios' : 'Asignar Servicio'}
+                                 </button>
                                 </div>
                              </form>
                         </motion.div>

@@ -122,7 +122,8 @@ router.get('/my', authenticate, async (req, res) => {
         const assignments = await Assignment.find({ 
             tenantId: req.user.tenantId, 
             workerId: req.user.userId,
-            status: { $ne: 'completado' }
+            status: { $ne: 'completado' },
+            isDeleted: false
         })
         .populate('clientId')
         .sort({ date: 1 })
@@ -236,6 +237,60 @@ router.patch('/:id/status', authenticate, async (req, res) => {
         res.send(assignment);
     } catch (error) {
         res.status(500).send({ message: 'Error al actualizar estado' });
+    }
+});
+
+/**
+ * PUT | Actualizar Asignación (Admin)
+ */
+router.put('/:id', authenticate, async (req, res) => {
+    try {
+        const { clientId, date, notes, workerId, price, extraServices, status } = req.body;
+        
+        const assignment = await Assignment.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!assignment) return res.status(404).send({ message: 'Asignación no encontrada' });
+
+        // Update fields if provided
+        if (clientId) assignment.clientId = clientId;
+        if (date) assignment.date = date;
+        if (notes !== undefined) assignment.notes = notes;
+        if (workerId !== undefined) assignment.workerId = workerId;
+        if (price !== undefined) assignment.price = price;
+        if (extraServices) assignment.extraServices = extraServices;
+        if (status) assignment.status = status;
+
+        await assignment.save();
+        const updated = await Assignment.findById(assignment._id).populate([
+            { path: 'clientId', select: 'companyName address' },
+            { path: 'workerId', select: 'fullName username' }
+        ]);
+        res.send(updated);
+    } catch (error) {
+        res.status(500).send({ message: 'Error al actualizar asignación' });
+    }
+});
+
+/**
+ * DELETE | Eliminar Asignación (Soft delete if billed)
+ */
+router.delete('/:id', authenticate, async (req, res) => {
+    try {
+        const assignment = await Assignment.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
+        if (!assignment) return res.status(404).send({ message: 'Asignación no encontrada' });
+
+        // If it was already billed (has invoiceNumber), we soft-delete it to preserve history
+        if (assignment.invoiceNumber) {
+            assignment.status = 'cancelado';
+            assignment.isDeleted = true;
+            await assignment.save();
+            return res.send({ message: 'Asignación facturada archivada/cancelada para historial.' });
+        }
+
+        // Otherwise, hard delete
+        await Assignment.deleteOne({ _id: req.params.id });
+        res.send({ message: 'Asignación eliminada correctamente.' });
+    } catch (error) {
+        res.status(500).send({ message: 'Error al eliminar asignación' });
     }
 });
 

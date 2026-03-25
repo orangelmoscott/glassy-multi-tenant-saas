@@ -3,7 +3,7 @@ import axios from 'axios';
 import SignatureCanvas from 'react-signature-canvas';
 import { 
   Calendar, MapPin, Phone, Info, CheckCircle, 
-  X, PenTool, Save, Trash2, ChevronRight, Clock
+  X, PenTool, Save, Trash2, ChevronRight, Clock, FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';

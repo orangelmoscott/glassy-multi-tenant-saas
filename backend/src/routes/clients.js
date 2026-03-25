@@ -9,7 +9,7 @@ const { checkClientLimit } = require('../middlewares/planGuard');
  */
 router.get('/', authenticate, async (req, res) => {
     try {
-        const clients = await Client.find({ tenantId: req.user.tenantId })
+        const clients = await Client.find({ tenantId: req.user.tenantId, isDeleted: false })
             .sort({ companyName: 1 })
             .lean(); // usar lean para poder inyectar propiedades
 
@@ -92,12 +92,12 @@ router.patch('/:id', authenticate, authorize(['owner', 'admin']), async (req, re
  */
 router.delete('/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
     try {
-        const deleted = await Client.findOneAndDelete({ 
-            _id: req.params.id, 
-            tenantId: req.user.tenantId 
-        });
+        const deleted = await Client.findOneAndUpdate(
+            { _id: req.params.id, tenantId: req.user.tenantId },
+            { isDeleted: true }
+        );
         if (!deleted) return res.status(404).send({ message: 'Cliente no encontrado' });
-        res.send({ message: 'Cliente eliminado correctamente' });
+        res.send({ message: 'Cliente eliminado (archivado) correctamente' });
     } catch (error) {
         res.status(500).send({ message: 'Error al eliminar cliente' });
     }

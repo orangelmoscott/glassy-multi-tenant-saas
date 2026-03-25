@@ -26,7 +26,7 @@ const clientSchema = new mongoose.Schema({
         ref: 'Tenant', 
         required: true 
     },
-    
+    isDeleted: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now }
 });
 
