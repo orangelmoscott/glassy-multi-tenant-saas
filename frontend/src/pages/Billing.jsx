@@ -12,6 +12,8 @@ const Billing = () => {
     const [assignments, setAssignments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
+    const [filterYear, setFilterYear] = useState(new Date().getFullYear());
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -65,7 +67,14 @@ const Billing = () => {
         }
     };
 
-    const totalInvoiced = assignments.reduce((acc, curr) => acc + (curr.price || 0), 0);
+    const filteredAssignments = assignments.filter(a => {
+        const d = new Date(a.date);
+        const matchMonth = (d.getMonth() + 1) === filterMonth && d.getFullYear() === filterYear;
+        const matchSearch = a.clientId?.companyName?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchMonth && matchSearch;
+    });
+
+    const totalInvoiced = filteredAssignments.reduce((acc, curr) => acc + (curr.price || 0) + (curr.extraServices?.reduce((sum, extra) => sum + extra.price, 0) || 0), 0);
 
     return (
         <DashboardLayout>
@@ -97,7 +106,7 @@ const Billing = () => {
                         </div>
                         <div>
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Servicios Validados</p>
-                            <p className="text-3xl font-black text-slate-900">{assignments.length}</p>
+                            <p className="text-3xl font-black text-slate-900">{filteredAssignments.length}</p>
                         </div>
                     </div>
                     <div className="bg-slate-900 p-8 rounded-[35px] text-white flex items-center gap-6 overflow-hidden relative">
@@ -114,17 +123,41 @@ const Billing = () => {
 
                 {/* Table */}
                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl overflow-hidden">
-                    <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                     <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between bg-slate-50/50 gap-4">
                         <h2 className="font-bold text-slate-800 flex items-center gap-2">
                              Historial de Liquidaciones
                         </h2>
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
-                            <input 
-                                type="text" placeholder="Buscar por cliente..." 
-                                className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-sm shadow-sm"
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                        
+                        <div className="flex flex-col md:flex-row gap-3 items-center w-full md:w-auto">
+                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                                <Calendar size={14} className="text-blue-500" />
+                                <select 
+                                    className="bg-transparent outline-none font-bold text-slate-700 text-sm p-1 cursor-pointer"
+                                    value={filterMonth}
+                                    onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                                >
+                                    {Array.from({length: 12}, (_, i) => (
+                                        <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
+                                    ))}
+                                </select>
+                                <select 
+                                    className="bg-transparent outline-none font-bold text-slate-700 text-sm p-1 cursor-pointer border-l pl-2"
+                                    value={filterYear}
+                                    onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                                >
+                                    <option value={2025}>2025</option>
+                                    <option value={2026}>2026</option>
+                                </select>
+                            </div>
+
+                            <div className="relative w-full md:w-auto">
+                                <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                                <input 
+                                    type="text" placeholder="Buscar por cliente..." 
+                                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-sm shadow-sm"
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -142,8 +175,8 @@ const Billing = () => {
                             <tbody className="divide-y divide-slate-50">
                                 {loading ? (
                                     [1,2,3].map(i => <tr key={i} className="animate-pulse"><td colSpan="5" className="px-8 py-6 h-16 bg-slate-50/50"></td></tr>)
-                                ) : assignments.length > 0 ? (
-                                    assignments.map((as) => (
+                                ) : filteredAssignments.length > 0 ? (
+                                    filteredAssignments.map((as) => (
                                         <tr key={as._id} className="hover:bg-slate-50/80 transition-all group">
                                             <td className="px-8 py-6">
                                                 <span className="text-xs font-bold font-mono text-slate-400">#GL-{as._id.toString().slice(-6).toUpperCase()}</span>
@@ -160,7 +193,7 @@ const Billing = () => {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-right font-black text-slate-900">
-                                                {(as.price * 1.21).toFixed(2)}€
+                                                {((as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)) * 1.21).toFixed(2)}€
                                             </td>
                                             <td className="px-8 py-6 text-right flex items-center justify-end gap-2">
                                                 <button 

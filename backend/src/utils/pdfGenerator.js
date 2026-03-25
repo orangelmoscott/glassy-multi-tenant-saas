@@ -126,10 +126,16 @@ const generateInvoicePDF = (data) => {
             }
         }
 
-        // --- FOOTER ---
+        // --- FOOTER & PAGO (Prominente) ---
+        const footerY = 710;
+        doc.rect(50, footerY, 500, 45).fill('#F9FAFB').stroke('#E5E7EB');
+        doc.fillColor('#6B7280').fontSize(8).font('Helvetica-Bold').text('DETALLES DE PAGO Y TRANSFERENCIA', 65, footerY + 10);
+        
+        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold')
+           .text(`IBAN: ${tenant.bankAccount || 'Contactar con administración'}`, 65, footerY + 22);
+        
         doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica')
-           .text(`FORMA DE PAGO: ${tenant.bankAccount || 'Contactar con administración'}`, 50, 720, { align: 'center' })
-           .text('Gracias por su confianza. Este documento es un comprobante de servicio profesional.', 50, 735, { align: 'center' });
+           .text('Gracias por su confianza. Este documento es un comprobante de servicio profesional.', 50, 770, { align: 'center' });
 
         doc.end();
     });

@@ -16,6 +16,7 @@ const Assignments = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [extraServiceData, setExtraServiceData] = useState({ description: '', price: '' });
     const [filterWorkerId, setFilterWorkerId] = useState('');
+    const [selectedAssignmentForLogs, setSelectedAssignmentForLogs] = useState(null);
     const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
     const [filterYear, setFilterYear] = useState(new Date().getFullYear());
     const [showRouteModal, setShowRouteModal] = useState(false);
@@ -107,6 +108,51 @@ const Assignments = () => {
         }
     };
 
+    const handleReplicateMonth = async () => {
+        if (!window.confirm(`¿Replicar todas las rutas de ${new Date(2024, filterMonth - 2).toLocaleString('es-ES', {month: 'long'})} a este mes (${new Date(2024, filterMonth - 1).toLocaleString('es-ES', {month: 'long'})})?`)) return;
+        
+        try {
+            setLoading(true);
+            const prevMonth = filterMonth === 1 ? 12 : filterMonth - 1;
+            const prevYear = filterMonth === 1 ? filterYear - 1 : filterYear;
+            
+            // 1. Obtener asignaciones del mes anterior
+            const res = await axios.get('https://glassy-backend.onrender.com/assignments', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const prevAssignments = res.data.filter(as => {
+                const d = new Date(as.date);
+                return (d.getMonth() + 1) === prevMonth && d.getFullYear() === prevYear && !as.isDeleted;
+            });
+
+            if (prevAssignments.length === 0) {
+                alert('No hay rutas en el mes anterior para replicar.');
+                return;
+            }
+
+            // 2. Crear copias para el mes actual
+            const promises = prevAssignments.map(as => {
+                const newDate = new Date(filterYear, filterMonth - 1, new Date(as.date).getDate());
+                return axios.post('https://glassy-backend.onrender.com/assignments', {
+                    clientId: as.clientId?._id || as.clientId,
+                    workerId: as.workerId?._id || as.workerId,
+                    date: newDate,
+                    notes: as.notes,
+                    price: as.price
+                }, { headers: { Authorization: `Bearer ${token}` } });
+            });
+
+            await Promise.all(promises);
+            fetchAssignments();
+            alert(`Se han replicado ${prevAssignments.length} rutas con éxito.`);
+        } catch (err) {
+            alert('Error al replicar el mes.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleDownloadPDF = async (id) => {
         try {
             const response = await axios.get(`https://glassy-backend.onrender.com/assignments/${id}/invoice`, {
@@ -160,7 +206,14 @@ const Assignments = () => {
                         onClick={() => setShowRouteModal(true)} 
                         className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-blue-50"
                     >
-                        <User size={20} /> Asignar Ruta por Cristalero
+                        <User size={20} /> Asignar Ruta Completa
+                    </button>
+                    <button 
+                        onClick={handleReplicateMonth}
+                        className="bg-white text-slate-600 border-2 border-slate-200 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
+                        title="Copia todas las rutas del mes anterior al mes actual"
+                    >
+                        <RefreshCcw size={20} /> Replicar Mes Anterior
                     </button>
                     <button 
                         onClick={() => {
@@ -266,7 +319,12 @@ const Assignments = () => {
                                                             style={{ width: `${Math.min(((as.visitsDone || 0) / (as.expectedVisits || 1)) * 100, 100)}%` }}
                                                         ></div>
                                                     </div>
-                                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{as.visitsDone || 0}/{as.expectedVisits || 1}</span>
+                                                    <button 
+                                                        onClick={() => setSelectedAssignmentForLogs(as)}
+                                                        className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-lg flex items-center gap-1 transition-all"
+                                                    >
+                                                        {as.visitsDone || 0}/{as.expectedVisits || 1} <Info size={10} />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </td>
@@ -572,6 +630,88 @@ const Assignments = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+                {/* Visit Logs Modal */}
+                <AnimatePresence>
+                    {selectedAssignmentForLogs && (
+                        <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+                            <motion.div 
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                            >
+                                <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-xl font-extrabold text-slate-800">Detalle de Limpiezas</h3>
+                                        <p className="text-sm text-slate-400 font-medium">{selectedAssignmentForLogs.clientId?.companyName}</p>
+                                    </div>
+                                    <button onClick={() => setSelectedAssignmentForLogs(null)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition-all">
+                                        <X size={20} />
+                                    </button>
+                                </div>
+                                <div className="p-8 overflow-y-auto space-y-6">
+                                    <div className="grid grid-cols-2 gap-4 mb-4">
+                                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Visitas</p>
+                                            <p className="text-2xl font-black text-slate-800">{selectedAssignmentForLogs.visitsDone || 0} de {selectedAssignmentForLogs.expectedVisits || 1}</p>
+                                        </div>
+                                        <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Estado General</p>
+                                            <p className="text-2xl font-black text-blue-700 capitalize">{selectedAssignmentForLogs.status}</p>
+                                        </div>
+                                    </div>
+
+                                    {(!selectedAssignmentForLogs.visitLogs || selectedAssignmentForLogs.visitLogs.length === 0) ? (
+                                        <div className="text-center py-10">
+                                            <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                                                 <AlertCircle size={32} />
+                                            </div>
+                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin visitas registradas todavía</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Registro Cronológico de Validaciones</p>
+                                            <div className="grid gap-4">
+                                                {selectedAssignmentForLogs.visitLogs.map((log, idx) => (
+                                                    <div key={idx} className="bg-white border border-slate-100 p-6 rounded-[30px] flex items-center justify-between shadow-sm group hover:border-blue-200 transition-all">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black">
+                                                                {idx + 1}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-extrabold text-slate-800">{new Date(log.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest mt-0.5">
+                                                                    <Clock size={10}/> {new Date(log.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col items-end gap-2">
+                                                            {log.signature ? (
+                                                                <div className="relative group/sig">
+                                                                    <img src={log.signature} alt="Firma cliente" className="h-12 w-24 object-contain bg-slate-50 rounded-xl border border-slate-100 shadow-sm" />
+                                                                    <div className="absolute inset-0 bg-blue-600/90 rounded-xl opacity-0 group-hover/sig:opacity-100 transition-all flex items-center justify-center">
+                                                                        <CheckCircle size={16} className="text-white" />
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Sin Firma</span>
+                                                            )}
+                                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Validación de Limpieza</span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="p-8 bg-slate-50 border-t border-slate-100">
+                                    <button onClick={() => setSelectedAssignmentForLogs(null)} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95">Cerrar Registro</button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </DashboardLayout>
     );
