@@ -7,7 +7,7 @@ const assignmentSchema = new mongoose.Schema({
     workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: {
         type: String,
-        enum: ['pendiente', 'en_ruta', 'completado'],
+        enum: ['pendiente', 'en_ruta', 'completado', 'cancelado'],
         default: 'pendiente'
     },
     notes: { type: String, default: '' },
