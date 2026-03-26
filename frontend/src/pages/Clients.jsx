@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Clients = () => {
     const [clients, setClients] = useState([]);
@@ -28,6 +29,10 @@ const Clients = () => {
         serviceType: 'tienda',
         frequency: 'mensual'
     });
+    
+    // State para ConfirmModal
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, clientId: null });
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -72,15 +77,23 @@ const Clients = () => {
         }
     };
 
-    const handleDeleteClient = async (id) => {
-        if (!window.confirm('¿ELIMINAR CLIENTE? Se perderá todo el historial de servicios.')) return;
+    const handleDeleteClient = (id) => {
+        setDeleteModal({ isOpen: true, clientId: id });
+    };
+
+    const confirmDeleteClient = async () => {
+        if (!deleteModal.clientId) return;
+        setIsDeleting(true);
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/clients/${id}`, {
+            await axios.delete(`https://glassy-backend.onrender.com/clients/${deleteModal.clientId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setClients(clients.filter(c => c._id !== id));
+            setClients(clients.filter(c => c._id !== deleteModal.clientId));
+            setDeleteModal({ isOpen: false, clientId: null });
         } catch (err) {
             alert('Error al eliminar cliente');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -335,6 +348,16 @@ const Clients = () => {
                      </div>
                  )}
             </AnimatePresence>
+            
+            <ConfirmModal 
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ isOpen: false, clientId: null })}
+                onConfirm={confirmDeleteClient}
+                title="¿Eliminar a este cliente?"
+                message="Esta acción archivará al cliente y todo su historial de servicios ya no estará disponible en tu panel. ¿Estás seguro de continuar?"
+                confirmText="Sí, Eliminar Cliente"
+                loading={isDeleting}
+            />
         </DashboardLayout>
     );
 };

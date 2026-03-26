@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Assignments = () => {
     const [assignments, setAssignments] = useState([]);
@@ -28,6 +29,9 @@ const Assignments = () => {
         clientIds: [],
         notes: ''
     });
+
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, assignmentId: null });
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const [formData, setFormData] = useState({
         clientId: '',
@@ -181,6 +185,22 @@ const Assignments = () => {
             alert('Error al replicar el mes.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const confirmDeleteAssignment = async () => {
+        if (!deleteModal.assignmentId) return;
+        setIsDeleting(true);
+        try {
+            await axios.delete(`https://glassy-backend.onrender.com/assignments/${deleteModal.assignmentId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAssignments(assignments.filter(a => a._id !== deleteModal.assignmentId));
+            setDeleteModal({ isOpen: false, assignmentId: null });
+        } catch (err) {
+            alert('Error al eliminar asignación');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -422,15 +442,7 @@ const Assignments = () => {
                                                 </button>
 
                                                 <button 
-                                                    onClick={async () => {
-                                                        if (!window.confirm('¿Seguro que deseas eliminar esta asignación?')) return;
-                                                        try {
-                                                            await axios.delete(`https://glassy-backend.onrender.com/assignments/${as._id}`, { headers: { Authorization: `Bearer ${token}` } });
-                                                            setAssignments(assignments.filter(a => a._id !== as._id));
-                                                        } catch (err) {
-                                                            alert('Error al eliminar');
-                                                        }
-                                                    }}
+                                                    onClick={() => setDeleteModal({ isOpen: true, assignmentId: as._id })}
                                                     className="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all"
                                                     title="Eliminar"
                                                 >
@@ -745,6 +757,16 @@ const Assignments = () => {
                     )}
                 </AnimatePresence>
             </div>
+
+            <ConfirmModal 
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ isOpen: false, assignmentId: null })}
+                onConfirm={confirmDeleteAssignment}
+                title="¿Eliminar esta asignación/ruta?"
+                message="Si ya estaba completada o facturada se marcará como cancelada por seguridad. De lo contrario, se borrará definitivamente."
+                confirmText="Sí, Eliminar Asignación"
+                loading={isDeleting}
+            />
         </DashboardLayout>
     );
 };

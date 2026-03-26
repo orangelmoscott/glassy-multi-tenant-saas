@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
+import ConfirmModal from '../components/ConfirmModal';
+import { Trash2 } from 'lucide-react';
 
 const Billing = () => {
     const [assignments, setAssignments] = useState([]);
@@ -14,6 +16,11 @@ const Billing = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
     const [filterYear, setFilterYear] = useState(new Date().getFullYear());
+    
+    // Estados para Modales de Acción
+    const [emailModal, setEmailModal] = useState({ isOpen: false, invoiceId: null });
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, invoiceId: null });
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -55,15 +62,35 @@ const Billing = () => {
         }
     };
 
-    const handleEmailInvoice = async (id) => {
-        if (!window.confirm('¿Enviar factura ahora al email del cliente?')) return;
+    const confirmEmailInvoice = async () => {
+        if (!emailModal.invoiceId) return;
+        setIsProcessing(true);
         try {
-            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${id}/send-invoice`, {}, {
+            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${emailModal.invoiceId}/send-invoice`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             alert(res.data.message);
         } catch (err) {
             alert(err.response?.data?.message || 'Error al enviar email');
+        } finally {
+            setIsProcessing(false);
+            setEmailModal({ isOpen: false, invoiceId: null });
+        }
+    };
+
+    const confirmDeleteInvoice = async () => {
+        if (!deleteModal.invoiceId) return;
+        setIsProcessing(true);
+        try {
+            await axios.delete(`https://glassy-backend.onrender.com/assignments/${deleteModal.invoiceId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAssignments(assignments.filter(a => a._id !== deleteModal.invoiceId));
+        } catch (err) {
+            alert('Error al eliminar factura');
+        } finally {
+            setIsProcessing(false);
+            setDeleteModal({ isOpen: false, invoiceId: null });
         }
     };
 
@@ -77,6 +104,7 @@ const Billing = () => {
     const totalInvoiced = filteredAssignments.reduce((acc, curr) => acc + (curr.price || 0) + (curr.extraServices?.reduce((sum, extra) => sum + extra.price, 0) || 0), 0);
 
     return (
+        <>
         <DashboardLayout>
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
@@ -204,11 +232,18 @@ const Billing = () => {
                                                     <Download size={14} /> PDF
                                                 </button>
                                                 <button 
-                                                    onClick={() => handleEmailInvoice(as._id)}
+                                                    onClick={() => setEmailModal({ isOpen: true, invoiceId: as._id })}
                                                     className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-green-600 hover:text-white transition-all shadow-sm"
                                                     title="Enviar Factura por Email"
                                                 >
                                                     <Send size={14} /> Email
+                                                </button>
+                                                <button 
+                                                    onClick={() => setDeleteModal({ isOpen: true, invoiceId: as._id })}
+                                                    className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                                                    title="Eliminar Factura"
+                                                >
+                                                    <Trash2 size={14} /> 
                                                 </button>
                                             </td>
                                         </tr>
@@ -229,6 +264,27 @@ const Billing = () => {
                 </div>
             </div>
         </DashboardLayout>
+
+            <ConfirmModal 
+                isOpen={emailModal.isOpen}
+                onClose={() => setEmailModal({ isOpen: false, invoiceId: null })}
+                onConfirm={confirmEmailInvoice}
+                title="¿Enviar Factura por Email?"
+                message="Se enviará un correo automáticamente al cliente con el desglose del servicio y copia en formato PDF incrustada."
+                confirmText="Sí, Enviar Factura"
+                loading={isProcessing}
+            />
+
+            <ConfirmModal 
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ isOpen: false, invoiceId: null })}
+                onConfirm={confirmDeleteInvoice}
+                title="¿Eliminar definitivamente esta factura?"
+                message="Esta acción archivará constancia de la prestación de este servicio afectando a los ingresos mensuales reportados. Este paso no se puede deshacer."
+                confirmText="Sí, Eliminar Factura"
+                loading={isProcessing}
+            />
+        </>
     );
 };
 

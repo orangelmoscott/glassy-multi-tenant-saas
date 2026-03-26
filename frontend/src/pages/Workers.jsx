@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
+import ConfirmModal from '../components/ConfirmModal';
 
 const Workers = () => {
     const [workers, setWorkers] = useState([]);
@@ -18,6 +19,9 @@ const Workers = () => {
         fullName: '',
         phone: ''
     });
+    
+    const [deleteModal, setDeleteModal] = useState({ isOpen: false, workerId: null });
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -61,15 +65,23 @@ const Workers = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('¿ELIMINAR ACCESO? El operario ya no podrá entrar a ver sus rutas.')) return;
+    const handleDelete = (id) => {
+        setDeleteModal({ isOpen: true, workerId: id });
+    };
+
+    const confirmDeleteWorker = async () => {
+        if (!deleteModal.workerId) return;
+        setIsDeleting(true);
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/users/workers/${id}`, {
+            await axios.delete(`https://glassy-backend.onrender.com/users/workers/${deleteModal.workerId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setWorkers(workers.filter(w => w._id !== id));
+            setWorkers(workers.filter(w => w._id !== deleteModal.workerId));
+            setDeleteModal({ isOpen: false, workerId: null });
         } catch (err) {
             alert('Error al eliminar operario');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
