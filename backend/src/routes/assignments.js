@@ -296,7 +296,8 @@ router.delete('/:id', authenticate, async (req, res) => {
         await Assignment.deleteOne({ _id: req.params.id });
         res.send({ message: 'Asignación eliminada correctamente.' });
     } catch (error) {
-        res.status(500).send({ message: 'Error al eliminar asignación' });
+        console.error('Delete assignment error:', error);
+        res.status(500).send({ message: 'Error al eliminar asignación', error: error.message });
     }
 });
 

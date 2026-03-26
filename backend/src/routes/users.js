@@ -90,7 +90,8 @@ router.delete('/workers/:id', authenticate, authorize(['owner', 'admin']), async
         if (!deleted) return res.status(404).send({ message: 'Operario no encontrado' });
         res.send({ message: 'Operario eliminado correctamente' });
     } catch (error) {
-        res.status(500).send({ message: 'Error al eliminar operario' });
+        console.error('Delete worker error:', error);
+        res.status(500).send({ message: 'Error al eliminar operario', error: error.message });
     }
 });
 
