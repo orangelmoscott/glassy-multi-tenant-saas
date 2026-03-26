@@ -31,7 +31,9 @@ const Assignments = () => {
     });
 
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, assignmentId: null });
-    const [isDeleting, setIsDeleting] = useState(false);
+    const [emailModal, setEmailModal] = useState({ isOpen: false, assignmentId: null });
+    const [replicateModal, setReplicateModal] = useState({ isOpen: false });
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const [formData, setFormData] = useState({
         clientId: '',
@@ -144,7 +146,8 @@ const Assignments = () => {
     };
 
     const handleReplicateMonth = async () => {
-        if (!window.confirm(`¿Replicar todas las rutas de ${new Date(2024, filterMonth - 2).toLocaleString('es-ES', {month: 'long'})} a este mes (${new Date(2024, filterMonth - 1).toLocaleString('es-ES', {month: 'long'})})?`)) return;
+        if (!replicateModal.isOpen) return;
+        setReplicateModal({ isOpen: false });
         
         try {
             setLoading(true);
@@ -190,7 +193,7 @@ const Assignments = () => {
 
     const confirmDeleteAssignment = async () => {
         if (!deleteModal.assignmentId) return;
-        setIsDeleting(true);
+        setIsProcessing(true);
         try {
             await axios.delete(`https://glassy-backend.onrender.com/assignments/${deleteModal.assignmentId}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -200,7 +203,7 @@ const Assignments = () => {
         } catch (err) {
             alert('Error al eliminar asignación');
         } finally {
-            setIsDeleting(false);
+            setIsProcessing(false);
         }
     };
 
@@ -223,15 +226,19 @@ const Assignments = () => {
         }
     };
 
-    const handleEmailInvoice = async (id) => {
-        if (!window.confirm('¿Enviar factura ahora al email del cliente?')) return;
+    const confirmEmailInvoice = async () => {
+        if (!emailModal.assignmentId) return;
+        setIsProcessing(true);
         try {
-            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${id}/send-invoice`, {}, {
+            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${emailModal.assignmentId}/send-invoice`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             alert(res.data.message);
         } catch (err) {
             alert(err.response?.data?.message || 'Error al enviar email');
+        } finally {
+            setIsProcessing(false);
+            setEmailModal({ isOpen: false, assignmentId: null });
         }
     };
 
@@ -260,7 +267,7 @@ const Assignments = () => {
                         <User size={20} /> Asignar Ruta Completa
                     </button>
                     <button 
-                        onClick={handleReplicateMonth}
+                        onClick={() => setReplicateModal({ isOpen: true })}
                         className="bg-white text-slate-600 border-2 border-slate-200 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
                         title="Copia todas las rutas del mes anterior al mes actual"
                     >
@@ -413,7 +420,7 @@ const Assignments = () => {
                                                             <Download size={18} />
                                                         </button>
                                                         <button 
-                                                            onClick={() => handleEmailInvoice(as._id)}
+                                                            onClick={() => setEmailModal({ isOpen: true, assignmentId: as._id })}
                                                             className="p-2.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-xl transition-all group/btn"
                                                             title="Enviar por Email"
                                                         >
@@ -765,7 +772,27 @@ const Assignments = () => {
                 title="¿Eliminar esta asignación/ruta?"
                 message="Si ya estaba completada o facturada se marcará como cancelada por seguridad. De lo contrario, se borrará definitivamente."
                 confirmText="Sí, Eliminar Asignación"
-                loading={isDeleting}
+                loading={isProcessing}
+            />
+
+            <ConfirmModal 
+                isOpen={emailModal.isOpen}
+                onClose={() => setEmailModal({ isOpen: false, assignmentId: null })}
+                onConfirm={confirmEmailInvoice}
+                title="¿Enviar Factura por Email?"
+                message="Se enviará automáticamente la factura al cliente."
+                confirmText="Sí, Enviar Factura"
+                loading={isProcessing}
+            />
+
+            <ConfirmModal 
+                isOpen={replicateModal.isOpen}
+                onClose={() => setReplicateModal({ isOpen: false })}
+                onConfirm={handleReplicateMonth}
+                title="¿Replicar todas las rutas?"
+                message={`¿Copiar todas las rutas del mes anterior al mes actual?`}
+                confirmText="Sí, Replicar Rutas"
+                loading={loading}
             />
         </DashboardLayout>
     );
