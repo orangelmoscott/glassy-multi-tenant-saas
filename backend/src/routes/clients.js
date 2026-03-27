@@ -84,7 +84,17 @@ router.patch('/:id', authenticate, authorize(['owner', 'admin']), checkTrialStat
             { new: true }
         );
         if (!client) return res.status(404).send({ message: 'Cliente no encontrado' });
-        res.send({ message: 'Cliente actualizado con éxito', client });
+
+        // Propagar precio a rutas pendientes si el precio del cliente cambió
+        if (req.body.price !== undefined) {
+             const Assignment = require('../models/Assignment');
+             await Assignment.updateMany(
+                 { clientId: client._id, tenantId: req.user.tenantId, status: { $ne: 'completado' } },
+                 { $set: { price: req.body.price } }
+             );
+        }
+
+        res.send({ message: 'Cliente actualizado con éxito y precios de rutas sincronizados', client });
     } catch (error) {
         res.status(500).send({ message: 'Error al actualizar cliente' });
     }

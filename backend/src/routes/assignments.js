@@ -201,13 +201,25 @@ router.post('/', authenticate, checkTrialStatus, async (req, res) => {
  */
 router.patch('/:id/complete', authenticate, checkTrialStatus, async (req, res) => {
     try {
-        const { signature, notes } = req.body;
+        const { signature, notes, extraServices } = req.body;
         
         const assignment = await Assignment.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
         if (!assignment) return res.status(404).send({ message: 'Ruta no encontrada' });
 
         assignment.visitsDone = (assignment.visitsDone || 0) + 1;
         assignment.notes = notes || assignment.notes;
+
+        // Añadir servicios extra si el operario los reportó en el momento
+        if (extraServices && Array.isArray(extraServices)) {
+            extraServices.forEach(service => {
+                if (service.description && service.price) {
+                    assignment.extraServices.push({
+                        description: service.description,
+                        price: parseFloat(service.price)
+                    });
+                }
+            });
+        }
         
         if (signature) {
             assignment.visitLogs.push({ signature, date: new Date() });

@@ -244,10 +244,21 @@ const Assignments = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'completed': return 'bg-green-100 text-green-600 border-green-200';
-            case 'cancelled': return 'bg-red-100 text-red-600 border-red-200';
-            default: return 'bg-amber-100 text-amber-600 border-amber-200';
+            case 'completado': return 'bg-green-100 text-green-600 border-green-200';
+            case 'cancelado': return 'bg-red-100 text-red-600 border-red-200';
+            case 'en_ruta': return 'bg-blue-100 text-blue-600 border-blue-200';
+            default: return 'bg-amber-100 text-amber-600 border-amber-200'; // Pendiente
         }
+    };
+
+    const formatStatus = (status) => {
+        const statuses = {
+            'pendiente': 'Pendiente',
+            'en_ruta': 'En Ruta',
+            'completado': 'Finalizado/Verde',
+            'cancelado': 'Cancelado'
+        };
+        return statuses[status] || status;
     };
 
     return (
@@ -397,7 +408,7 @@ const Assignments = () => {
                                          </td>
                                         <td className="px-8 py-6">
                                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border ${getStatusColor(as.status)}`}>
-                                                {as.status}
+                                                {formatStatus(as.status)}
                                             </span>
                                         </td>
                                         <td className="px-8 py-6 font-extrabold text-slate-800">
