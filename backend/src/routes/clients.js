@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
 const { authenticate, authorize } = require('../middlewares/auth');
-const { checkClientLimit } = require('../middlewares/planGuard');
+const { checkClientLimit, checkTrialStatus } = require('../middlewares/planGuard');
 
 /**
  * GET /clients — Listar solo mis clientes (Aislamiento Multi-tenant)
@@ -58,7 +58,7 @@ router.get('/', authenticate, async (req, res) => {
 /**
  * POST /clients — Crear cliente en mi Tenant (Protegido por Plan SaaS)
  */
-router.post('/', authenticate, authorize(['owner', 'admin']), checkClientLimit, async (req, res) => {
+router.post('/', authenticate, authorize(['owner', 'admin']), checkTrialStatus, checkClientLimit, async (req, res) => {
     try {
         const clientData = {
             ...req.body,
@@ -76,7 +76,7 @@ router.post('/', authenticate, authorize(['owner', 'admin']), checkClientLimit, 
 /**
  * PATCH /clients/:id — Actualizar datos de un cliente
  */
-router.patch('/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+router.patch('/:id', authenticate, authorize(['owner', 'admin']), checkTrialStatus, async (req, res) => {
     try {
         const client = await Client.findOneAndUpdate(
             { _id: req.params.id, tenantId: req.user.tenantId },
@@ -93,7 +93,7 @@ router.patch('/:id', authenticate, authorize(['owner', 'admin']), async (req, re
 /**
  * DELETE /clients/:id — Eliminar cliente de mi empresa
  */
-router.delete('/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+router.delete('/:id', authenticate, authorize(['owner', 'admin']), checkTrialStatus, async (req, res) => {
     try {
         const deleted = await Client.findOneAndUpdate(
             { _id: req.params.id, tenantId: req.user.tenantId },

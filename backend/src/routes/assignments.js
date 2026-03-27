@@ -5,6 +5,7 @@ const Tenant = require('../models/Tenant');
 const Client = require('../models/Client');
 const Counter = require('../models/Counter');
 const { authenticate } = require('../middlewares/auth');
+const { checkTrialStatus } = require('../middlewares/planGuard');
 const { generateInvoicePDF } = require('../utils/pdfGenerator');
 
 /**
@@ -158,7 +159,7 @@ router.get('/my', authenticate, async (req, res) => {
 /**
  * POST | Crear nueva asignación (Ruta Mensual/Servicio único)
  */
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, checkTrialStatus, async (req, res) => {
     try {
         const { clientId, date, notes, workerId, price, extraServices } = req.body;
         
@@ -198,7 +199,7 @@ router.post('/', authenticate, async (req, res) => {
 /**
  * PATCH | Completar Trabajo o Registrar Visita Parcial
  */
-router.patch('/:id/complete', authenticate, async (req, res) => {
+router.patch('/:id/complete', authenticate, checkTrialStatus, async (req, res) => {
     try {
         const { signature, notes } = req.body;
         
@@ -232,7 +233,7 @@ router.patch('/:id/complete', authenticate, async (req, res) => {
 /**
  * PATCH | Actualizar estado
  */
-router.patch('/:id/status', authenticate, async (req, res) => {
+router.patch('/:id/status', authenticate, checkTrialStatus, async (req, res) => {
     try {
         const { status } = req.body;
         const assignment = await Assignment.findOneAndUpdate(
@@ -249,7 +250,7 @@ router.patch('/:id/status', authenticate, async (req, res) => {
 /**
  * PUT | Actualizar Asignación (Admin)
  */
-router.put('/:id', authenticate, async (req, res) => {
+router.put('/:id', authenticate, checkTrialStatus, async (req, res) => {
     try {
         const { clientId, date, notes, workerId, price, extraServices, status } = req.body;
         
@@ -279,7 +280,7 @@ router.put('/:id', authenticate, async (req, res) => {
 /**
  * DELETE | Eliminar Asignación (Soft delete if billed)
  */
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, checkTrialStatus, async (req, res) => {
     try {
         const assignment = await Assignment.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
         if (!assignment) return res.status(404).send({ message: 'Asignación no encontrada' });

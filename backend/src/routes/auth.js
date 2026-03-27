@@ -81,6 +81,13 @@ router.post('/login', async (req, res) => {
             { expiresIn: '8h' }
         );
 
+        // Cálculo de días restantes de prueba (Starter)
+        const trialLimit = 7 * 24 * 60 * 60 * 1000;
+        const tenantCreated = new Date(user.tenantId.createdAt);
+        const now = new Date();
+        const diff = now - tenantCreated;
+        const daysLeft = Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000)));
+
         res.send({
             token,
             username: user.username,
@@ -88,6 +95,7 @@ router.post('/login', async (req, res) => {
             companyName: user.tenantId.name,
             tenantId: user.tenantId._id,
             plan: user.tenantId.plan,
+            trialDaysLeft: user.tenantId.plan === 'starter' ? daysLeft : null,
             userId: user._id
         });
 

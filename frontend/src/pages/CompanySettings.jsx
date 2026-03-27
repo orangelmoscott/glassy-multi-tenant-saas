@@ -158,6 +158,17 @@ const CompanySettings = () => {
                                     <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
                                         <FileBadge size={14} className="text-blue-400" /> Facturación ilimitada
                                     </div>
+                                    {tenant.plan === 'starter' && (
+                                        <div className="mt-4 p-3 bg-amber-500/20 rounded-xl border border-amber-500/30 flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-slate-900">
+                                                <Sparkles size={16} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-amber-500 uppercase">Periodo de Prueba</p>
+                                                <p className="text-sm font-bold text-white">{tenant.trialDaysLeft} días restantes</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <button 

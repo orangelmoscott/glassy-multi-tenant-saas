@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Users, Calendar, BarChart3, Settings, 
   LogOut, LayoutDashboard, Menu, X, 
-  CreditCard, HardHat, FileText, MapPin
+  CreditCard, HardHat, FileText, MapPin, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +15,13 @@ const DashboardLayout = ({ children }) => {
     const userString = localStorage.getItem('glassy_user');
     const user = userString ? JSON.parse(userString) : { role: 'cristalero', username: 'Usuario' };
     const isOwner = user.role === 'owner' || user.role === 'admin';
+
+    React.useEffect(() => {
+        if (isOwner && user.plan === 'starter' && user.trialDaysLeft <= 0) {
+            // Un mensaje profesional cada vez que inician sesión
+            console.log("Trial expired notice triggered");
+        }
+    }, [isOwner, user.plan, user.trialDaysLeft]);
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'] },
@@ -104,6 +111,30 @@ const DashboardLayout = ({ children }) => {
                                 <span>Salir del Sistema</span>
                             </button>
                         </div>
+                        
+                        {user.plan === 'starter' && (
+                            <div className={`mt-6 p-4 rounded-2xl border shadow-sm transition-colors ${user.trialDaysLeft <= 0 ? 'bg-red-50 border-red-200' : 'bg-gradient-to-tr from-amber-50 to-orange-50 border-amber-100/50'}`}>
+                                <div className={`flex items-center gap-2 mb-2 font-extrabold text-[10px] uppercase tracking-tighter ${user.trialDaysLeft <= 0 ? 'text-red-700' : 'text-amber-700'}`}>
+                                    <Sparkles size={14} className={user.trialDaysLeft > 0 ? "animate-pulse" : ""} /> {user.trialDaysLeft <= 0 ? 'PERIODO EXPIRADO' : 'Periodo de Prueba'}
+                                </div>
+                                <p className="text-sm font-bold text-slate-900 leading-tight">
+                                    {user.trialDaysLeft <= 0 ? (
+                                        <span className="text-red-600 font-extrabold">Renovación Necesaria</span>
+                                    ) : (
+                                        <>Te quedan <span className="text-amber-600 font-black">{user.trialDaysLeft} días</span></>
+                                    )}
+                                </p>
+                                <p className="text-[10px] text-slate-400 mt-1 font-medium">
+                                    {user.trialDaysLeft <= 0 ? 'Suscríbete ahora para seguir operando tu negocio.' : 'Actualiza a un plan PRO antes de que expire.'}
+                                </p>
+                                <button 
+                                    onClick={() => navigate('/app/settings')}
+                                    className={`w-full mt-3 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all active:scale-95 ${user.trialDaysLeft <= 0 ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-slate-800 border-slate-200 hover:bg-slate-50'}`}
+                                >
+                                    Ver Planes y Precios
+                                </button>
+                            </div>
+                        )}
                     </motion.aside>
                 )}
             </AnimatePresence>
@@ -122,11 +153,47 @@ const DashboardLayout = ({ children }) => {
             </AnimatePresence>
 
             {/* Main Content Area */}
+            {/* Main Content Area */}
             <main className="flex-1 p-4 md:p-12 overflow-y-auto w-full">
                 <div className="max-w-6xl mx-auto w-full">
                     {children}
                 </div>
             </main>
+
+            {/* Trial Expiry Overlay (Management only) */}
+            {isOwner && user.plan === 'starter' && user.trialDaysLeft <= 0 && location.pathname !== '/app/settings' && (
+                <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+                    <motion.div 
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="bg-white rounded-[40px] p-10 max-w-lg w-full text-center shadow-2xl"
+                    >
+                        <div className="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center text-red-600 mx-auto mb-8">
+                            <Sparkles size={40} />
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Acceso Restringido</h2>
+                        <p className="text-slate-500 font-medium mb-10 leading-relaxed">
+                            Tu periodo de prueba de <span className="text-slate-900 font-bold">7 días</span> ha llegado a su fin. 
+                            Para continuar gestionando tus clientes y operarios, necesitas activar una suscripción profesional.
+                        </p>
+                        <div className="space-y-4">
+                            <button 
+                                onClick={() => navigate('/app/settings')}
+                                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-extrabold shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-3"
+                            >
+                                <CreditCard size={22} />
+                                Activar Suscripción Profesional
+                            </button>
+                            <button 
+                                onClick={handleLogout}
+                                className="w-full text-slate-400 py-2 font-bold text-sm hover:text-slate-600 transition-all"
+                            >
+                                Cerrar Sesión
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 };

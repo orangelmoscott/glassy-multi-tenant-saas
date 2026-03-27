@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Building, Phone, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 const RegisterCompany = () => {
     const [searchParams] = useSearchParams();
@@ -70,9 +70,16 @@ const RegisterCompany = () => {
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-400/20 rounded-full -ml-32 -mb-32 blur-3xl"></div>
                 
                 <div className="relative z-10">
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 shadow-xl">
-                        <span className="text-blue-600 font-extrabold text-2xl">G</span>
-                    </div>
+                    <Link to="/" className="group flex items-center gap-2 mb-8 text-blue-100 hover:text-white transition-all">
+                        <ArrowRight className="rotate-180 transform group-hover:-translate-x-1 transition-transform" size={18} />
+                        <span className="font-bold text-sm">Volver a Inicio</span>
+                    </Link>
+
+                    <Link to="/" className="inline-block">
+                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-6 shadow-xl hover:scale-105 transition-all">
+                            <span className="text-blue-600 font-extrabold text-2xl">G</span>
+                        </div>
+                    </Link>
                     <h1 className="text-4xl lg:text-5xl font-extrabold text-white leading-tight mb-6">Empecemos a digitalizar tu negocio</h1>
                     <p className="text-blue-100 text-lg leading-relaxed max-w-sm">Únete a cientos de empresas que ya gestionan sus servicios de limpieza con Glassy.</p>
                 </div>

@@ -8,8 +8,14 @@ const { authenticate, authorize } = require('../middlewares/auth');
  */
 router.get('/my-company', authenticate, async (req, res) => {
     try {
-        const tenant = await Tenant.findById(req.user.tenantId);
+        const tenant = await Tenant.findById(req.user.tenantId).lean();
         if (!tenant) return res.status(404).send({ message: 'Empresa no encontrada' });
+        
+        // Cálculo días restantes (Starter)
+        const trialLimit = 7 * 24 * 60 * 60 * 1000;
+        const diff = new Date() - new Date(tenant.createdAt);
+        tenant.trialDaysLeft = tenant.plan === 'starter' ? Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000))) : null;
+
         res.send(tenant);
     } catch (error) {
         res.status(500).send({ message: 'Error al obtener la empresa' });

@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const { authenticate, authorize } = require('../middlewares/auth');
+const { checkTrialStatus } = require('../middlewares/planGuard');
 
 /**
  * GET | Listar todos los operarios (workers) del Tenant
@@ -23,7 +24,7 @@ router.get('/workers', authenticate, authorize(['owner', 'admin']), async (req, 
 /**
  * POST | Crear un nuevo operario
  */
-router.post('/workers', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+router.post('/workers', authenticate, authorize(['owner', 'admin']), checkTrialStatus, async (req, res) => {
     try {
         const { username, password, fullName, phone } = req.body;
         
@@ -56,7 +57,7 @@ router.post('/workers', authenticate, authorize(['owner', 'admin']), async (req,
 /**
  * PATCH | Actualizar datos de un operario
  */
-router.patch('/workers/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+router.patch('/workers/:id', authenticate, authorize(['owner', 'admin']), checkTrialStatus, async (req, res) => {
     try {
         const { fullName, phone, password } = req.body;
         const updateData = { fullName, phone };
@@ -81,7 +82,7 @@ router.patch('/workers/:id', authenticate, authorize(['owner', 'admin']), async 
 /**
  * DELETE | Eliminar operario
  */
-router.delete('/workers/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
+router.delete('/workers/:id', authenticate, authorize(['owner', 'admin']), checkTrialStatus, async (req, res) => {
     try {
         const deleted = await User.findOneAndUpdate(
             { _id: req.params.id, tenantId: req.user.tenantId, role: 'cristalero' },

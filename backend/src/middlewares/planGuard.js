@@ -61,4 +61,28 @@ async function requireProfessionalPlan(req, res, next) {
     }
 }
 
-module.exports = { checkClientLimit, requireProfessionalPlan };
+async function checkTrialStatus(req, res, next) {
+    try {
+        const tenant = await Tenant.findById(req.user.tenantId);
+        if (!tenant) return res.status(404).send({ message: 'Empresa no encontrada' });
+
+        // Cálculo de días de prueba (7 días máximo según nueva regla profesional)
+        const trialDuration = 7 * 24 * 60 * 60 * 1000;
+        const now = new Date();
+        const created = new Date(tenant.createdAt);
+        const diff = now - created;
+
+        if (tenant.plan === 'starter' && diff > trialDuration) {
+            return res.status(403).send({ 
+                message: 'Tu periodo de prueba de 7 días ha expirado.', 
+                trialExpired: true,
+                upgradeSuggested: true 
+            });
+        }
+        next();
+    } catch (error) {
+        res.status(500).send({ message: 'Error al verificar periodo de prueba' });
+    }
+}
+
+module.exports = { checkClientLimit, requireProfessionalPlan, checkTrialStatus };
