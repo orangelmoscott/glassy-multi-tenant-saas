@@ -2,8 +2,22 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Check, CreditCard, Sparkles, Zap, Shield, HelpCircle } from 'lucide-react';
 
-const PricingModal = ({ isOpen, onClose, currentPlan }) => {
+const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
+  const [loadingPlan, setLoadingPlan] = React.useState(null);
+
   if (!isOpen) return null;
+
+  const handleSelect = async (planId) => {
+    if (planId === currentPlan) return;
+    setLoadingPlan(planId);
+    try {
+        await onSelectPlan(planId);
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setLoadingPlan(null);
+    }
+  };
 
   const plans = [
     {
@@ -107,9 +121,14 @@ const PricingModal = ({ isOpen, onClose, currentPlan }) => {
                                 </li>
                             ))}
                         </ul>
-                        <button className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95
+                        <button 
+                            disabled={p.current || !!loadingPlan}
+                            onClick={() => handleSelect(p.id)}
+                            className={`w-full py-3 rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 flex items-center justify-center gap-2
                             ${p.highlight ? 'bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-blue-200 hover:shadow-lg' : 'bg-slate-900 text-white hover:bg-slate-800'}
+                            ${(p.current || !!loadingPlan) ? 'opacity-70 cursor-not-allowed' : ''}
                         `}>
+                            {loadingPlan === p.id && <RefreshCcw size={16} className="animate-spin" />}
                             {p.current ? 'Tu Plan Actual' : p.cta}
                         </button>
                     </div>

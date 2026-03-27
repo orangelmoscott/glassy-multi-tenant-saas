@@ -12,7 +12,7 @@ const Tenant = require('../models/Tenant');
  */
 router.post('/register-company', async (req, res) => {
     try {
-        const { companyName, nif, email, username, password, fullName, phone } = req.body;
+        const { companyName, nif, email, username, password, fullName, phone, plan } = req.body;
 
         // Validaciones profesionales
         if (!companyName || !nif || !email || !username || !password) {
@@ -25,6 +25,7 @@ router.post('/register-company', async (req, res) => {
             nif,
             email,
             phone: phone || '',
+            plan: plan || 'starter',
             subscriptionStatus: 'trial' // Empieza en periodo de prueba de 14 días (ejemplo)
         });
         await tenant.save();

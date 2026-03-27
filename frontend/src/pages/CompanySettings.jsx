@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
+import PricingModal from '../components/PricingModal';
 
 const CompanySettings = () => {
     const [tenant, setTenant] = useState(null);
@@ -14,6 +15,7 @@ const CompanySettings = () => {
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
+    const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
     
     // Sesión
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
@@ -62,6 +64,28 @@ const CompanySettings = () => {
             setError(err.response?.data?.message || 'Error al guardar cambios');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handlePlanUpdate = async (planId) => {
+        try {
+            const res = await axios.patch('https://glassy-backend.onrender.com/tenant/update', { plan: planId }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            // Actualizar estado local y localStorage para reflejar el plan en toda la app
+            const updatedTenant = res.data.tenant;
+            setTenant(updatedTenant);
+            
+            const updatedUser = { ...user, plan: updatedTenant.plan };
+            localStorage.setItem('glassy_user', JSON.stringify(updatedUser));
+
+            setSuccess(true);
+            setIsPricingModalOpen(false);
+            setTimeout(() => setSuccess(false), 3000);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error al actualizar el plan');
+            throw err;
         }
     };
 
@@ -136,7 +160,11 @@ const CompanySettings = () => {
                                     </div>
                                 </div>
 
-                                <button type="button" className="w-full bg-white/10 hover:bg-white/20 border border-white/10 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-inner">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsPricingModalOpen(true)}
+                                    className="w-full bg-white/10 hover:bg-white/20 border border-white/10 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-inner"
+                                >
                                     <Sparkles size={14} className="text-amber-400" /> Gestionar Suscripción
                                 </button>
                             </div>
@@ -236,6 +264,13 @@ const CompanySettings = () => {
                         </div>
                     </div>
                 </form>
+
+                <PricingModal 
+                    isOpen={isPricingModalOpen} 
+                    onClose={() => setIsPricingModalOpen(false)} 
+                    currentPlan={tenant.plan}
+                    onSelectPlan={handlePlanUpdate}
+                />
             </div>
         </DashboardLayout>
     );

@@ -4,6 +4,9 @@ import { CheckCircle, Shield, Zap, Layout, ArrowRight, UserPlus, FileText, Calen
 import { Link } from 'react-router-dom';
 
 const LandingPage = () => {
+  const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
+  const isLoggedIn = !!user.token;
+
   return (
     <div className="min-h-screen bg-[#f0fafa]">
       {/* Navigation */}
@@ -97,7 +100,7 @@ const LandingPage = () => {
                         <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Hasta 100 Clientes</li>
                         <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Facturas PDF</li>
                     </ul>
-                    <Link to="/register" className="w-full">
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=basico"} className="w-full">
                         <button className="w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-white transition-all text-sm">Empezar ahora</button>
                     </Link>
                 </div>
@@ -114,7 +117,7 @@ const LandingPage = () => {
                         <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Clientes Ilimitados</li>
                         <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Rutas para Personal</li>
                     </ul>
-                    <Link to="/register" className="w-full">
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=profesional"} className="w-full">
                         <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">Empezar ahora</button>
                     </Link>
                 </div>
@@ -130,7 +133,7 @@ const LandingPage = () => {
                         <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Todo lo Pro</li>
                         <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Soporte 24/7</li>
                     </ul>
-                    <Link to="/register" className="w-full">
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=empresa"} className="w-full">
                         <button className="w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-white transition-all">Empezar ahora</button>
                     </Link>
                 </div>

@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Building, Phone, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const RegisterCompany = () => {
-    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const planFromUrl = searchParams.get('plan') || 'starter';
+
     const [formData, setFormData] = useState({
         companyName: '',
         nif: '',
@@ -13,7 +15,8 @@ const RegisterCompany = () => {
         username: '',
         password: '',
         fullName: '',
-        phone: ''
+        phone: '',
+        plan: planFromUrl
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -87,7 +90,9 @@ const RegisterCompany = () => {
             <div className="w-full md:w-7/12 bg-white p-8 md:p-16 flex flex-col justify-center overflow-y-auto max-h-screen">
                 <div className="max-w-md mx-auto w-full">
                     <h2 className="text-3xl font-extrabold text-slate-800 mb-2">Crea tu cuenta</h2>
-                    <p className="text-slate-500 mb-8 flex items-center gap-2">Completa los datos de tu empresa para empezar.</p>
+                    <p className="text-slate-500 mb-8 flex items-center gap-2">
+                        Plan seleccionado: <span className="text-blue-600 font-bold capitalize">{formData.plan}</span>
+                    </p>
 
                     {error && (
                         <div className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm mb-6 rounded-r-lg font-medium">
