@@ -11,7 +11,8 @@ router.get('/workers', authenticate, authorize(['owner', 'admin']), async (req, 
     try {
         const workers = await User.find({ 
             tenantId: req.user.tenantId, 
-            role: 'cristalero' 
+            role: 'cristalero',
+            isDeleted: { $ne: true } 
         }).select('-password');
         res.send(workers);
     } catch (error) {
@@ -82,11 +83,11 @@ router.patch('/workers/:id', authenticate, authorize(['owner', 'admin']), async 
  */
 router.delete('/workers/:id', authenticate, authorize(['owner', 'admin']), async (req, res) => {
     try {
-        const deleted = await User.findOneAndDelete({ 
-            _id: req.params.id, 
-            tenantId: req.user.tenantId,
-            role: 'cristalero' 
-        });
+        const deleted = await User.findOneAndUpdate(
+            { _id: req.params.id, tenantId: req.user.tenantId, role: 'cristalero' },
+            { $set: { isDeleted: true } },
+            { new: true }
+        );
         if (!deleted) return res.status(404).send({ message: 'Operario no encontrado' });
         res.send({ message: 'Operario eliminado correctamente' });
     } catch (error) {

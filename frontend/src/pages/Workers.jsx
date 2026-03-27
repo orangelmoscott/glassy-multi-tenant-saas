@@ -209,6 +209,15 @@ const Workers = () => {
                    </div>
                 )}
             </AnimatePresence>
+            <ConfirmModal 
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ isOpen: false, workerId: null })}
+                onConfirm={confirmDeleteWorker}
+                title="¿Eliminar este operario?"
+                message="Esta acción revocará el acceso del trabajador al sistema y lo ocultará de tus listas. Sus servicios pasados permanecerán en el historial."
+                confirmText="Sí, Eliminar Operario"
+                loading={isDeleting}
+            />
         </DashboardLayout>
     );
 };

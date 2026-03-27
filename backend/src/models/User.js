@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema({
         required: true 
     },
     
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    isDeleted: { type: Boolean, default: false }
 });
 
 // Índice para asegurar que el username sea único globalmente, pero también podrías 
