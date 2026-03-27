@@ -14,7 +14,10 @@ async function checkClientLimit(req, res, next) {
         const tenant = await Tenant.findById(req.user.tenantId);
         if (!tenant) return res.status(404).send({ message: 'Empresa no encontrada' });
 
-        const clientCount = await Client.countDocuments({ tenantId: req.user.tenantId });
+        const clientCount = await Client.countDocuments({ 
+            tenantId: req.user.tenantId,
+            isDeleted: { $ne: true } // No contar clientes eliminados
+        });
 
         const limits = {
             'starter': 10,
