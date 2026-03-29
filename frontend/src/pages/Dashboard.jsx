@@ -4,7 +4,7 @@ import {
   BarChart3, Users, HardHat, Calendar, 
   TrendingUp, ArrowUpRight, CheckCircle, Clock,
   DollarSign, Sparkles, RefreshCcw, Briefcase, 
-  LayoutDashboard, Receipt
+  LayoutDashboard, FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -56,7 +56,7 @@ const Dashboard = () => {
         { 
             label: 'Gastos Totales', 
             value: `${stats?.totalExpenses?.toFixed(2) || 0}€`, 
-            icon: Receipt, 
+            icon: FileText, 
             color: 'text-red-500', 
             bg: 'bg-red-50',
             subtitle: 'Costes operativos registrados'

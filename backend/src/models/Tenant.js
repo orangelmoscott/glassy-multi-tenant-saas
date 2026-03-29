@@ -15,8 +15,8 @@ const tenantSchema = new mongoose.Schema({
     stripeSubscriptionId: { type: String, default: '' },
     planId: { 
         type: String, 
-        enum: ['autonomo', 'pro', 'business'], 
-        default: 'autonomo' 
+        enum: ['autonomo', 'pro', 'business', 'starter'], // Added starter for legacy/trial
+        default: 'starter' 
     },
     planActivo: { type: Boolean, default: false },
     proximoCobro: { type: Date, default: null },

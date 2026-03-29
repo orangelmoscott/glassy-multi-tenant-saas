@@ -18,7 +18,6 @@ const DashboardLayout = ({ children }) => {
 
     React.useEffect(() => {
         if (isOwner && user.plan === 'starter' && user.trialDaysLeft <= 0) {
-            // Un mensaje profesional cada vez que inician sesión
             console.log("Trial expired notice triggered");
         }
     }, [isOwner, user.plan, user.trialDaysLeft]);

@@ -16,22 +16,22 @@ async function checkClientLimit(req, res, next) {
 
         const clientCount = await Client.countDocuments({ 
             tenantId: req.user.tenantId,
-            isDeleted: { $ne: true } // No contar clientes eliminados
+            isDeleted: { $ne: true }
         });
 
         const limits = {
             'starter': 10,
-            'basico': 100,
-            'profesional': Infinity,
-            'empresa': Infinity
+            'autonomo': 40,
+            'pro': 150,
+            'business': Infinity
         };
 
-        const limit = limits[tenant.plan] || 0;
+        const limit = limits[tenant.planId] || limits['starter'];
 
         if (clientCount >= limit) {
             return res.status(403).send({ 
-                message: 'Límite de clientes alcanzado', 
-                currentPlan: tenant.plan,
+                message: 'Límite de clientes alcanzado para tu plan actual', 
+                currentPlan: tenant.planId,
                 limit: limit,
                 upgradeSuggested: true
             });
@@ -49,9 +49,9 @@ async function checkClientLimit(req, res, next) {
 async function requireProfessionalPlan(req, res, next) {
     try {
         const tenant = await Tenant.findById(req.user.tenantId);
-        if (['starter', 'basico'].includes(tenant.plan)) {
+        if (['starter', 'autonomo'].includes(tenant.planId)) {
             return res.status(403).send({ 
-                message: 'Funcionalidad exclusiva del Plan Profesional', 
+                message: 'Funcionalidad exclusiva de Planes Superiores (Pro o Business)', 
                 upgradeSuggested: true 
             });
         }
@@ -72,9 +72,9 @@ async function checkTrialStatus(req, res, next) {
         const created = new Date(tenant.createdAt);
         const diff = now - created;
 
-        if (tenant.plan === 'starter' && diff > trialDuration) {
+        if (tenant.planId === 'starter' && diff > trialDuration) {
             return res.status(403).send({ 
-                message: 'Tu periodo de prueba de 7 días ha expirado.', 
+                message: 'Tu periodo de prueba de 7 días ha expirado. Suscríbete a un plan para continuar.', 
                 trialExpired: true,
                 upgradeSuggested: true 
             });

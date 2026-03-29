@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle, Shield, Zap, Layout, ArrowRight, UserPlus, FileText, Calendar } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const LandingPage = () => {
+  const [searchParams] = useSearchParams();
   const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
   const isLoggedIn = !!user.token;
 
@@ -19,8 +20,8 @@ const LandingPage = () => {
             <span className="text-2xl font-bold tracking-tight text-slate-800">Glassy</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-slate-600 font-medium">
-            <Link to="#features" className="hover:text-blue-600 transition-colors">Funcionalidades</Link>
-            <Link to="#pricing" className="hover:text-blue-600 transition-colors">Precios</Link>
+            <a href="#features" className="hover:text-blue-600 transition-colors">Funcionalidades</a>
+            <a href="#pricing" className="hover:text-blue-600 transition-colors">Precios</a>
             <Link to="/login" className="hover:text-blue-600 transition-colors">Iniciar Sesión</Link>
             <Link to="/register">
                 <button className="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition-all hover:scale-105 shadow-md shadow-blue-200">
@@ -66,9 +67,9 @@ const LandingPage = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-wrap justify-center gap-4 mb-20"
           >
-            <Link to="/register">
+            <Link to="/register?plan=autonomo">
                 <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-slate-800 transition-all hover:-translate-y-1 shadow-xl">
-                Prueba Gratuita 14 días <ArrowRight size={20} />
+                Prueba Gratuita 7 días <ArrowRight size={20} />
                 </button>
             </Link>
             <Link to="/register">

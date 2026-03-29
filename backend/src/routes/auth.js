@@ -25,8 +25,8 @@ router.post('/register-company', async (req, res) => {
             nif,
             email,
             phone: phone || '',
-            plan: plan || 'starter',
-            subscriptionStatus: 'trial' // Empieza en periodo de prueba de 14 días (ejemplo)
+            planId: 'starter',
+            subscriptionStatus: 'trial'
         });
         await tenant.save();
 
@@ -94,8 +94,8 @@ router.post('/login', async (req, res) => {
             role: user.role,
             companyName: user.tenantId.name,
             tenantId: user.tenantId._id,
-            plan: user.tenantId.plan,
-            trialDaysLeft: user.tenantId.plan === 'starter' ? daysLeft : null,
+            plan: user.tenantId.planId,
+            trialDaysLeft: user.tenantId.planId === 'starter' ? daysLeft : null,
             userId: user._id
         });
 

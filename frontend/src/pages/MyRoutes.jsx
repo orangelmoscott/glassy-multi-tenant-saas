@@ -111,8 +111,8 @@ const MyRoutes = () => {
             <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 pb-10 px-4 pt-10">
                 {/* Perfil del Operario */}
                 <div className="bg-white p-6 md:p-8 rounded-[30px] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex items-center gap-5">
-                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-blue-200">
+                    <div className="flex items-center gap-4 md:gap-5">
+                        <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-blue-200">
                             {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username?.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -242,14 +242,14 @@ const MyRoutes = () => {
                             className="bg-white w-full h-full md:h-auto md:max-w-3xl md:rounded-[50px] overflow-hidden flex flex-col shadow-3xl"
                         >
                             {/* Modal Header */}
-                            <div className="p-6 md:p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between bg-slate-50/50 gap-4">
-                                <div className="space-y-1">
+                            <div className="p-6 md:p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between bg-slate-50/50 gap-4 relative">
+                                <div className="space-y-1 pr-10 md:pr-0">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusInfo(selectedJob.status).color}`}>
                                             {getStatusInfo(selectedJob.status).label}
                                         </span>
                                     </div>
-                                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight tracking-tight uppercase">{selectedJob.clientId?.companyName}</h2>
+                                    <h2 className="text-xl md:text-3xl font-black text-slate-900 leading-tight tracking-tight uppercase break-words">{selectedJob.clientId?.companyName}</h2>
                                     <p className="text-slate-500 text-sm font-bold flex items-start md:items-center gap-2"><MapPin size={18} className="text-blue-500 shrink-0 mt-0.5 md:mt-0" /> {selectedJob.clientId?.address}</p>
                                 </div>
                                 <button onClick={() => setSelectedJob(null)} className="absolute top-6 right-6 md:relative md:top-auto md:right-auto p-3 md:p-4 bg-white text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">
@@ -260,10 +260,10 @@ const MyRoutes = () => {
                              {/* Job Details */}
                              <div className="p-6 md:p-10 space-y-8 md:space-y-10 flex-1 overflow-y-auto">
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                       <div className="p-6 bg-slate-900 text-white rounded-3xl border border-slate-800 flex items-center justify-between col-span-1 md:col-span-2 shadow-xl">
-                                           <div>
+                                       <div className="p-6 bg-slate-900 text-white rounded-3xl border border-slate-800 flex items-center justify-between col-span-1 md:col-span-2 shadow-xl gap-4">
+                                           <div className="overflow-hidden">
                                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 opacity-70">Ubicación Navegación</p>
-                                              <p className="text-lg font-bold truncate max-w-[300px]">{selectedJob.clientId?.address}</p>
+                                              <p className="text-base md:text-lg font-bold truncate w-full">{selectedJob.clientId?.address}</p>
                                            </div>
                                            <a 
                                               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedJob.clientId?.address)}`}
@@ -272,17 +272,17 @@ const MyRoutes = () => {
                                            ><MapPin size={24}/></a>
                                        </div>
 
-                                       <a href={`tel:${selectedJob.clientId?.phone}`} className="p-6 bg-blue-50 rounded-3xl border border-blue-100 flex items-center gap-5 hover:bg-blue-100 transition-all group">
-                                           <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><Phone size={24} /></div>
-                                           <div>
+                                       <a href={`tel:${selectedJob.clientId?.phone}`} className="p-6 bg-blue-50 rounded-3xl border border-blue-100 flex items-center gap-4 md:gap-5 hover:bg-blue-100 transition-all group overflow-hidden">
+                                           <div className="w-12 h-12 shrink-0 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform"><Phone size={24} /></div>
+                                           <div className="min-w-0">
                                               <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-0.5">Contactar Ahora</p>
                                               <p className="text-lg font-black text-blue-800">{selectedJob.clientId?.phone || 'Sin teléfono'}</p>
                                            </div>
                                        </a>
 
-                                       <div className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center gap-5">
-                                            <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400"><Clock size={24} /></div>
-                                            <div>
+                                       <div className="p-6 bg-white border border-slate-100 rounded-3xl flex items-center gap-4 md:gap-5 overflow-hidden">
+                                            <div className="w-12 h-12 shrink-0 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400"><Clock size={24} /></div>
+                                            <div className="min-w-0">
                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5 font-sans">Meta Mensual</p>
                                                <p className="text-lg font-black text-slate-800">{selectedJob.visitsDone || 0} de {selectedJob.expectedVisits || 1} Visitas</p>
                                             </div>

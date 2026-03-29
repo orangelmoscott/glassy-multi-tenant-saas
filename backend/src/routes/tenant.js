@@ -14,7 +14,7 @@ router.get('/my-company', authenticate, async (req, res) => {
         // Cálculo días restantes (Starter)
         const trialLimit = 7 * 24 * 60 * 60 * 1000;
         const diff = new Date() - new Date(tenant.createdAt);
-        tenant.trialDaysLeft = tenant.plan === 'starter' ? Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000))) : null;
+        tenant.trialDaysLeft = tenant.planId === 'starter' ? Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000))) : null;
 
         res.send(tenant);
     } catch (error) {

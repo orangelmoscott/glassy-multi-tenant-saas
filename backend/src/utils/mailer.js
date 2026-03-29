@@ -25,7 +25,7 @@ const sendInvoiceEmail = async (to, subject, htmlContent, pdfBuffer, pdfFilename
         }
 
         await transporter.sendMail({
-            from: `"Gestión SaaS" <${process.env.EMAIL_USER}>`,
+            from: `"Glassy SaaS" <${process.env.EMAIL_USER}>`,
             to,
             subject,
             html: htmlContent,
