@@ -69,22 +69,17 @@ const CompanySettings = () => {
 
     const handlePlanUpdate = async (planId) => {
         try {
-            const res = await axios.patch('https://glassy-backend.onrender.com/tenant/update', { plan: planId }, {
+            // Ya no es un simple patch, es una creación de sesión de pago profesional
+            const res = await axios.post('https://glassy-backend.onrender.com/stripe/create-checkout-session', { planId }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            // Actualizar estado local y localStorage para reflejar el plan en toda la app
-            const updatedTenant = res.data.tenant;
-            setTenant(updatedTenant);
-            
-            const updatedUser = { ...user, plan: updatedTenant.plan };
-            localStorage.setItem('glassy_user', JSON.stringify(updatedUser));
-
-            setSuccess(true);
-            setIsPricingModalOpen(false);
-            setTimeout(() => setSuccess(false), 3000);
+            // Redirigir a Stripe Checkout
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            }
         } catch (err) {
-            setError(err.response?.data?.message || 'Error al actualizar el plan');
+            setError(err.response?.data?.message || 'Error al conectar con la pasarela de pago');
             throw err;
         }
     };

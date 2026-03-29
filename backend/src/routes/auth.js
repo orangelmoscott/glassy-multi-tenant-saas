@@ -19,14 +19,14 @@ router.post('/register-company', async (req, res) => {
             return res.status(400).send({ message: 'Todos los campos básicos son obligatorios.' });
         }
 
-        // 1. Crear la Empresa (Tenant)
+        // 1. Crear la Empresa (Tenant) con el plan seleccionado
         const tenant = new Tenant({
             name: companyName,
             nif,
             email,
             phone: phone || '',
-            planId: 'starter',
-            subscriptionStatus: 'trial'
+            planId: plan || 'starter',
+            subscriptionStatus: plan === 'starter' ? 'trial' : 'incomplete'
         });
         await tenant.save();
 
@@ -95,6 +95,7 @@ router.post('/login', async (req, res) => {
             companyName: user.tenantId.name,
             tenantId: user.tenantId._id,
             plan: user.tenantId.planId,
+            planId: user.tenantId.planId,
             trialDaysLeft: user.tenantId.planId === 'starter' ? daysLeft : null,
             userId: user._id
         });
