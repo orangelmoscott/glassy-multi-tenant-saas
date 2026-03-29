@@ -28,15 +28,16 @@ const app = express();
 const webhookRoutes = require('./src/routes/webhooks');
 
 // ==============================
-// WEBHOOKS STRIPE (Debe ir antes de bodyParser para soportar raw body)
-// ==============================
-app.use('/webhooks', webhookRoutes);
-
-// ==============================
 // CONFIGURACIÓN GLOBAL
 // ==============================
 app.use(cors());
-app.use(bodyParser.json({ limit: '5mb' })); // Permitir logos en Base64 de buen tamaño
+
+// Se declara la ruta antes que cualquier middleware global de JSON
+app.use('/webhooks', webhookRoutes);
+
+// Una vez declarada la ruta de webhooks, habilitamos JSON con límites
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // CONECTAR A LA BASE DE DATOS (Mismo Clúster, Nueva Base de Datos SaaS)
 mongoose.connect(process.env.MONGO_URI_SAAS)
