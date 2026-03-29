@@ -80,60 +80,95 @@ router.post('/:id/send-invoice', authenticate, async (req, res) => {
         const { sendInvoiceEmail } = require('../utils/mailer');
         const fileName = `Factura_${tenant.name.replace(/\s+/g, '_')}_${assignment.invoiceNumber}.pdf`;
         
-        const logoHtml = tenant.logo 
-            ? `<div style="text-align: center; margin-bottom: 30px;"><img src="${tenant.logo}" alt="${tenant.name}" style="max-height: 80px; max-width: 250px;" /></div>` 
-            : `<div style="text-align: center; margin-bottom: 30px;"><h1 style="color: #1e3a8a; margin: 0; font-size: 28px;">${tenant.name}</h1></div>`;
+        let logoHtml = `<div style="text-align: center; margin-bottom: 30px;"><h1 style="color: #1e3a8a; margin: 0; font-size: 28px;">${tenant.name}</h1></div>`;
+        let logoAttachment = null;
+        
+        if (tenant.logo && typeof tenant.logo === 'string') {
+            if (tenant.logo.startsWith('data:image')) {
+                // Flexibly parse base64 to avoid regex failures from newlines or large payloads
+                const prefixMatch = tenant.logo.match(/^data:(image\/\w+);base64,/);
+                if (prefixMatch) {
+                    const contentType = prefixMatch[1];
+                    const base64Data = tenant.logo.slice(prefixMatch[0].length);
+                    const ext = contentType.split('/')[1] || 'png';
+                    
+                    logoAttachment = {
+                        filename: `logo.${ext}`,
+                        content: Buffer.from(base64Data, 'base64'),
+                        cid: 'companyLogo'
+                    };
+                    logoHtml = `<div style="text-align: center; margin-bottom: 30px;"><img src="cid:companyLogo" alt="${tenant.name}" style="max-height: 80px; max-width: 250px;" /></div>`;
+                }
+            } else if (tenant.logo.startsWith('http')) {
+                // Use URL directly if it's hosted elsewhere
+                logoHtml = `<div style="text-align: center; margin-bottom: 30px;"><img src="${tenant.logo}" alt="${tenant.name}" style="max-height: 80px; max-width: 250px;" /></div>`;
+            }
+        }
 
-        const html = `
-        <div style="font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px; color: #334155; line-height: 1.6;">
-            <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
-                <div style="padding: 40px;">
-                    ${logoHtml}
-                    
-                    <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; text-align: center; font-weight: 600;">
-                        Tu factura ya está disponible
-                    </h2>
-                    
-                    <div style="height: 2px; width: 40px; background-color: #3b82f6; margin: 20px auto 30px;"></div>
-                    
-                    <p style="font-size: 16px;">Hola <strong>${assignment.clientId.companyName}</strong>,</p>
-                    
-                    <p style="font-size: 16px; color: #475569;">
-                        Queremos agradecerte por confiar en <strong>${tenant.name}</strong>. Adjunta a este correo encontrarás la factura <strong>#${assignment.invoiceNumber}</strong> correspondiente a los servicios prestados recientemente.
-                    </p>
-                    
-                    <p style="font-size: 16px; color: #475569; margin-bottom: 30px;">
-                        Nuestro compromiso principal es ofrecerte siempre la máxima calidad. Si tienes alguna duda sobre esta factura o sobre cualquiera de nuestros servicios, puedes responder directamente a este correo; estaremos encantados de ayudarte.
-                    </p>
-
-                    <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed #cbd5e1;">
-                        <p style="margin: 0; font-size: 14px; font-weight: 500; color: #64748b;">
-                            📄 El documento oficial en formato PDF se encuentra adjunto.
-                        </p>
-                    </div>
-                </div>
+        const html = `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc;">
+    <div style="font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px; color: #334155; line-height: 1.6;">
+        <!--[if mso]>
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="600"><tr><td align="center" valign="top">
+        <![endif]-->
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);">
+            <div style="padding: 40px;">
+                ${logoHtml}
                 
-                <div style="background-color: #f8fafc; padding: 30px 40px; border-top: 1px solid #e2e8f0; text-align: center;">
-                    <p style="margin: 0; font-size: 15px; font-weight: 600; color: #334155;">Atentamente,</p>
-                    <p style="margin: 5px 0 0; font-size: 15px; color: #3b82f6; font-weight: 600;">El equipo de ${tenant.name}</p>
-                    ${tenant.website ? `<p style="margin: 15px 0 0;"><a href="${tenant.website}" style="color: #64748b; font-size: 12px; text-decoration: none;">${tenant.website}</a></p>` : ''}
-                    <p style="margin: 5px 0 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 20px;">
-                        ESTE ES UN MENSAJE IMPORTANTE
+                <h2 style="color: #0f172a; font-size: 20px; margin-top: 0; text-align: center; font-weight: 600;">
+                    Tu factura ya está disponible
+                </h2>
+                
+                <div style="height: 2px; width: 40px; background-color: #3b82f6; margin: 20px auto 30px;"></div>
+                
+                <p style="font-size: 16px;">Hola <strong>${assignment.clientId.companyName}</strong>,</p>
+                
+                <p style="font-size: 16px; color: #475569;">
+                    Queremos agradecerte por confiar en <strong>${tenant.name}</strong>. Adjunta a este correo encontrarás la factura <strong>#${assignment.invoiceNumber}</strong> correspondiente a los servicios prestados recientemente.
+                </p>
+                
+                <p style="font-size: 16px; color: #475569; margin-bottom: 30px;">
+                    Nuestro compromiso principal es ofrecerte siempre la máxima calidad. Si tienes alguna duda sobre esta factura o sobre cualquiera de nuestros servicios, puedes responder directamente a este correo; estaremos encantados de ayudarte.
+                </p>
+
+                <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed #cbd5e1;">
+                    <p style="margin: 0; font-size: 14px; font-weight: 500; color: #64748b;">
+                        📄 El documento oficial en formato PDF se encuentra adjunto.
                     </p>
                 </div>
             </div>
-            <div style="text-align: center; padding-top: 20px;">
-                <p style="font-size: 12px; color: #94a3b8; margin: 0;">Enviado a través de <strong>Glassy</strong> SaaS.</p>
+            
+            <div style="background-color: #f8fafc; padding: 30px 40px; border-top: 1px solid #e2e8f0; text-align: center;">
+                <p style="margin: 0; font-size: 15px; font-weight: 600; color: #334155;">Atentamente,</p>
+                <p style="margin: 5px 0 0; font-size: 15px; color: #3b82f6; font-weight: 600;">El equipo de ${tenant.name}</p>
+                ${tenant.website ? `<p style="margin: 15px 0 0;"><a href="${tenant.website}" style="color: #64748b; font-size: 12px; text-decoration: none;">${tenant.website}</a></p>` : ''}
+                <p style="margin: 5px 0 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 20px;">
+                    ESTE ES UN MENSAJE IMPORTANTE
+                </p>
             </div>
         </div>
-        `;
+        <!--[if mso]>
+        </td></tr></table>
+        <![endif]-->
+        <div style="text-align: center; padding-top: 20px;">
+            <p style="font-size: 12px; color: #94a3b8; margin: 0;">Enviado a través de <strong>Glassy</strong> SaaS.</p>
+        </div>
+    </div>
+</body>
+</html>`;
 
         await sendInvoiceEmail(
             assignment.clientId.email, 
             `Factura de Servicios - ${tenant.name}`, 
             html, 
             pdfBuffer, 
-            fileName
+            fileName,
+            logoAttachment
         );
 
         res.send({ message: 'Factura enviada al email del cliente exitosamente.' });
