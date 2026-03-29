@@ -17,10 +17,10 @@ const DashboardLayout = ({ children }) => {
     const isOwner = user.role === 'owner' || user.role === 'admin';
 
     React.useEffect(() => {
-        if (isOwner && user.plan === 'starter' && user.trialDaysLeft <= 0) {
+        if (isOwner && (user.plan === 'starter' || user.planId === 'starter') && user.trialDaysLeft <= 0) {
             console.log("Trial expired notice triggered");
         }
-    }, [isOwner, user.plan, user.trialDaysLeft]);
+    }, [isOwner, user.plan, user.planId, user.trialDaysLeft]);
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'] },
@@ -112,7 +112,7 @@ const DashboardLayout = ({ children }) => {
                             </button>
                         </div>
                         
-                        {user.plan === 'starter' && (
+                        {isOwner && (user.plan === 'starter' || user.planId === 'starter') && (
                             <div className={`mt-6 p-4 rounded-2xl border shadow-sm transition-colors ${user.trialDaysLeft <= 0 ? 'bg-red-50 border-red-200' : 'bg-gradient-to-tr from-amber-50 to-orange-50 border-amber-100/50'}`}>
                                 <div className={`flex items-center gap-2 mb-2 font-extrabold text-[10px] uppercase tracking-tighter ${user.trialDaysLeft <= 0 ? 'text-red-700' : 'text-amber-700'}`}>
                                     <Sparkles size={14} className={user.trialDaysLeft > 0 ? "animate-pulse" : ""} /> {user.trialDaysLeft <= 0 ? 'PERIODO EXPIRADO' : 'Periodo de Prueba'}
@@ -161,7 +161,7 @@ const DashboardLayout = ({ children }) => {
             </main>
 
             {/* Trial Expiry Overlay (Management only) */}
-            {isOwner && user.plan === 'starter' && user.trialDaysLeft <= 0 && location.pathname !== '/app/settings' && (
+            {isOwner && (user.plan === 'starter' || user.planId === 'starter') && user.trialDaysLeft <= 0 && location.pathname !== '/app/settings' && (
                 <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
