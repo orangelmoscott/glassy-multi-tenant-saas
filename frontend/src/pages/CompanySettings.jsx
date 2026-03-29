@@ -23,7 +23,43 @@ const CompanySettings = () => {
 
     useEffect(() => {
         fetchSettings();
+        checkPaymentStatus();
     }, []);
+    
+    // Auto-Heal: Sincronizar con Stripe si venimos de un pago
+    const checkPaymentStatus = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session_id');
+        const status = params.get('status');
+        
+        if (status === 'success' && sessionId) {
+            try {
+                const res = await axios.post('https://glassy-backend.onrender.com/tenant/sync-subscription', 
+                    { sessionId },
+                    { headers: { Authorization: `Bearer ${token}` }}
+                );
+                
+                // Actualizar localStorage para desbloquear rutas de inmediato
+                const updatedTenant = res.data.tenant;
+                const currentUser = JSON.parse(localStorage.getItem('glassy_user') || '{}');
+                const newUser = { 
+                    ...currentUser, 
+                    plan: updatedTenant.planId, 
+                    planId: updatedTenant.planId,
+                    planActivo: true 
+                };
+                localStorage.setItem('glassy_user', JSON.stringify(newUser));
+                
+                // Refrescar estado local
+                setTenant(updatedTenant);
+                setSuccess(true);
+                // Limpiar URL
+                window.history.replaceState({}, document.title, "/app/settings");
+            } catch (err) {
+                console.error("Error al sincronizar pago:", err);
+            }
+        }
+    };
 
     const fetchSettings = async () => {
         try {

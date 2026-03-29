@@ -96,6 +96,7 @@ router.post('/login', async (req, res) => {
             tenantId: user.tenantId._id,
             plan: user.tenantId.planId,
             planId: user.tenantId.planId,
+            planActivo: user.tenantId.planActivo,
             trialDaysLeft: user.tenantId.planId === 'starter' ? daysLeft : null,
             userId: user._id
         });
