@@ -10,16 +10,22 @@ const tenantSchema = new mongoose.Schema({
     bankAccount: { type: String, default: '' }, // IBAN o cuenta para facturas
     website: { type: String, default: '' },
     
-    // Configuración SaaS
+    // Configuración SaaS y Facturación (Stripe)
+    stripeCustomerId: { type: String, default: '' },
+    stripeSubscriptionId: { type: String, default: '' },
+    planId: { 
+        type: String, 
+        enum: ['autonomo', 'pro', 'business'], 
+        default: 'autonomo' 
+    },
+    planActivo: { type: Boolean, default: false },
+    proximoCobro: { type: Date, default: null },
+    canceladoEn: { type: Date, default: null },
+
     subscriptionStatus: { 
         type: String, 
-        enum: ['active', 'inactive', 'past_due', 'trial'], 
+        enum: ['active', 'inactive', 'past_due', 'trial', 'canceled'], 
         default: 'trial' 
-    },
-    plan: { 
-        type: String, 
-        enum: ['starter', 'basico', 'profesional', 'empresa'], 
-        default: 'starter' 
     },
     
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

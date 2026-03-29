@@ -10,20 +10,26 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendInvoiceEmail = async (to, subject, htmlContent, pdfBuffer, pdfFilename) => {
+const sendInvoiceEmail = async (to, subject, htmlContent, pdfBuffer, pdfFilename, logoAttachment = null) => {
     try {
+        const attachments = [
+            {
+                filename: pdfFilename,
+                content: pdfBuffer,
+                contentType: 'application/pdf'
+            }
+        ];
+
+        if (logoAttachment) {
+            attachments.push(logoAttachment);
+        }
+
         await transporter.sendMail({
             from: `"Gestión SaaS" <${process.env.EMAIL_USER}>`,
             to,
             subject,
             html: htmlContent,
-            attachments: [
-                {
-                    filename: pdfFilename,
-                    content: pdfBuffer,
-                    contentType: 'application/pdf'
-                }
-            ]
+            attachments
         });
         return true;
     } catch (error) {

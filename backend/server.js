@@ -24,6 +24,13 @@ const expenseRoutes = require('./src/routes/expenses');
 
 const app = express();
 
+const webhookRoutes = require('./src/routes/webhooks');
+
+// ==============================
+// WEBHOOKS STRIPE (Debe ir antes de bodyParser para soportar raw body)
+// ==============================
+app.use('/webhooks', webhookRoutes);
+
 // ==============================
 // CONFIGURACIÓN GLOBAL
 // ==============================

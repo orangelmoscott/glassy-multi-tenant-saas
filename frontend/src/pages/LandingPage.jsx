@@ -88,53 +88,62 @@ const LandingPage = () => {
             <h2 className="text-4xl font-extrabold text-slate-900 mb-4">Planes diseñados para crecer</h2>
             <p className="text-slate-600 mb-16">Sin costos ocultos. Paga solo por lo que necesitas.</p>
             
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                {/* Básico */}
-                <div className="p-8 rounded-3xl border border-slate-100 bg-slate-50/50 flex flex-col text-left">
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">Básico</h3>
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mt-12">
+                {/* Autónomo */}
+                <div className="p-8 rounded-3xl border border-slate-100 bg-slate-50 flex flex-col text-left hover:shadow-lg transition-all">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Plan Autónomo</h3>
+                    <p className="text-sm text-slate-500 mb-4 h-10">Para cristaleros independientes.</p>
                     <div className="flex items-baseline gap-1 mb-6">
                         <span className="text-4xl font-extrabold text-slate-900">29€</span>
                         <span className="text-slate-500">/ mes</span>
                     </div>
-                    <ul className="space-y-4 mb-8 flex-1 text-slate-600">
-                        <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Hasta 100 Clientes</li>
-                        <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Facturas PDF</li>
+                    <ul className="space-y-4 mb-8 flex-1 text-slate-600 text-sm">
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Hasta 40 Clientes</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>1 Cristalero Activo</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>1 Ruta Diaria</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Facturación Automática por Email</span></li>
                     </ul>
-                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=basico"} className="w-full">
-                        <button className="w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-white transition-all text-sm">Empezar ahora</button>
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=autonomo"} className="w-full">
+                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white transition-all text-slate-700">Empezar ahora</button>
                     </Link>
                 </div>
 
-                {/* Profesional */}
-                <div className="p-8 rounded-3xl border-2 border-blue-500 bg-white shadow-2xl shadow-blue-100 flex flex-col text-left relative overflow-hidden scale-105">
-                    <div className="absolute top-0 right-0 bg-blue-500 text-white px-4 py-1 text-xs font-bold rounded-bl-xl uppercase tracking-widest">Recomendado</div>
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">Profesional</h3>
+                {/* Pro */}
+                <div className="p-8 rounded-3xl border-2 border-blue-500 bg-white shadow-2xl shadow-blue-100/50 flex flex-col text-left relative overflow-hidden md:scale-105 z-10">
+                    <div className="absolute top-0 right-0 bg-gradient-to-l from-blue-600 to-cyan-500 text-white px-4 py-1.5 text-[10px] font-bold rounded-bl-xl uppercase tracking-widest shadow-sm">El más popular</div>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Plan Pro</h3>
+                    <p className="text-sm text-slate-500 mb-4 h-10">Para pequeñas empresas en crecimiento.</p>
                     <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-3xl font-extrabold text-slate-900">49€</span>
-                        <span className="text-slate-500 whitespace-nowrap">/ mes</span>
+                        <span className="text-5xl font-extrabold text-slate-900">49€</span>
+                        <span className="text-slate-500 font-medium whitespace-nowrap">/ mes</span>
                     </div>
-                    <ul className="space-y-4 mb-8 flex-1 text-slate-600 font-medium">
-                        <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Clientes Ilimitados</li>
-                        <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Rutas para Personal</li>
+                    <ul className="space-y-4 mb-8 flex-1 text-slate-700 font-medium text-sm">
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Hasta 150 Clientes</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>5 Cristaleros Activos</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>5 Rutas Diarias</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Dashboard Multi-trabajador</span></li>
                     </ul>
-                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=profesional"} className="w-full">
-                        <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200">Empezar ahora</button>
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=pro"} className="w-full">
+                        <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200/50 active:scale-95">Comenzar Pro</button>
                     </Link>
                 </div>
 
-                {/* Empresa */}
-                <div className="p-8 rounded-3xl border border-slate-100 bg-slate-50/50 flex flex-col text-left">
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">Empresa</h3>
+                {/* Business */}
+                <div className="p-8 rounded-3xl border border-slate-100 bg-slate-50 flex flex-col text-left hover:shadow-lg transition-all">
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Plan Business</h3>
+                    <p className="text-sm text-slate-500 mb-4 h-10">Para empresas consolidadas.</p>
                     <div className="flex items-baseline gap-1 mb-6">
-                        <span className="text-3xl font-extrabold text-slate-900">99€</span>
+                        <span className="text-4xl font-extrabold text-slate-900">99€</span>
                         <span className="text-slate-500">/ mes</span>
                     </div>
-                    <ul className="space-y-4 mb-8 flex-1 text-slate-600">
-                        <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Todo lo Pro</li>
-                        <li className="flex items-center gap-2"><CheckCircle size={18} className="text-blue-500"/> Soporte 24/7</li>
+                    <ul className="space-y-4 mb-8 flex-1 text-slate-600 text-sm">
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Clientes Ilimitados</strong></span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Cristaleros Ilimitados</strong></span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Rutas Ilimitadas</strong></span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span>Soporte prioritario y acceso total</span></li>
                     </ul>
-                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=empresa"} className="w-full">
-                        <button className="w-full py-3 rounded-xl border border-slate-200 font-bold hover:bg-white transition-all">Empezar ahora</button>
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=business"} className="w-full">
+                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white text-slate-700 transition-all">Contactar Soporte</button>
                     </Link>
                 </div>
             </div>
