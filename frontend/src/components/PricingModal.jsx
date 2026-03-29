@@ -21,35 +21,35 @@ const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
 
   const plans = [
     {
-        id: 'basico',
-        name: 'Básico',
+        id: 'autonomo',
+        name: 'Plan Autónomo',
         price: '29€',
-        description: 'Ideal para autónomos operando en solitario.',
-        features: ['Hasta 100 Clientes', 'Facturación PDF', 'Soporte Email', 'Exportar Datos'],
-        cta: 'Suscribirse al Básico',
+        description: 'Ideal para operarios independientes.',
+        features: ['Hasta 40 Clientes', '1 Cristalero / 1 Ruta', 'Facturación Automática', 'IVA 21% Desglosado'],
+        cta: 'Suscribirse al Autónomo',
         color: 'from-blue-600 to-indigo-500',
-        current: currentPlan === 'basico'
+        current: currentPlan === 'autonomo'
     },
     {
-        id: 'profesional',
-        name: 'Profesional',
+        id: 'pro',
+        name: 'Plan Pro',
         price: '49€',
         description: 'Perfecto para equipos en crecimiento.',
-        features: ['Clientes Ilimitados', 'Rutas de Cristaleros', 'Firma Digital', 'Logo Personalizado'],
-        cta: 'Obtener Profesional',
+        features: ['Hasta 150 Clientes', '5 Cristaleros / 5 Rutas', 'Gestión Avanzada', 'Soporte Premium'],
+        cta: 'Obtener Plan Pro',
         color: 'from-indigo-600 to-cyan-500',
         highlight: true,
-        current: currentPlan === 'profesional'
+        current: currentPlan === 'pro'
     },
     {
-        id: 'empresa',
-        name: 'Empresa',
+        id: 'business',
+        name: 'Plan Business',
         price: '99€',
-        description: 'Para flotas y multi-sedes.',
-        features: ['Todo lo Pro', 'API de Integración', 'Múltiples Sedes', 'Soporte 24/7 Personal'],
-        cta: 'Contactar Sales',
+        description: 'Para flotas y grandes empresas.',
+        features: ['Clientes Ilimitados', 'Cristaleros Ilimitados', 'Todas las Funciones', 'Soporte 24/7'],
+        cta: 'Obtener Plan Business',
         color: 'from-slate-900 to-slate-700',
-        current: currentPlan === 'empresa'
+        current: currentPlan === 'business'
     }
   ];
 

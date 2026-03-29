@@ -149,7 +149,7 @@ const CompanySettings = () => {
                             <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-600/20 rounded-full blur-2xl group-hover:bg-blue-400/30 transition-all"></div>
                             <div className="flex flex-col h-full relative z-10">
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Suscripción Activa</span>
-                                <h3 className="text-2xl font-extrabold capitalize mb-6">{tenant.plan}</h3>
+                                <h3 className="text-2xl font-extrabold capitalize mb-6">{tenant.planId || 'Starter'}</h3>
                                 
                                 <div className="space-y-3 mb-8">
                                     <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
@@ -158,7 +158,7 @@ const CompanySettings = () => {
                                     <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
                                         <FileBadge size={14} className="text-blue-400" /> Facturación ilimitada
                                     </div>
-                                    {tenant.plan === 'starter' && (
+                                    {['starter', 'trial'].includes(tenant.planId) && (
                                         <div className="mt-4 p-3 bg-amber-500/20 rounded-xl border border-amber-500/30 flex items-center gap-3">
                                             <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-slate-900">
                                                 <Sparkles size={16} />
@@ -279,7 +279,7 @@ const CompanySettings = () => {
                 <PricingModal 
                     isOpen={isPricingModalOpen} 
                     onClose={() => setIsPricingModalOpen(false)} 
-                    currentPlan={tenant.plan}
+                    currentPlan={tenant.planId || 'starter'}
                     onSelectPlan={handlePlanUpdate}
                 />
             </div>
