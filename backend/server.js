@@ -19,6 +19,8 @@ const clientRoutes = require('./src/routes/clients');
 const tenantRoutes = require('./src/routes/tenant');
 const assignmentRoutes = require('./src/routes/assignments');
 const userRoutes = require('./src/routes/users');
+const dashboardRoutes = require('./src/routes/dashboard');
+const expenseRoutes = require('./src/routes/expenses');
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use('/clients', clientRoutes);
 app.use('/tenant', tenantRoutes);
 app.use('/assignments', assignmentRoutes);
 app.use('/users', userRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/expenses', expenseRoutes);
 
 // Ruta de Salud del SaaS
 app.get('/', (req, res) => {

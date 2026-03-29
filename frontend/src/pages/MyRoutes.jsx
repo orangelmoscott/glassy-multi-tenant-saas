@@ -3,17 +3,20 @@ import axios from 'axios';
 import SignatureCanvas from 'react-signature-canvas';
 import { 
   Calendar, MapPin, Phone, Info, CheckCircle, 
-  X, PenTool, Save, Trash2, ChevronRight, Clock, FileText
+  X, PenTool, Save, Trash2, ChevronRight, Clock, FileText,
+  RefreshCcw, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 
 const MyRoutes = () => {
     const [assignments, setAssignments] = useState([]);
+    const [history, setHistory] = useState([]);
+    const [activeTab, setActiveTab] = useState('pendientes');
     const [loading, setLoading] = useState(true);
     const [selectedJob, setSelectedJob] = useState(null);
     const [isSigning, setIsSigning] = useState(false);
-    const [currentExtras, setCurrentExtras] = useState([]); // List of newly added extras for THIS visit
+    const [currentExtras, setCurrentExtras] = useState([]); 
     const [newExtra, setNewExtra] = useState({ description: '', price: '' });
     const sigPad = useRef({});
 
@@ -22,6 +25,7 @@ const MyRoutes = () => {
 
     useEffect(() => {
         fetchMyAssignments();
+        fetchMyHistory();
     }, []);
 
     const fetchMyAssignments = async () => {
@@ -34,6 +38,17 @@ const MyRoutes = () => {
         } catch (err) {
             console.error(err);
             setLoading(false);
+        }
+    };
+
+    const fetchMyHistory = async () => {
+        try {
+            const res = await axios.get('https://glassy-backend.onrender.com/assignments/my-history', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setHistory(res.data);
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -110,77 +125,110 @@ const MyRoutes = () => {
                     </div>
                 </div>
 
-                {/* Mobile Friendly Header */}
-                <div className="bg-slate-900 p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl md:text-3xl font-extrabold flex items-center gap-3">
-                                <Calendar className="text-blue-400" size={24} /> Mi Ruta Actual
-                            </h1>
-                            <p className="text-slate-400 mt-1 font-medium text-sm">Pendientes para hoy: <span className="text-white font-bold">{assignments.length}</span> servicios.</p>
-                        </div>
-                        <div className="bg-white/10 backdrop-blur p-4 rounded-2xl flex items-center gap-3 border border-white/10">
-                            <Clock className="text-blue-400" size={20} />
-                            <span className="font-bold text-sm">{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'short' })}</span>
-                        </div>
-                    </div>
+                {/* Tab Selector */}
+                <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-fit mx-auto md:mx-0">
+                    <button 
+                        onClick={() => setActiveTab('pendientes')}
+                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'pendientes' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Pendientes
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('historial')}
+                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'historial' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Historial
+                    </button>
                 </div>
 
-                {/* Assignment List */}
-                <div className="space-y-4">
-                    {loading ? (
-                        [1,2].map(i => <div key={i} className="h-28 bg-slate-50 border border-slate-100 rounded-[35px] animate-pulse"></div>)
-                    ) : (
-                        assignments.map(job => (
-                            <motion.div 
-                                key={job._id}
-                                layout
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-white p-6 rounded-[35px] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all cursor-pointer active:scale-[0.98] relative overflow-hidden"
-                                onClick={() => {
-                                    setSelectedJob(job);
-                                    setCurrentExtras([]);
-                                }}
-                            >
-                                <div className="flex items-center gap-4 md:gap-6 relative z-10">
-                                    <div className="w-14 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0 shadow-sm">
-                                        <MapPin size={24} />
-                                    </div>
-                                    <div className="overflow-hidden">
-                                        <h3 className="font-bold text-slate-800 text-lg truncate group-hover:text-blue-600 transition-colors uppercase tracking-tight">{job.clientId?.companyName}</h3>
-                                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mt-1.5">
-                                            {job.progressInfo && (
-                                                <span className="text-[10px] font-black w-fit px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 uppercase tracking-widest border border-blue-100 flex items-center gap-1.5">
-                                                    <RefreshCcw size={10}/> {job.progressInfo.text}
-                                                </span>
-                                            )}
-                                            <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-[0.1em] border ${getStatusInfo(job.status).color}`}>
-                                                {getStatusInfo(job.status).label}
-                                            </span>
-                                            <span className="text-[11px] font-bold text-slate-400 truncate max-w-[200px] flex items-center gap-1">
-                                                <MapPin size={10} /> {job.clientId?.address}
-                                            </span>
+                {activeTab === 'pendientes' ? (
+                    <div className="space-y-6">
+                        {loading ? (
+                            [1,2].map(i => <div key={i} className="h-28 bg-slate-50 border border-slate-100 rounded-[35px] animate-pulse"></div>)
+                        ) : assignments.length === 0 ? (
+                            <div className="bg-white p-12 rounded-[40px] text-center border border-dashed border-slate-200">
+                                <CheckCircle className="mx-auto text-emerald-100 mb-4" size={64} />
+                                <h3 className="text-xl font-black text-slate-800 uppercase italic">¡Todo al día!</h3>
+                                <p className="text-slate-400 font-medium mt-2">No tienes servicios pendientes para gestionar.</p>
+                            </div>
+                        ) : (
+                            assignments.map((job) => (
+                                <motion.div 
+                                    key={job._id}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden relative group hover:border-blue-200 transition-all cursor-pointer"
+                                    onClick={() => setSelectedJob(job)}
+                                >
+                                    <div className="p-8">
+                                        <div className="flex flex-col md:flex-row justify-between gap-6">
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusInfo(job.status).color}`}>
+                                                        {getStatusInfo(job.status).label}
+                                                    </span>
+                                                    {job.progressInfo && (
+                                                        <span className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                                                            {job.progressInfo.text}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none mb-2">{job.clientId?.companyName}</h3>
+                                                    <div className="flex items-center gap-2 text-slate-400 font-bold text-sm">
+                                                        <MapPin size={16} className="text-blue-500" />
+                                                        {job.clientId?.address}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col md:items-end justify-center">
+                                                <div className="bg-blue-600 text-white px-8 py-4 rounded-[20px] font-black flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95">
+                                                    Gestionar Visita <ChevronRight size={20} />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                                    <ChevronRight size={18} />
-                                </div>
-                            </motion.div>
-                        ))
-                    )}
-                    {assignments.length === 0 && !loading && (
-                        <div className="p-20 text-center bg-white rounded-[50px] border-2 border-dashed border-slate-100">
-                             <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
-                                <CheckCircle size={40} />
-                             </div>
-                             <h3 className="text-xl font-bold text-slate-800">¡Ruta finalizada!</h3>
-                             <p className="text-slate-400 font-medium mt-2">No tienes servicios pendientes para gestionar.</p>
-                        </div>
-                    )}
-                </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {history.length === 0 ? (
+                            <div className="bg-white p-12 rounded-[40px] text-center border border-dashed border-slate-200">
+                                <Clock className="mx-auto text-slate-100 mb-4" size={64} />
+                                <p className="text-slate-400 font-bold italic uppercase tracking-widest text-xs">No hay historial reciente.</p>
+                            </div>
+                        ) : (
+                            history.map((job) => (
+                                <motion.div 
+                                    key={job._id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="bg-white/60 p-6 rounded-[30px] border border-slate-100 flex items-center justify-between opacity-80"
+                                >
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center">
+                                            <CheckCircle size={24} />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-slate-800 uppercase text-sm tracking-tight">{job.clientId?.companyName}</h4>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                                Finalizado el {new Date(job.updatedAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs font-black text-slate-900">{job.price?.toFixed(2)}€</p>
+                                        {job.extraServices?.length > 0 && (
+                                            <p className="text-[9px] text-emerald-600 font-bold">+{job.extraServices.reduce((s, e) => s + e.price, 0).toFixed(2)}€ Extras</p>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Signature & Detail Modal */}
@@ -241,7 +289,7 @@ const MyRoutes = () => {
                                        </div>
                                   </div>
 
-                                  {/* TRABAJOS EXTRA - REQUERIMIENTO USER */}
+                                  {/* TRABAJOS EXTRA */}
                                   <div className="p-8 bg-blue-50/30 rounded-[40px] border-2 border-dashed border-blue-200/50 space-y-6">
                                         <div className="flex items-center justify-between">
                                             <h3 className="text-sm font-black text-blue-800 uppercase tracking-widest flex items-center gap-2">
@@ -282,17 +330,16 @@ const MyRoutes = () => {
                                             <div className="space-y-2 pt-2">
                                                 {currentExtras.map((ex, idx) => (
                                                     <div key={idx} className="flex justify-between items-center bg-blue-100/50 p-4 rounded-2xl border border-blue-200">
-                                                        <span className="font-bold text-blue-900 flex items-center gap-2 text-sm"><CheckCircle size={14}/> {ex.description}</span>
                                                         <div className="flex items-center gap-3">
-                                                            <span className="font-black text-blue-900">+{ex.price}€</span>
-                                                            <button onClick={() => setCurrentExtras(currentExtras.filter((_, i) => i !== idx))}><Trash2 size={16} className="text-red-400 hover:text-red-500"/></button>
+                                                           <span className="text-blue-800 font-bold text-xs uppercase">{ex.description}</span>
+                                                           <span className="text-blue-500 font-black text-xs">{ex.price}€</span>
                                                         </div>
+                                                        <button 
+                                                            onClick={() => setCurrentExtras(currentExtras.filter((_, i) => i !== idx))}
+                                                            className="text-red-400 hover:text-red-600 transition-colors"
+                                                        ><Trash2 size={16}/></button>
                                                     </div>
                                                 ))}
-                                                <div className="text-right pr-2">
-                                                    <p className="text-xs font-black text-blue-600 uppercase tracking-widest mt-2">Total Extra para Facturar: +{currentExtras.reduce((s, c) => s + c.price, 0).toFixed(2)}€</p>
-                                                </div>
-                                            </div>
                                         )}
                                   </div>
 
@@ -353,4 +400,4 @@ const MyRoutes = () => {
     );
 };
 
-export default MyRoutes;tes;
+export default MyRoutes;

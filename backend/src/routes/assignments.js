@@ -157,6 +157,29 @@ router.get('/my', authenticate, async (req, res) => {
 });
 
 /**
+ * GET | Historial de asignaciones completadas (Acceso para Cristaleros)
+ */
+router.get('/my-history', authenticate, async (req, res) => {
+    try {
+        const assignments = await Assignment.find({ 
+            tenantId: req.user.tenantId, 
+            workerId: req.user.userId,
+            status: 'completado',
+            isDeleted: false
+        })
+        .populate('clientId', 'companyName address phone')
+        .sort({ updatedAt: -1 })
+        .limit(20)
+        .lean();
+
+        res.send(assignments);
+    } catch (error) {
+        res.status(500).send({ message: 'Error al obtener tu historial' });
+    }
+});
+
+
+/**
  * POST | Crear nueva asignación (Ruta Mensual/Servicio único)
  */
 router.post('/', authenticate, checkTrialStatus, async (req, res) => {

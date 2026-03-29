@@ -5,6 +5,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './pages/LandingPage';
 import RegisterCompany from './pages/RegisterCompany';
 import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Expenses from './pages/Expenses';
 import Clients from './pages/Clients';
 import CompanySettings from './pages/CompanySettings';
 import Assignments from './pages/Assignments';
@@ -38,13 +40,14 @@ function App() {
         
         {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
         {/* He unificado /app y /app/dashboard para que NUNCA vuelvas a landing al loguearte */}
-        <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
-        <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
+        <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
+        <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
         
         <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
         <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
         <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
         <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
+        <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Expenses /></ProtectedRoute>} />
         <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Billing /></ProtectedRoute>} />
 
         {/* Canales de Campo (Operarios) */}

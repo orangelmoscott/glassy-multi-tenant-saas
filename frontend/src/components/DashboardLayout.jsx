@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Users, Calendar, BarChart3, Settings, 
   LogOut, LayoutDashboard, Menu, X, 
-  CreditCard, HardHat, FileText, MapPin, Sparkles
+  CreditCard, HardHat, FileText, MapPin, Sparkles, Receipt, Briefcase
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,6 +30,7 @@ const DashboardLayout = ({ children }) => {
         { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['owner', 'admin'] },
         { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker', 'cristalero'] },
         { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'] },
+        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'] },
         { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
     ];
 
