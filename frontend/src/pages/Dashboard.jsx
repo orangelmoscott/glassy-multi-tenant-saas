@@ -4,7 +4,7 @@ import {
   BarChart3, Users, HardHat, Calendar, 
   TrendingUp, ArrowUpRight, CheckCircle, Clock,
   DollarSign, Sparkles, RefreshCcw, Briefcase, 
-  LayoutDashboard 
+  LayoutDashboard, Receipt
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';

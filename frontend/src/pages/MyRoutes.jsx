@@ -242,24 +242,24 @@ const MyRoutes = () => {
                             className="bg-white w-full h-full md:h-auto md:max-w-3xl md:rounded-[50px] overflow-hidden flex flex-col shadow-3xl"
                         >
                             {/* Modal Header */}
-                            <div className="p-10 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                            <div className="p-6 md:p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between bg-slate-50/50 gap-4">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusInfo(selectedJob.status).color}`}>
                                             {getStatusInfo(selectedJob.status).label}
                                         </span>
                                     </div>
-                                    <h2 className="text-3xl font-black text-slate-900 leading-tight tracking-tight uppercase">{selectedJob.clientId?.companyName}</h2>
-                                    <p className="text-slate-500 text-sm font-bold flex items-center gap-2"><MapPin size={14} className="text-blue-500" /> {selectedJob.clientId?.address}</p>
+                                    <h2 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight tracking-tight uppercase">{selectedJob.clientId?.companyName}</h2>
+                                    <p className="text-slate-500 text-sm font-bold flex items-start md:items-center gap-2"><MapPin size={18} className="text-blue-500 shrink-0 mt-0.5 md:mt-0" /> {selectedJob.clientId?.address}</p>
                                 </div>
-                                <button onClick={() => setSelectedJob(null)} className="p-4 bg-white text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">
+                                <button onClick={() => setSelectedJob(null)} className="absolute top-6 right-6 md:relative md:top-auto md:right-auto p-3 md:p-4 bg-white text-slate-400 rounded-full hover:bg-red-50 hover:text-red-500 transition-all shadow-sm">
                                     <X size={20} />
                                 </button>
                             </div>
 
                              {/* Job Details */}
-                             <div className="p-10 space-y-10 flex-1 overflow-y-auto">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div className="p-6 md:p-10 space-y-8 md:space-y-10 flex-1 overflow-y-auto">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                        <div className="p-6 bg-slate-900 text-white rounded-3xl border border-slate-800 flex items-center justify-between col-span-1 md:col-span-2 shadow-xl">
                                            <div>
                                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 opacity-70">Ubicación Navegación</p>
@@ -290,40 +290,42 @@ const MyRoutes = () => {
                                   </div>
 
                                   {/* TRABAJOS EXTRA */}
-                                  <div className="p-8 bg-blue-50/30 rounded-[40px] border-2 border-dashed border-blue-200/50 space-y-6">
-                                        <div className="flex items-center justify-between">
-                                            <h3 className="text-sm font-black text-blue-800 uppercase tracking-widest flex items-center gap-2">
-                                                <Plus size={18} /> ¿Has realizado un trabajo extra hoy?
+                                  <div className="p-5 md:p-8 bg-blue-50/30 rounded-[30px] md:rounded-[40px] border-2 border-dashed border-blue-200/50 space-y-4 md:space-y-6">
+                                        <div className="flex items-start md:items-center justify-between gap-3 flex-col md:flex-row">
+                                            <h3 className="text-xs md:text-sm font-black text-blue-800 uppercase tracking-widest flex items-center gap-2 leading-snug">
+                                                <Plus size={18} className="shrink-0" /> ¿Has realizado un trabajo extra hoy?
                                             </h3>
-                                            <span className="text-[9px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black uppercase">Opcional</span>
+                                            <span className="text-[9px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black uppercase self-start md:self-auto">Opcional</span>
                                         </div>
                                         
-                                        <div className="flex gap-3">
+                                        <div className="flex flex-col xl:flex-row gap-3">
                                             <input 
-                                                className="flex-[2] bg-white border border-blue-100 p-4 rounded-2xl outline-none focus:border-blue-600 text-sm font-bold shadow-sm"
-                                                placeholder="Ej: Limpieza de rótulos o marcos..."
+                                                className="flex-[2] bg-white border border-blue-100 p-4 rounded-2xl outline-none focus:border-blue-600 text-sm font-bold shadow-sm w-full"
+                                                placeholder="Ej: Limpieza rótulos..."
                                                 value={newExtra.description}
                                                 onChange={(e) => setNewExtra({...newExtra, description: e.target.value})}
                                             />
-                                            <input 
-                                                type="number"
-                                                className="flex-1 bg-white border border-blue-100 p-4 rounded-2xl outline-none focus:border-blue-600 text-sm font-bold shadow-sm"
-                                                placeholder="Precio €"
-                                                value={newExtra.price}
-                                                onChange={(e) => setNewExtra({...newExtra, price: e.target.value})}
-                                            />
-                                            <button 
-                                                type="button" 
-                                                className="px-5 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all shadow-lg active:scale-90"
-                                                onClick={() => {
-                                                    if(newExtra.description && newExtra.price) {
-                                                        setCurrentExtras([...currentExtras, { ...newExtra, price: parseFloat(newExtra.price) }]);
-                                                        setNewExtra({ description: '', price: '' });
-                                                    }
-                                                }}
-                                            >
-                                                <Plus size={20} />
-                                            </button>
+                                            <div className="flex gap-3">
+                                                <input 
+                                                    type="number"
+                                                    className="flex-[1] bg-white border border-blue-100 p-4 rounded-2xl outline-none focus:border-blue-600 text-sm font-bold shadow-sm w-full min-w-[100px]"
+                                                    placeholder="Precio €"
+                                                    value={newExtra.price}
+                                                    onChange={(e) => setNewExtra({...newExtra, price: e.target.value})}
+                                                />
+                                                <button 
+                                                    type="button" 
+                                                    className="px-6 py-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all shadow-lg active:scale-90 flex items-center justify-center"
+                                                    onClick={() => {
+                                                        if(newExtra.description && newExtra.price) {
+                                                            setCurrentExtras([...currentExtras, { ...newExtra, price: parseFloat(newExtra.price) }]);
+                                                            setNewExtra({ description: '', price: '' });
+                                                        }
+                                                    }}
+                                                >
+                                                    <Plus size={20} />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {currentExtras.length > 0 && (
@@ -363,11 +365,11 @@ const MyRoutes = () => {
                                      <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-3">
                                          <PenTool size={20} className="text-blue-600" /> Firma de Validación del Cliente
                                      </h3>
-                                     <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[40px] p-3 overflow-hidden relative group shadow-inner">
+                                     <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-[30px] md:rounded-[40px] p-2 md:p-3 overflow-hidden relative group shadow-inner">
                                           <SignatureCanvas 
                                              ref={sigPad}
                                              penColor='#111827'
-                                             canvasProps={{ className: 'w-full h-80 cursor-crosshair bg-white rounded-[35px] shadow-sm' }}
+                                             canvasProps={{ className: 'w-full h-48 md:h-80 cursor-crosshair bg-white rounded-[25px] md:rounded-[35px] shadow-sm' }}
                                           />
                                           <button 
                                              onClick={clearSignature}
@@ -383,13 +385,13 @@ const MyRoutes = () => {
                              </div>
 
                              {/* Action Footer */}
-                             <div className="p-10 bg-slate-50 border-t border-slate-100 flex gap-6">
-                                 <button onClick={() => setSelectedJob(null)} className="flex-1 py-5 font-black text-slate-400 hover:text-slate-600 transition-all uppercase tracking-widest text-xs">Posponer</button>
+                             <div className="p-6 md:p-10 bg-slate-50 border-t border-slate-100 flex flex-col-reverse md:flex-row gap-4 md:gap-6">
+                                 <button onClick={() => setSelectedJob(null)} className="w-full md:flex-1 py-4 md:py-5 font-black text-slate-400 hover:bg-slate-200/50 rounded-2xl md:bg-transparent transition-all uppercase tracking-widest text-xs">Posponer</button>
                                  <button 
                                      onClick={handleComplete}
-                                     className="flex-[3] bg-slate-900 text-white py-6 rounded-[25px] font-black shadow-2xl shadow-slate-200 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 text-lg"
+                                     className="w-full md:flex-[3] bg-slate-900 text-white py-4 md:py-6 px-4 rounded-[20px] md:rounded-[25px] font-black shadow-2xl shadow-slate-200 hover:bg-black hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 md:gap-3 text-xs md:text-lg text-center leading-tight"
                                  >
-                                     <CheckCircle size={24} className="text-blue-400" /> 
+                                     <CheckCircle size={20} className="text-blue-400 shrink-0 md:w-6 md:h-6" /> 
                                      {(selectedJob.visitsDone || 0) + 1 >= (selectedJob.expectedVisits || 1) ? 'FINALIZAR SERVICIO COMPLETO' : `REPORTAR VISITA ${(selectedJob.visitsDone || 0) + 1}/${selectedJob.expectedVisits || 1}`}
                                  </button>
                              </div>
