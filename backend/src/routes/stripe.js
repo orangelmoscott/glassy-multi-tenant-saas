@@ -30,12 +30,18 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
             mode: 'subscription',
             payment_method_types: ['card'],
             customer_email: tenant.email,
+            billing_address_collection: 'required', // Requerido para facturas profesionales
             line_items: [
                 {
                     price: priceId,
                     quantity: 1,
                 },
             ],
+            subscription_data: {
+                metadata: {
+                    tenantId: tenant._id.toString()
+                }
+            },
             automatic_tax: { enabled: true },
             success_url: `${process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com'}/app/settings?session_id={CHECKOUT_SESSION_ID}&status=success`,
             cancel_url: `${process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com'}/app/settings?status=cancel`,

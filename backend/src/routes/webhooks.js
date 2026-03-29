@@ -19,10 +19,26 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
         const obj = event.data.object;
 
         switch (event.type) {
+            case 'checkout.session.completed': {
+                const tenantId = obj.metadata.tenantId;
+                const customerId = obj.customer;
+                const subscriptionId = obj.subscription;
+
+                if (tenantId) {
+                    await Tenant.findByIdAndUpdate(tenantId, {
+                        stripeCustomerId: customerId,
+                        stripeSubscriptionId: subscriptionId,
+                        subscriptionStatus: 'active',
+                        planActivo: true
+                    });
+                }
+                break;
+            }
             case 'invoice.paid': {
                 const customerId = obj.customer;
                 const subscriptionId = obj.subscription;
-                
+                const tenantId = obj.metadata?.tenantId; // Intentar sacar de metadata de la factura
+
                 let current_period_end = 0;
                 let status = 'active';
 
@@ -32,8 +48,11 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
                     status = subscription.status;
                 }
 
+                // Si no hay metadata en invoice, buscar por customerId
+                const query = tenantId ? { _id: tenantId } : { stripeCustomerId: customerId };
+
                 await Tenant.findOneAndUpdate(
-                    { stripeCustomerId: customerId },
+                    query,
                     {
                         planActivo: true,
                         proximoCobro: current_period_end ? new Date(current_period_end * 1000) : null,
@@ -58,12 +77,15 @@ router.post('/stripe', express.raw({ type: 'application/json' }), async (req, re
                 const customerId = obj.customer;
                 const subscriptionId = obj.id;
                 const productId = obj.items.data[0].price.product;
+                const tenantId = obj.metadata?.tenantId;
 
                 const product = await stripe.products.retrieve(productId);
                 const planId = product.metadata.plan_id || 'autonomo';
 
+                const query = tenantId ? { _id: tenantId } : { stripeCustomerId: customerId };
+
                 await Tenant.findOneAndUpdate(
-                    { stripeCustomerId: customerId },
+                    query,
                     {
                         stripeSubscriptionId: subscriptionId,
                         planId: planId,
