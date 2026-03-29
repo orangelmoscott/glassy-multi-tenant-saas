@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, CreditCard, Sparkles, Zap, Shield, HelpCircle } from 'lucide-react';
+import { X, Check, CreditCard, Sparkles, Zap, Shield, HelpCircle, RefreshCcw } from 'lucide-react';
 
 const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
   const [loadingPlan, setLoadingPlan] = React.useState(null);
