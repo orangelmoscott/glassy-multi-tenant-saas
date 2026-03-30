@@ -26,12 +26,14 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
         if (!priceId) return res.status(400).send({ message: 'Plan no válido' });
 
         // Determinar base URL para el redireccionamiento (Dinámica desde el origen o configuración)
-        const baseUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
+        let baseUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
+        // Eliminar barra final si existe
+        if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
-        // Crear sesión de Stripe
+        // Configuración robusta de la sesión
         const sessionOptions = {
             mode: 'subscription',
-            payment_method_types: ['card'],
+            allow_promotion_codes: true, // Útil para cupones en el futuro
             billing_address_collection: 'required',
             line_items: [
                 {
@@ -41,11 +43,10 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
             ],
             subscription_data: {
                 metadata: {
-                    tenantId: tenant._id.toString()
+                    tenantId: tenant._id.toString(),
+                    planId: planId
                 }
             },
-            // Desactivado para evitar errores 500 si no está configurado en el Dashboard
-            // automatic_tax: { enabled: true }, 
             success_url: `${baseUrl}/app/settings?session_id={CHECKOUT_SESSION_ID}&status=success`,
             cancel_url: `${baseUrl}/app/settings?status=cancel`,
             metadata: {
@@ -54,13 +55,15 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
             }
         };
 
-        // Si ya tenemos un cliente en Stripe, lo usamos. Si no, usamos el email.
-        if (tenant.stripeCustomerId) {
+        // Si ya tenemos un cliente válido en Stripe, lo usamos.
+        if (tenant.stripeCustomerId && tenant.stripeCustomerId.startsWith('cus_')) {
             sessionOptions.customer = tenant.stripeCustomerId;
         } else {
             sessionOptions.customer_email = tenant.email;
         }
 
+        console.log('CREANDO SESIÓN STRIPE CON:', JSON.stringify(sessionOptions, null, 2));
+        
         const session = await stripe.checkout.sessions.create(sessionOptions);
 
         res.send({ 
