@@ -160,8 +160,8 @@ const DashboardLayout = ({ children }) => {
                 </div>
             </main>
 
-            {/* Trial Expiry Overlay (Management only) */}
-            {isOwner && (user.plan === 'starter' || user.planId === 'starter') && user.trialDaysLeft <= 0 && location.pathname !== '/app/settings' && (
+            {/* Trial Expiry Overlay - SOLO si está en starter Y no ha pagado Y no está en settings */}
+            {isOwner && (user.plan === 'starter' || user.planId === 'starter') && !user.planActivo && (user.trialDaysLeft ?? 1) <= 0 && location.pathname !== '/app/settings' && (
                 <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}

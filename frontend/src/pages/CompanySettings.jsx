@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   Building, Mail, Phone, CreditCard, Shield, 
   Upload, Save, RefreshCcw, Sparkles, CheckCircle,
-  FileBadge, MapPin, Briefcase
+  FileBadge, MapPin, Briefcase, PartyPopper
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -16,48 +16,62 @@ const CompanySettings = () => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+    const [paymentActivated, setPaymentActivated] = useState(false); // overlay post-pago
     
     // Sesión
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
 
     useEffect(() => {
-        fetchSettings();
-        checkPaymentStatus();
-    }, []);
-    
-    // Auto-Heal: Sincronizar con Stripe si venimos de un pago
-    const checkPaymentStatus = async () => {
+        // Primero sincronizar pago si venimos de Stripe, luego cargar settings
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session_id');
         const status = params.get('status');
-        
+
         if (status === 'success' && sessionId) {
-            try {
-                const res = await axios.post('https://glassy-backend.onrender.com/tenant/sync-subscription', 
-                    { sessionId },
-                    { headers: { Authorization: `Bearer ${token}` }}
-                );
-                
-                // Actualizar localStorage para desbloquear rutas de inmediato
-                const updatedTenant = res.data.tenant;
-                const currentUser = JSON.parse(localStorage.getItem('glassy_user') || '{}');
-                const newUser = { 
-                    ...currentUser, 
-                    plan: updatedTenant.planId, 
-                    planId: updatedTenant.planId,
-                    planActivo: true 
-                };
-                localStorage.setItem('glassy_user', JSON.stringify(newUser));
-                
-                // Refrescar estado local
-                setTenant(updatedTenant);
-                setSuccess(true);
-                // Limpiar URL
-                window.history.replaceState({}, document.title, "/app/settings");
-            } catch (err) {
-                console.error("Error al sincronizar pago:", err);
-            }
+            checkPaymentStatus(sessionId);
+        } else {
+            fetchSettings();
+        }
+    }, []);
+    
+    // Auto-Heal DEFINITIVO: Sincronizar con Stripe y recargar la página completa
+    const checkPaymentStatus = async (sessionId) => {
+        try {
+            const res = await axios.post(
+                'https://glassy-backend.onrender.com/tenant/sync-subscription', 
+                { sessionId },
+                { headers: { Authorization: `Bearer ${token}` }}
+            );
+            
+            const updatedTenant = res.data.tenant;
+
+            // 1. Actualizar localStorage CON el nuevo planId
+            const currentUser = JSON.parse(localStorage.getItem('glassy_user') || '{}');
+            const newUser = { 
+                ...currentUser, 
+                plan: updatedTenant.planId, 
+                planId: updatedTenant.planId,
+                planActivo: true,
+                trialDaysLeft: null  // Ya no está en prueba
+            };
+            localStorage.setItem('glassy_user', JSON.stringify(newUser));
+            
+            // 2. Limpiar URL para que no se repita la sincronización
+            window.history.replaceState({}, document.title, '/app/settings');
+
+            // 3. Mostrar overlay de éxito 2s y luego RECARGAR la página completa
+            //    Esto garantiza que DashboardLayout re-lea el localStorage actualizado
+            //    y elimine el overlay de 'trial expirado' definitivamente.
+            setPaymentActivated(true);
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+
+        } catch (err) {
+            console.error('Error al sincronizar pago:', err);
+            // Si falla la sync automática, al menos cargar settings normalmente
+            fetchSettings();
         }
     };
 
@@ -119,6 +133,25 @@ const CompanySettings = () => {
             throw err;
         }
     };
+
+    // Pantalla de sincronización de pago (mientras esperamos o mostramos éxito)
+    if (paymentActivated) return (
+        <div className="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center gap-6">
+            <motion.div
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 200 }}
+                className="w-28 h-28 bg-green-100 rounded-[40px] flex items-center justify-center"
+            >
+                <CheckCircle className="text-green-600" size={64} strokeWidth={1.5} />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-center">
+                <h2 className="text-3xl font-black text-slate-900 mb-2">¡Pago Confirmado!</h2>
+                <p className="text-slate-500 font-medium">Tu suscripción está activa. Redirigiendo al panel...</p>
+            </motion.div>
+            <div className="animate-spin text-blue-500"><RefreshCcw size={24} /></div>
+        </div>
+    );
 
     if (loading) return (
         <DashboardLayout>
