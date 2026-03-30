@@ -19,7 +19,7 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
         const priceIds = {
             'autonomo': 'price_1TGQMNBFGOxLufnn2SfOQ2zA',
             'pro': 'price_1TGQMOBFGOxLufnnDtecYCBG',
-            'business': 'price_1TGQWIBFGOxLufnnfCH6qS0Y'
+            'business': 'price_1TGPx5BFGOxLufnnM50qMNz7'
         };
 
         const priceId = priceIds[planId];
