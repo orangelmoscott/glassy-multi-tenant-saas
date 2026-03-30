@@ -4,27 +4,16 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tenant = require('../models/Tenant');
 
 /**
- * GET /webhooks/stripe — Endpoint de diagnóstico
- * Permite verificar que la ruta es alcanzable desde internet.
- * Stripe no usa GET, pero sirve para confirmar que Render enruta bien.
+ * GET /stripe-health — Diagnostic route at root level
  */
-router.get('/stripe', (req, res) => {
-    res.json({ 
-        status: 'Webhook endpoint activo',
-        timestamp: new Date().toISOString(),
-        hasSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-        hasStripeKey: !!process.env.STRIPE_SECRET_KEY
-    });
+router.get('/stripe-health', (req, res) => {
+    res.json({ status: 'active', secret: !!process.env.STRIPE_WEBHOOK_SECRET });
 });
 
 /**
- * POST /webhooks/stripe — Webhook principal de Stripe
- * 
- * IMPORTANTE: Este endpoint usa express.raw() para recibir el body sin parsear.
- * Stripe requiere el body RAW para validar la firma HMAC del webhook.
- * Por eso en server.js este router se monta ANTES de express.json().
+ * Webhook route at explicit path /webhook/stripe
  */
-router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+router.post('/webhook/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
     const sig = req.headers['stripe-signature'];
     
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

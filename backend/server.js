@@ -8,10 +8,10 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-
-// Middlewares locales
 const { authenticate } = require('./src/middlewares/auth');
+
+// Note: webhookRoutes has internal routes like /webhook/stripe
+const webhookRoutes = require('./src/routes/webhooks');
 
 // Rutas locales
 const authRoutes = require('./src/routes/auth');
@@ -25,17 +25,15 @@ const stripeRoutes = require('./src/routes/stripe');
 
 const app = express();
 
-const webhookRoutes = require('./src/routes/webhooks');
-
 // ==============================
 // CONFIGURACIÓN GLOBAL
 // ==============================
 app.use(cors());
 
-// Se declara la ruta antes que cualquier middleware global de JSON
-app.use('/webhooks', webhookRoutes);
+// Webhooks mounted at root to allow /webhook/stripe 
+app.use(webhookRoutes);
 
-// Una vez declarada la ruta de webhooks, habilitamos JSON con límites
+// JSON Parsing must come AFTER webhooks to avoid signature breakdown
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
