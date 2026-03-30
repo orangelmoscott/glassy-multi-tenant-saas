@@ -21,8 +21,12 @@ const checkPlanLimit = (resourceType) => {
 
             if (!tenant) return res.status(404).json({ message: 'Empresa no encontrada' });
 
-            // Verificar si está activo y tiene plan
-            if (!tenant.planActivo && tenant.subscriptionStatus !== 'trial') {
+            // Permitir si está activo (pagado) O en periodo de prueba
+            const isAllowed = tenant.planActivo === true || 
+                              tenant.subscriptionStatus === 'active' || 
+                              tenant.subscriptionStatus === 'trial';
+                              
+            if (!isAllowed) {
                 return res.status(403).json({ error: 'SUBSCRIPTION_INACTIVE', message: 'Tu suscripción no está activa.' });
             }
 

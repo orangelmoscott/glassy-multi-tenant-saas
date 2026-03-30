@@ -66,7 +66,12 @@ async function checkTrialStatus(req, res, next) {
         const tenant = await Tenant.findById(req.user.tenantId);
         if (!tenant) return res.status(404).send({ message: 'Empresa no encontrada' });
 
-        // Cálculo de días de prueba (7 días máximo según nueva regla profesional)
+        // Si la suscripción está activa y pagada, dejar pasar siempre
+        if (tenant.planActivo === true || tenant.subscriptionStatus === 'active') {
+            return next();
+        }
+
+        // Solo bloquear si está en starter Y el periodo de prueba de 7 días ha expirado
         const trialDuration = 7 * 24 * 60 * 60 * 1000;
         const now = new Date();
         const created = new Date(tenant.createdAt);
@@ -79,6 +84,7 @@ async function checkTrialStatus(req, res, next) {
                 upgradeSuggested: true 
             });
         }
+
         next();
     } catch (error) {
         res.status(500).send({ message: 'Error al verificar periodo de prueba' });
