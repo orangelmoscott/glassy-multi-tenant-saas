@@ -120,7 +120,10 @@ const CompanySettings = () => {
     const handlePlanUpdate = async (planId) => {
         try {
             // Ya no es un simple patch, es una creación de sesión de pago profesional
-            const res = await axios.post('https://glassy-backend.onrender.com/stripe/create-checkout-session', { planId }, {
+            const res = await axios.post('https://glassy-backend.onrender.com/stripe/create-checkout-session', { 
+                planId,
+                origin: window.location.origin 
+            }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             

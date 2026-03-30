@@ -25,12 +25,15 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
         const priceId = priceIds[planId];
         if (!priceId) return res.status(400).send({ message: 'Plan no válido' });
 
+        // Determinar base URL para el redireccionamiento (Dinámica desde el origen o configuración)
+        const baseUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
+
         // Crear sesión de Stripe
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             payment_method_types: ['card'],
             customer_email: tenant.email,
-            billing_address_collection: 'required', // Requerido para facturas profesionales
+            billing_address_collection: 'required',
             line_items: [
                 {
                     price: priceId,
@@ -43,8 +46,8 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
                 }
             },
             automatic_tax: { enabled: true },
-            success_url: `${process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com'}/app/settings?session_id={CHECKOUT_SESSION_ID}&status=success`,
-            cancel_url: `${process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com'}/app/settings?status=cancel`,
+            success_url: `${baseUrl}/app/settings?session_id={CHECKOUT_SESSION_ID}&status=success`,
+            cancel_url: `${baseUrl}/app/settings?status=cancel`,
             metadata: {
                 tenantId: tenant._id.toString(),
                 planId: planId

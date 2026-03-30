@@ -37,8 +37,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 function useGlobalStripeSync() {
     useEffect(() => {
         const syncPendingPayment = async () => {
-            const pending = localStorage.getItem('stripe_pending_session');
-            if (!pending) return;
+            // 1. Buscar session_id en la URL (Stripe Redirect) o en localStorage (Auto-Heal)
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionIdFromUrl = urlParams.get('session_id');
+            const pendingFromStorage = localStorage.getItem('stripe_pending_session');
+            
+            const sessionId = sessionIdFromUrl || pendingFromStorage;
+            if (!sessionId) return;
 
             const userStr = localStorage.getItem('glassy_user');
             if (!userStr) return;
@@ -49,13 +54,13 @@ function useGlobalStripeSync() {
             try {
                 const res = await axios.post(
                     'https://glassy-backend.onrender.com/tenant/sync-subscription',
-                    { sessionId: pending },
+                    { sessionId },
                     { headers: { Authorization: `Bearer ${user.token}` } }
                 );
 
                 const updatedTenant = res.data.tenant;
                 if (updatedTenant && updatedTenant.planActivo) {
-                    // Actualizar localStorage y limpiar el flag pendiente
+                    // Actualizar localStorage
                     const newUser = {
                         ...user,
                         plan: updatedTenant.planId,
@@ -64,13 +69,24 @@ function useGlobalStripeSync() {
                         trialDaysLeft: null
                     };
                     localStorage.setItem('glassy_user', JSON.stringify(newUser));
+                    
+                    // Limpiar estados de sincronización pendientes
                     localStorage.removeItem('stripe_pending_session');
-                    // Recargar para reflejar el nuevo estado en DashboardLayout
+                    
+                    // Limpiar la URL de parámetros de Stripe para que no se repita el proceso al refrescar
+                    if (sessionIdFromUrl) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+
+                    // Recargar para aplicar cambios globales en DashboardLayout (RBAC/Guards)
                     window.location.reload();
                 }
             } catch (err) {
                 console.error('Global stripe sync error:', err);
-                // No limpiar el flag, reintentar en próxima carga
+                // Si falla, no limpiamos el storage para reintentar, pero sí la URL para no buclear
+                if (sessionIdFromUrl) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
             }
         };
 
