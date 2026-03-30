@@ -126,6 +126,10 @@ const CompanySettings = () => {
             
             // Redirigir a Stripe Checkout
             if (res.data.url) {
+                // Guardar para Auto-Heal global
+                if (res.data.id) {
+                    localStorage.setItem('stripe_pending_session', res.data.id);
+                }
                 window.location.href = res.data.url;
             }
         } catch (err) {

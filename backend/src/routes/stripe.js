@@ -51,7 +51,10 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
             }
         });
 
-        res.send({ url: session.url });
+        res.send({ 
+            url: session.url, 
+            id: session.id 
+        });
     } catch (error) {
         console.error('Error al crear sesión de Stripe:', error);
         res.status(500).send({ message: 'Error al conectar con Stripe' });
