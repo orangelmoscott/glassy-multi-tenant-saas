@@ -179,12 +179,49 @@ const CompanySettings = () => {
                         </h1>
                         <p className="text-slate-500 mt-2 font-medium">Configura la identidad de tu empresa para facturas y servicios.</p>
                     </div>
-                    {success && (
-                        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-2 bg-green-50 text-green-700 px-6 py-3 rounded-2xl font-bold border border-green-100 shadow-sm">
-                            <CheckCircle size={20} /> ¡Cambios guardados con éxito!
+                </div>
+
+                {/* Banner de Errores o Éxito */}
+                <AnimatePresence>
+                    {error && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="mb-8 p-4 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-4 text-red-600 shadow-xl shadow-red-200/20"
+                        >
+                            <div className="w-10 h-10 bg-red-500 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/30">
+                                <X size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold uppercase tracking-widest leading-none mb-1">Error de Sistema</p>
+                                <p className="text-sm font-bold opacity-90">{error}</p>
+                            </div>
+                            <button onClick={() => setError(null)} className="p-2 hover:bg-red-100 rounded-xl transition-colors">
+                                <X size={16} />
+                            </button>
                         </motion.div>
                     )}
-                </div>
+                    {success && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="mb-8 p-4 bg-green-50 border border-green-100 rounded-3xl flex items-center gap-4 text-green-600 shadow-xl shadow-green-200/20"
+                        >
+                            <div className="w-10 h-10 bg-green-500 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
+                                <CheckCircle size={20} />
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-xs font-bold uppercase tracking-widest leading-none mb-1">Operación Exitosa</p>
+                                <p className="text-sm font-bold opacity-90">Configuración guardada correctamente.</p>
+                            </div>
+                            <button onClick={() => setSuccess(false)} className="p-2 hover:bg-green-100 rounded-xl transition-colors">
+                                <X size={16} />
+                            </button>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     
