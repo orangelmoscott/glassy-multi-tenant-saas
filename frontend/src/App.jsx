@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import axios from 'axios';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -21,43 +22,92 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     
     const user = JSON.parse(userString);
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        // Redirigir según el rol si no tiene permiso (Isolation total)
-        // 'cristalero' es el rol de operario en la BD
         const isWorker = user.role === 'worker' || user.role === 'cristalero';
         return <Navigate to={isWorker ? "/app/my-routes" : "/app/clients"} replace />;
     }
     return children;
 };
 
+/**
+ * Hook Global de Sincronización de Pagos
+ * Se ejecuta en cualquier ruta protegida. Verifica si hay un pago pendiente
+ * de Stripe en localStorage y lo sincroniza automáticamente con el backend.
+ * Esto garantiza que el plan se active incluso si el webhook de Stripe falla.
+ */
+function useGlobalStripeSync() {
+    useEffect(() => {
+        const syncPendingPayment = async () => {
+            const pending = localStorage.getItem('stripe_pending_session');
+            if (!pending) return;
+
+            const userStr = localStorage.getItem('glassy_user');
+            if (!userStr) return;
+
+            const user = JSON.parse(userStr);
+            if (!user.token) return;
+
+            try {
+                const res = await axios.post(
+                    'https://glassy-backend.onrender.com/tenant/sync-subscription',
+                    { sessionId: pending },
+                    { headers: { Authorization: `Bearer ${user.token}` } }
+                );
+
+                const updatedTenant = res.data.tenant;
+                if (updatedTenant && updatedTenant.planActivo) {
+                    // Actualizar localStorage y limpiar el flag pendiente
+                    const newUser = {
+                        ...user,
+                        plan: updatedTenant.planId,
+                        planId: updatedTenant.planId,
+                        planActivo: true,
+                        trialDaysLeft: null
+                    };
+                    localStorage.setItem('glassy_user', JSON.stringify(newUser));
+                    localStorage.removeItem('stripe_pending_session');
+                    // Recargar para reflejar el nuevo estado en DashboardLayout
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.error('Global stripe sync error:', err);
+                // No limpiar el flag, reintentar en próxima carga
+            }
+        };
+
+        syncPendingPayment();
+    }, []);
+}
+
 function App() {
-  return (
-    <Router>
-      <Routes>
-        {/* Rutas Públicas */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/register" element={<RegisterCompany />} />
-        <Route path="/login" element={<Login />} />
-        
-        {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
-        {/* He unificado /app y /app/dashboard para que NUNCA vuelvas a landing al loguearte */}
-        <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
-        <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
-        
-        <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
-        <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
-        <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
-        <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
-        <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Expenses /></ProtectedRoute>} />
-        <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Billing /></ProtectedRoute>} />
+    useGlobalStripeSync();
 
-        {/* Canales de Campo (Operarios) */}
-        <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'cristalero', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />
+    return (
+        <Router>
+            <Routes>
+                {/* Rutas Públicas */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/register" element={<RegisterCompany />} />
+                <Route path="/login" element={<Login />} />
+                
+                {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
+                <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
+                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
+                <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
+                <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
+                <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
+                <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
+                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Expenses /></ProtectedRoute>} />
+                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Billing /></ProtectedRoute>} />
 
-        {/* Global Redirector */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
-  );
+                {/* Canales de Campo (Operarios) */}
+                <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'cristalero', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />
+
+                {/* Global Redirector */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;
+
