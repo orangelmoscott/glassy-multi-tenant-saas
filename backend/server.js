@@ -56,7 +56,7 @@ app.use('/stripe', stripeRoutes);
 
 // Ruta de Salud del SaaS
 app.get('/', (req, res) => {
-    res.send({ status: 'Glassy SaaS Platform Online', version: '1.0.0' });
+    res.send({ status: 'Glassy SaaS Platform Online', version: '1.0.0', time: new Date().toISOString() });
 });
 
 // Middleware de manejo de errores profesional 404
