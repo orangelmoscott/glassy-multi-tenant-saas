@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   Building, Mail, Phone, CreditCard, Shield, 
   Upload, Save, RefreshCcw, Sparkles, CheckCircle,
-  FileBadge, MapPin, Briefcase, PartyPopper
+  FileBadge, MapPin, Briefcase, PartyPopper, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';

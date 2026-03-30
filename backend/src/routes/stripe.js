@@ -29,10 +29,9 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
         const baseUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
 
         // Crear sesión de Stripe
-        const session = await stripe.checkout.sessions.create({
+        const sessionOptions = {
             mode: 'subscription',
             payment_method_types: ['card'],
-            customer_email: tenant.email,
             billing_address_collection: 'required',
             line_items: [
                 {
@@ -45,22 +44,40 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
                     tenantId: tenant._id.toString()
                 }
             },
-            automatic_tax: { enabled: true },
+            // Desactivado para evitar errores 500 si no está configurado en el Dashboard
+            // automatic_tax: { enabled: true }, 
             success_url: `${baseUrl}/app/settings?session_id={CHECKOUT_SESSION_ID}&status=success`,
             cancel_url: `${baseUrl}/app/settings?status=cancel`,
             metadata: {
                 tenantId: tenant._id.toString(),
                 planId: planId
             }
-        });
+        };
+
+        // Si ya tenemos un cliente en Stripe, lo usamos. Si no, usamos el email.
+        if (tenant.stripeCustomerId) {
+            sessionOptions.customer = tenant.stripeCustomerId;
+        } else {
+            sessionOptions.customer_email = tenant.email;
+        }
+
+        const session = await stripe.checkout.sessions.create(sessionOptions);
 
         res.send({ 
             url: session.url, 
             id: session.id 
+            // session // debug
         });
     } catch (error) {
-        console.error('Error al crear sesión de Stripe:', error);
-        res.status(500).send({ message: 'Error al conectar con Stripe' });
+        console.error('ERROR STRIPE DETALLADO:', {
+            message: error.message,
+            type: error.type,
+            raw: error.raw
+        });
+        res.status(500).send({ 
+            message: 'Error al conectar con Stripe',
+            details: error.message 
+        });
     }
 });
 
