@@ -44,8 +44,8 @@ const DashboardLayout = ({ children }) => {
         <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-x-hidden">
             {/* Mobile Header */}
             <header className="md:hidden bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-[60] shadow-sm">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-black shadow-md">G</div>
+                <div className="flex items-center gap-3">
+                    <img src="/favicon.png" alt="Glassy Icon" className="w-8 h-8 object-contain" />
                     <span className="font-extrabold text-slate-900 tracking-tight">Glassy</span>
                 </div>
                 <button 
@@ -69,9 +69,8 @@ const DashboardLayout = ({ children }) => {
                             ${isMobileMenuOpen ? 'flex' : 'hidden md:flex'}
                         `}
                     >
-                        <div className="hidden md:flex items-center gap-3 mb-10">
-                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200">G</div>
-                            <span className="text-2xl font-black text-slate-900 tracking-tighter italic">Glassy</span>
+                        <div className="hidden md:flex items-center gap-3 mb-10 overflow-hidden px-2">
+                            <img src="/logo.png" alt="Glassy Logo" className="h-10 w-auto object-contain" />
                         </div>
 
                         <nav className="flex-1 space-y-2">

@@ -13,11 +13,8 @@ const LandingPage = () => {
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/30 backdrop-blur-lg border-b border-white/20">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-xl">G</span>
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-800">Glassy</span>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Glassy Logo" className="h-12 w-auto object-contain" />
           </div>
           <div className="hidden md:flex items-center gap-8 text-slate-600 font-medium">
             <a href="#features" className="hover:text-blue-600 transition-colors">Funcionalidades</a>
@@ -154,11 +151,8 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-20">
         <div className="container mx-auto px-6 border-t border-slate-800 pt-10 flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2 grayscale brightness-200">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold">G</span>
-                </div>
-                <span className="text-xl font-bold tracking-tight">Glassy</span>
+            <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="Glassy Logo" className="h-8 w-auto object-contain grayscale brightness-200" />
             </div>
             <div className="text-slate-500 text-sm">
                 &copy; 2026 Glassy SaaS Platform. Todos los derechos reservados.
