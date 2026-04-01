@@ -11,6 +11,7 @@ import DashboardLayout from '../components/DashboardLayout';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [month, setMonth] = useState(new Date().getMonth());
     const [year, setYear] = useState(new Date().getFullYear());
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
