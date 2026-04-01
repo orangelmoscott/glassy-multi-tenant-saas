@@ -39,25 +39,25 @@ const LandingPage = () => {
             transition={{ duration: 0.6 }}
             className="mb-8"
           >
-            <span className="bg-blue-100/50 text-blue-600 px-4 py-1.5 rounded-full text-sm font-bold border border-blue-200">
-              La revolución para tu empresa de limpieza
+            <span className="bg-blue-100/50 text-blue-600 px-4 py-1.5 rounded-full text-sm font-bold border border-blue-200 uppercase tracking-wider">
+              Especializado en Limpieza de Cristales
             </span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-6xl md:text-7xl font-extrabold text-slate-900 leading-tight mb-6"
+            className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-tight mb-8"
           >
-            Gestiona tu negocio con <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Claridad</span>
+            Haz crecer tu negocio de limpieza de cristales <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">sin perder el control</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-slate-600 max-w-2xl mb-12 leading-relaxed"
+            className="text-xl text-slate-600 max-w-3xl mb-12 leading-relaxed"
           >
-            Glassy es la plataforma multi-empresa todo-en-uno diseñada para optimizar rutas de cristaleros, automatizar facturación y fidelizar clientes.
+            Deja de perder horas organizando rutas en papel o Excel. Con Glassy, optimizas tus servicios diarios, automatizas tus facturas y fidelizas a tus clientes desde una sola plataforma. Diseñada específicamente para cristaleros que buscan eficiencia.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -78,6 +78,57 @@ const LandingPage = () => {
           </motion.div>
 
           {/* ... resto del dashboard sim ... */}
+        </div>
+      </section>
+      
+      {/* Features Section */}
+      <section id="features" className="py-24 px-6 bg-white/50 backdrop-blur-sm">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-extrabold text-slate-900 mb-4">¿Por qué Glassy?</h2>
+            <div className="w-20 h-1.5 bg-blue-600 mx-auto rounded-full"></div>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+            <motion.div 
+               whileHover={{ y: -5 }}
+               className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
+            >
+              <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
+                <Zap size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Rutas Inteligentes</h3>
+              <p className="text-slate-600 leading-relaxed">
+                No más vueltas innecesarias. Nuestra tecnología calcula la mejor ruta para que tú y tu equipo limpien más cristales en menos tiempo.
+              </p>
+            </motion.div>
+
+            <motion.div 
+               whileHover={{ y: -5 }}
+               className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
+            >
+              <div className="w-14 h-14 bg-cyan-100 rounded-2xl flex items-center justify-center text-cyan-600 mb-6">
+                <FileText size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Facturación en un clic</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Envía facturas profesionales a tus clientes nada más terminar el trabajo. Ahorra hasta 5 horas de administración a la semana.
+              </p>
+            </motion.div>
+
+            <motion.div 
+               whileHover={{ y: -5 }}
+               className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
+            >
+              <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 mb-6">
+                <Shield size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Imagen Profesional</h3>
+              <p className="text-slate-600 leading-relaxed">
+                Fideliza con recordatorios automáticos de visitas. Tus clientes valorarán la puntualidad y el orden de una empresa tecnológica.
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
