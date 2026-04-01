@@ -70,7 +70,8 @@ const DashboardLayout = ({ children }) => {
                         `}
                     >
                         <div className="hidden md:flex items-center gap-3 mb-10 overflow-hidden px-2">
-                            <img src="/logo.png" alt="Glassy Logo" className="h-10 w-auto object-contain" />
+                             <img src="/favicon.png" alt="Glassy Icon" className="h-10 w-10 object-contain" />
+                             <span className="text-2xl font-black text-slate-900 tracking-tighter italic">Glassy</span>
                         </div>
 
                         <nav className="flex-1 space-y-2">
