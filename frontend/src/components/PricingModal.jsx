@@ -29,7 +29,7 @@ const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
         price: '29€',
         description: 'Ideal para operarios independientes.',
         features: ['Hasta 40 Clientes', '1 Cristalero / 1 Ruta', 'Facturación Automática', 'IVA 21% Desglosado'],
-        cta: 'Suscribirse al Autónomo',
+        cta: 'Suscribirse',
         color: 'from-blue-600 to-indigo-500',
         current: currentPlan === 'autonomo'
     },
@@ -39,7 +39,7 @@ const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
         price: '49€',
         description: 'Perfecto para equipos en crecimiento.',
         features: ['Hasta 150 Clientes', '5 Cristaleros / 5 Rutas', 'Gestión Avanzada', 'Soporte Premium'],
-        cta: 'Obtener Plan Pro',
+        cta: 'Suscribirse',
         color: 'from-indigo-600 to-cyan-500',
         highlight: true,
         current: currentPlan === 'pro'
@@ -50,7 +50,7 @@ const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
         price: '99€',
         description: 'Para flotas y grandes empresas.',
         features: ['Clientes Ilimitados', 'Cristaleros Ilimitados', 'Todas las Funciones', 'Soporte 24/7'],
-        cta: 'Obtener Plan Business',
+        cta: 'Suscribirse',
         color: 'from-slate-900 to-slate-700',
         current: currentPlan === 'business'
     }

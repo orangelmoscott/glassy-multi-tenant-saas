@@ -107,8 +107,8 @@ const Billing = () => {
         <>
         <DashboardLayout>
             <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                {/* Header - Sticky */}
+                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
                             <FileText className="text-blue-600" size={32} /> Facturación y Finanzas
@@ -151,7 +151,7 @@ const Billing = () => {
 
                 {/* Table */}
                 <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl overflow-hidden">
-                     <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between bg-slate-50/50 gap-4">
+                    <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between bg-slate-50/50 gap-4 sticky top-[100px] z-[30] backdrop-blur-sm">
                         <h2 className="font-bold text-slate-800 flex items-center gap-2">
                              Historial de Liquidaciones
                         </h2>

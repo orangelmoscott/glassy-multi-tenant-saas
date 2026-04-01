@@ -24,7 +24,9 @@ const assignmentSchema = new mongoose.Schema({
     visitsDone: { type: Number, default: 0 }, // Visitas realizadas
     visitLogs: [{
         signature: String,
-        date: { type: Date, default: Date.now }
+        date: { type: Date, default: Date.now },
+        workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        workerName: String
     }],
     
     // SaaS Multi-tenancy

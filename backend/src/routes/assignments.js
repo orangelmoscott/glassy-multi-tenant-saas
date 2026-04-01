@@ -225,7 +225,7 @@ router.get('/my', authenticate, async (req, res) => {
                 progressInfo: {
                     completed,
                     expected,
-                    text: `${completed}/${expected} este mes`
+                    text: `${completed}/${expected} visitas`
                 }
             };
         });
@@ -325,7 +325,12 @@ router.patch('/:id/complete', authenticate, checkTrialStatus, async (req, res) =
         }
         
         if (signature) {
-            assignment.visitLogs.push({ signature, date: new Date() });
+            assignment.visitLogs.push({ 
+                signature, 
+                date: new Date(),
+                workerId: req.user.userId,
+                workerName: req.user.fullName || req.user.username // Por si no hay fullName
+            });
         }
 
         // Si es la última visita esperada, pedimos que se complete la ruta

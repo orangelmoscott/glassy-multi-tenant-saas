@@ -16,33 +16,45 @@ router.get('/', authenticate, async (req, res) => {
             .sort({ companyName: 1 })
             .lean(); // usar lean para poder inyectar propiedades
 
-        // Calcular progreso del mes actual
+        // Calcular progreso del mes actual (basado en visitas reales registradas en este mes)
         const Assignment = require('../models/Assignment');
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
 
-        const monthlyAssignments = await Assignment.find({
+        const allAssignments = await Assignment.find({
             tenantId: req.user.tenantId,
-            date: { $gte: startOfMonth }
+            isDeleted: { $ne: true }
         }).lean();
 
         const enhancedClients = clients.map(client => {
-            const clientAssignments = monthlyAssignments.filter(a => a.clientId.toString() === client._id.toString());
-            
-            // Consideramos visitsDone nativo para el progreso
-            const completed = clientAssignments.reduce((sum, a) => sum + (a.visitsDone || (a.status === 'completado' ? 1 : 0)), 0);
-            
+            // Un cliente puede tener múltiples asignaciones (ej: una que empezó el mes pasado y sigue, y otra nueva)
             // Lógica base esperada según frecuencia
             let expected = 1; // mensual
             if (client.frequency === 'semanal') expected = 4;
             if (client.frequency === 'quincenal') expected = 2;
-            
+
+            // Contar visitas realizadas DENTRO del mes actual para este cliente
+            let completedInMonth = 0;
+            allAssignments.filter(a => a.clientId.toString() === client._id.toString()).forEach(a => {
+                if (a.visitLogs && a.visitLogs.length > 0) {
+                    a.visitLogs.forEach(log => {
+                        const logDate = new Date(log.date);
+                        if (logDate >= startOfMonth) {
+                            completedInMonth++;
+                        }
+                    });
+                } else if (a.status === 'completado' && a.completedAt && new Date(a.completedAt) >= startOfMonth) {
+                    // Fallback para asignaciones antiguas sin visitLogs
+                    completedInMonth++;
+                }
+            });
+
             return {
                 ...client,
                 monthlyProgress: {
-                    completed,
-                    totalAssigned: expected, // Simplificado, ahora el target es estricto
+                    completed: completedInMonth,
+                    totalAssigned: expected,
                     expected
                 }
             };

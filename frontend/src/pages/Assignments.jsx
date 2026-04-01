@@ -22,10 +22,11 @@ const Assignments = () => {
     const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
     const [filterYear, setFilterYear] = useState(new Date().getFullYear());
     const [showRouteModal, setShowRouteModal] = useState(false);
+    const [clientSearchQuery, setClientSearchQuery] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [routeData, setRouteData] = useState({
         workerId: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         clientIds: [],
         notes: ''
     });
@@ -264,79 +265,80 @@ const Assignments = () => {
     return (
         <DashboardLayout>
             <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                <div className="space-y-1">
-                    <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">Rutas y Servicios</h1>
-                    <p className="text-slate-500 font-medium">Gestión de cronogramas y asignación por cristaleros.</p>
-                </div>
-                <div className="flex gap-4">
-                    <button 
-                        onClick={() => setShowRouteModal(true)} 
-                        className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-blue-50"
-                    >
-                        <User size={20} /> Asignar Ruta Completa
-                    </button>
-                    <button 
-                        onClick={() => setReplicateModal({ isOpen: true })}
-                        className="bg-white text-slate-600 border-2 border-slate-200 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
-                        title="Copia todas las rutas del mes anterior al mes actual"
-                    >
-                        <RefreshCcw size={20} /> Replicar Mes Anterior
-                    </button>
-                    <button 
-                        onClick={() => {
-                            setEditingId(null);
-                            setFormData({
-                                clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
-                            });
-                            setShowAddModal(true);
-                        }} 
-                        className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all hover:scale-105 shadow-xl shadow-blue-200 active:scale-95"
-                    >
-                        <Plus size={20} /> Asignar Servicio
-                    </button>
-                </div>
-            </div>
-
-            <div className="space-y-8 mb-10">
-                {/* Filters & Stats */}
-                <div className="grid md:grid-cols-4 gap-4">
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                         <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg">{assignments.filter(a => !a.isDeleted).length}</div>
-                         <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Activas</div>
-                    </div>
-                    
-                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2">
-                        <select 
-                            className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm p-2"
-                            value={filterMonth}
-                            onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                        >
-                            {Array.from({length: 12}, (_, i) => (
-                                <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
-                            ))}
-                        </select>
-                        <select 
-                            className="bg-transparent outline-none font-bold text-slate-600 text-sm p-2"
-                            value={filterYear}
-                            onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                        >
-                            <option value={2025}>2025</option>
-                            <option value={2026}>2026</option>
-                        </select>
+                {/* Header & Filters - Sticky */}
+                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all space-y-6 mb-10">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-1">
+                            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">Rutas y Servicios</h1>
+                            <p className="text-slate-500 font-medium">Gestión de cronogramas y asignación por cristaleros.</p>
+                        </div>
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={() => setShowRouteModal(true)} 
+                                className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-blue-50"
+                            >
+                                <User size={20} /> Asignar Ruta Completa
+                            </button>
+                            <button 
+                                onClick={() => setReplicateModal({ isOpen: true })}
+                                className="bg-white text-slate-600 border-2 border-slate-200 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
+                                title="Copia todas las rutas del mes anterior al mes actual"
+                            >
+                                <RefreshCcw size={20} /> Replicar Mes Anterior
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    setEditingId(null);
+                                    setFormData({
+                                        clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
+                                    });
+                                    setShowAddModal(true);
+                                }} 
+                                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all hover:scale-105 shadow-xl shadow-blue-200 active:scale-95"
+                            >
+                                <Plus size={20} /> Asignar Servicio
+                            </button>
+                        </div>
                     </div>
 
-                    <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                        <User className="text-slate-400 ml-2" size={18} />
-                        <select 
-                            className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm"
-                            value={filterWorkerId}
-                            onChange={(e) => setFilterWorkerId(e.target.value)}
-                        >
-                            <option value="">Filtrar todos los cristaleros (Toda la Empresa)</option>
-                            {workers.map(w => <option key={w._id} value={w._id}>Trabajos de: {w.fullName}</option>)}
-                        </select>
+                    {/* Filters & Stats */}
+                    <div className="grid md:grid-cols-4 gap-4">
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                             <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg">{assignments.filter(a => !a.isDeleted).length}</div>
+                             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Activas</div>
+                        </div>
+                        
+                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2">
+                            <select 
+                                className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm p-2"
+                                value={filterMonth}
+                                onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                            >
+                                {Array.from({length: 12}, (_, i) => (
+                                    <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
+                                ))}
+                            </select>
+                            <select 
+                                className="bg-transparent outline-none font-bold text-slate-600 text-sm p-2"
+                                value={filterYear}
+                                onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                            >
+                                <option value={2025}>2025</option>
+                                <option value={2026}>2026</option>
+                            </select>
+                        </div>
+
+                        <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+                            <User className="text-slate-400 ml-2" size={18} />
+                            <select 
+                                className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm"
+                                value={filterWorkerId}
+                                onChange={(e) => setFilterWorkerId(e.target.value)}
+                            >
+                                <option value="">Filtrar todos los cristaleros (Toda la Empresa)</option>
+                                {workers.map(w => <option key={w._id} value={w._id}>Trabajos de: {w.fullName}</option>)}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -360,8 +362,16 @@ const Assignments = () => {
                                     .filter(as => !filterWorkerId || (as.workerId?._id === filterWorkerId || as.workerId === filterWorkerId))
                                     .filter(as => {
                                         const d = new Date(as.date);
-                                        // Usamos UTC para evitar desfases de zona horaria si la fecha se guarda como 2024-03-01T00:00:00Z
-                                        return (d.getUTCMonth() + 1) === filterMonth && d.getUTCFullYear() === filterYear;
+                                        const isSameMonth = (d.getUTCMonth() + 1) === filterMonth && d.getUTCFullYear() === filterYear;
+                                        
+                                        // Si la asignación NO está completada, y su fecha es anterior o igual al mes filtrado, mostrarla.
+                                        // Esto permite que "salte de mes" y siga apareciendo hasta que se complete.
+                                        const isActiveAndPast = as.status !== 'completado' && (
+                                            d.getUTCFullYear() < filterYear || 
+                                            (d.getUTCFullYear() === filterYear && (d.getUTCMonth() + 1) <= filterMonth)
+                                        );
+                                        
+                                        return isSameMonth || isActiveAndPast;
                                     })
                                     .map((as) => (
                                     <tr key={as._id} className="hover:bg-slate-50/30 transition-colors group">
@@ -489,126 +499,132 @@ const Assignments = () => {
             <AnimatePresence>
                 {showAddModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-xl p-10 shadow-3xl">
-                             <h2 className="text-2xl font-extrabold text-slate-800 mb-8">{editingId ? 'Editar Asignación' : 'Programar Nueva Ruta'}</h2>
-                             <form onSubmit={handleCreateOrUpdate} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cliente</label>
-                                        <select 
-                                            required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                            value={formData.clientId}
-                                            onChange={(e) => {
-                                                const clientId = e.target.value;
-                                                const client = clients.find(c => c._id === clientId);
-                                                setFormData({
-                                                    ...formData, 
-                                                    clientId, 
-                                                    price: client ? client.basePrice : 0 
-                                                });
-                                            }}
-                                        >
-                                            <option value="">Selecciona un cliente...</option>
-                                            {clients.map(c => <option key={c._id} value={c._id}>{c.companyName} ({c.basePrice}€)</option>)}
-                                        </select>
-                                     </div>
-                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Operario Asignado</label>
-                                        <select 
-                                            required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                            value={formData.workerId}
-                                            onChange={(e) => setFormData({...formData, workerId: e.target.value})}
-                                        >
-                                            <option value="">Elige un cristalero...</option>
-                                            {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
-                                        </select>
-                                     </div>
-                                </div>
-                                 <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Automático (€)</label>
-                                    <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600">
-                                        {formData.price || '0.00'}€
-                                    </div>
-                                 </div>
-                                 <div className="space-y-2">
-                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
-                                     <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
-                                 </div>
-
-                                 <div className="space-y-2">
-                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Notas / Instrucciones para el Cristalero</label>
-                                     <textarea 
-                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-medium text-sm min-h-[100px]"
-                                         placeholder="Ej: El cliente prefiere que se empiece por la fachada trasera o tiene un código de acceso..."
-                                         value={formData.notes}
-                                         onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                                     />
-                                 </div>
-
-                                 {/* Panel de Servicios Extra */}
-                                 <div className="space-y-2 pt-4 border-t border-slate-100">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">¿Añadir Servicio Extra? (Opcional)</label>
-                                    <div className="flex gap-2">
-                                        <input 
-                                            type="text" 
-                                            placeholder="Detalle (Ej. Limpieza a fondo)" 
-                                            className="flex-[2] px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
-                                            value={extraServiceData.description}
-                                            onChange={(e) => setExtraServiceData({...extraServiceData, description: e.target.value})}
-                                        />
-                                        <input 
-                                            type="number" 
-                                            placeholder="Precio €" 
-                                            className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
-                                            value={extraServiceData.price}
-                                            onChange={(e) => setExtraServiceData({...extraServiceData, price: e.target.value})}
-                                        />
-                                        <button 
-                                            type="button" 
-                                            className="px-4 py-3 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors font-bold"
-                                            onClick={() => {
-                                                if (extraServiceData.description && extraServiceData.price) {
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh]">
+                             <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex justify-between items-center">
+                                <h2 className="text-2xl font-extrabold text-slate-800 uppercase tracking-tight">{editingId ? 'Editar Asignación' : 'Programar Nueva Ruta'}</h2>
+                                <button onClick={() => setShowAddModal(false)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition-all"><X size={20}/></button>
+                             </div>
+                             
+                             <div className="overflow-y-auto p-10">
+                                 <form onSubmit={handleCreateOrUpdate} className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                         <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cliente</label>
+                                            <select 
+                                                required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
+                                                value={formData.clientId}
+                                                onChange={(e) => {
+                                                    const clientId = e.target.value;
+                                                    const client = clients.find(c => c._id === clientId);
                                                     setFormData({
-                                                        ...formData,
-                                                        extraServices: [...formData.extraServices, {
-                                                            description: extraServiceData.description,
-                                                            price: parseFloat(extraServiceData.price)
-                                                        }]
+                                                        ...formData, 
+                                                        clientId, 
+                                                        price: client ? client.basePrice : 0 
                                                     });
-                                                    setExtraServiceData({ description: '', price: '' });
-                                                }
-                                            }}
-                                        >
-                                            <Plus size={20} />
-                                        </button>
+                                                }}
+                                            >
+                                                <option value="">Selecciona un cliente...</option>
+                                                {clients.map(c => <option key={c._id} value={c._id}>{c.companyName} ({c.basePrice}€)</option>)}
+                                            </select>
+                                         </div>
+                                         <div className="space-y-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Operario Asignado</label>
+                                            <select 
+                                                required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
+                                                value={formData.workerId}
+                                                onChange={(e) => setFormData({...formData, workerId: e.target.value})}
+                                            >
+                                                <option value="">Elige un cristalero...</option>
+                                                {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                                            </select>
+                                         </div>
                                     </div>
-                                    
-                                    {/* Lista de Extras Añadidos */}
-                                    {formData.extraServices.length > 0 && (
-                                        <div className="mt-3 space-y-2">
-                                            {formData.extraServices.map((ex, idx) => (
-                                                <div key={idx} className="flex items-center justify-between text-sm px-4 py-2 bg-blue-50 text-blue-800 rounded-lg">
-                                                    <span className="font-bold">{ex.description}</span>
-                                                    <span className="font-extrabold">+{ex.price}€</span>
-                                                </div>
-                                            ))}
-                                            <div className="text-right text-sm font-black text-slate-900 mt-2 pr-2">
-                                                Total Extra: +{formData.extraServices.reduce((sum, item) => sum + item.price, 0).toFixed(2)}€
-                                            </div>
+                                     <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Automático (€)</label>
+                                        <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600">
+                                            {formData.price || '0.00'}€
                                         </div>
-                                    )}
-                                 </div>
+                                     </div>
+                                     <div className="space-y-2">
+                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
+                                         <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                                     </div>
 
-                                <div className="flex gap-4 pt-4">
-                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Cancelar</button>
-                                    <button 
-                                     type="submit" 
-                                     className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95"
-                                 >
-                                     {editingId ? 'Guardar Cambios' : 'Asignar Servicio'}
-                                 </button>
-                                </div>
-                             </form>
+                                     <div className="space-y-2">
+                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Notas / Instrucciones para el Cristalero</label>
+                                         <textarea 
+                                             className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-medium text-sm min-h-[100px]"
+                                             placeholder="Ej: El cliente prefiere que se empiece por la fachada trasera o tiene un código de acceso..."
+                                             value={formData.notes}
+                                             onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                                         />
+                                     </div>
+
+                                     {/* Panel de Servicios Extra */}
+                                     <div className="space-y-2 pt-4 border-t border-slate-100">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">¿Añadir Servicio Extra? (Opcional)</label>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Detalle (Ej. Limpieza a fondo)" 
+                                                className="flex-[2] px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
+                                                value={extraServiceData.description}
+                                                onChange={(e) => setExtraServiceData({...extraServiceData, description: e.target.value})}
+                                            />
+                                            <input 
+                                                type="number" 
+                                                placeholder="Precio €" 
+                                                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
+                                                value={extraServiceData.price}
+                                                onChange={(e) => setExtraServiceData({...extraServiceData, price: e.target.value})}
+                                            />
+                                            <button 
+                                                type="button" 
+                                                className="px-4 py-3 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors font-bold"
+                                                onClick={() => {
+                                                    if (extraServiceData.description && extraServiceData.price) {
+                                                        setFormData({
+                                                            ...formData,
+                                                            extraServices: [...formData.extraServices, {
+                                                                description: extraServiceData.description,
+                                                                price: parseFloat(extraServiceData.price)
+                                                            }]
+                                                        });
+                                                        setExtraServiceData({ description: '', price: '' });
+                                                    }
+                                                }}
+                                            >
+                                                <Plus size={20} />
+                                            </button>
+                                        </div>
+                                        
+                                        {/* Lista de Extras Añadidos */}
+                                        {formData.extraServices.length > 0 && (
+                                            <div className="mt-3 space-y-2">
+                                                {formData.extraServices.map((ex, idx) => (
+                                                    <div key={idx} className="flex items-center justify-between text-sm px-4 py-2 bg-blue-50 text-blue-800 rounded-lg">
+                                                        <span className="font-bold">{ex.description}</span>
+                                                        <span className="font-extrabold">+{ex.price}€</span>
+                                                    </div>
+                                                ))}
+                                                <div className="text-right text-sm font-black text-slate-900 mt-2 pr-2">
+                                                    Total Extra: +{formData.extraServices.reduce((sum, item) => sum + item.price, 0).toFixed(2)}€
+                                                </div>
+                                            </div>
+                                        )}
+                                     </div>
+
+                                    <div className="flex gap-4 pt-4">
+                                        <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Cancelar</button>
+                                        <button 
+                                         type="submit" 
+                                         className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95"
+                                     >
+                                         {editingId ? 'Guardar Cambios' : 'Asignar Servicio'}
+                                     </button>
+                                    </div>
+                                 </form>
+                             </div>
                         </motion.div>
                     </div>
                 )}
@@ -617,12 +633,13 @@ const Assignments = () => {
             <AnimatePresence>
                 {showRouteModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-2xl p-10 shadow-3xl overflow-y-auto max-h-[90vh]">
-                             <div className="flex justify-between items-center mb-8">
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-2xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh]">
+                             <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex justify-between items-center">
                                 <h2 className="text-2xl font-extrabold text-slate-800 uppercase tracking-tight">Crear Ruta Completa para Cristalero</h2>
-                                <button onClick={() => setShowRouteModal(false)} className="p-2 hover:bg-slate-100 rounded-full"><X/></button>
+                                <button onClick={() => setShowRouteModal(false)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition-all"><X size={20}/></button>
                              </div>
                              
+                             <div className="overflow-y-auto p-10">
                              <form onSubmit={handleCreateRoute} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                      <div className="space-y-2">
@@ -644,12 +661,21 @@ const Assignments = () => {
                                             onChange={(e) => setRouteData({...routeData, date: e.target.value})} 
                                         />
                                      </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Seleccionar Clientes para la Ruta (Múltiples)</label>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[200px] overflow-y-auto p-4 bg-slate-50/50 rounded-[30px] border border-slate-100">
-                                        {clients.map(c => (
+                                     <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Seleccionar Clientes para la Ruta (Múltiples)</label>
+                                        <div className="relative w-1/2">
+                                            <Search className="absolute left-3 top-2 text-slate-400" size={14} />
+                                            <input 
+                                                type="text" placeholder="Filtrar por nombre..." 
+                                                className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-xs shadow-sm"
+                                                value={clientSearchQuery}
+                                                onChange={(e) => setClientSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-4 bg-slate-50/50 rounded-[30px] border border-slate-100">
+                                        {clients.filter(c => c.companyName?.toLowerCase().includes(clientSearchQuery.toLowerCase())).map(c => (
                                             <div 
                                                 key={c._id} 
                                                 onClick={() => {
@@ -662,13 +688,20 @@ const Assignments = () => {
                                                 }}
                                                 className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${routeData.clientIds.includes(c._id) ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-100 text-slate-700 hover:border-blue-200'}`}
                                             >
-                                                <span className="font-bold text-xs truncate max-w-[150px]">{c.companyName}</span>
+                                                <div className="flex flex-col truncate pr-2">
+                                                    <span className="font-bold text-xs truncate">{c.companyName}</span>
+                                                    <span className="text-[10px] opacity-70 truncate italic">{c.address}</span>
+                                                </div>
                                                 {routeData.clientIds.includes(c._id) && <CheckCircle2 size={16} />}
                                             </div>
                                         ))}
                                     </div>
-                                    <p className="text-[10px] text-slate-400 font-medium px-2">Seleccionados: <span className="text-blue-600 font-bold">{routeData.clientIds.length}</span> clientes.</p>
+                                    <div className="flex items-center justify-between px-2">
+                                        <p className="text-[10px] text-slate-400 font-medium">Seleccionados: <span className="text-blue-600 font-bold">{routeData.clientIds.length}</span> clientes.</p>
+                                        {clientSearchQuery && <button onClick={() => setClientSearchQuery('')} className="text-[10px] text-blue-500 font-bold">Limpiar búsqueda</button>}
+                                    </div>
                                 </div>
+                              </div>
 
                                 <div className="space-y-2">
                                      <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nota General para esta Ruta</label>
@@ -688,6 +721,7 @@ const Assignments = () => {
                                     {loading ? 'Generando Ruta...' : `Confirmar Ruta (${routeData.clientIds.length} Clientes)`}
                                 </button>
                              </form>
+                             </div>
                         </motion.div>
                     </div>
                 )}
@@ -703,7 +737,7 @@ const Assignments = () => {
                                 exit={{ scale: 0.9, opacity: 0 }}
                                 className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                             >
-                                <div className="p-8 border-b border-slate-50 flex items-center justify-between">
+                                <div className="sticky top-0 bg-white z-20 p-8 border-b border-slate-50 flex items-center justify-between">
                                     <div>
                                         <h3 className="text-xl font-extrabold text-slate-800">Detalle de Limpiezas</h3>
                                         <p className="text-sm text-slate-400 font-medium">{selectedAssignmentForLogs.clientId?.companyName}</p>
@@ -743,7 +777,8 @@ const Assignments = () => {
                                                             </div>
                                                             <div>
                                                                 <p className="text-sm font-extrabold text-slate-800">{new Date(log.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                                                                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest mt-0.5">
+                                                                <p className="text-[11px] font-black text-blue-600 uppercase tracking-tight mb-1">{log.workerName || 'Cristalero Desconocido'}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest">
                                                                     <Clock size={10}/> {new Date(log.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                                                 </p>
                                                             </div>
@@ -774,7 +809,6 @@ const Assignments = () => {
                         </div>
                     )}
                 </AnimatePresence>
-            </div>
 
             <ConfirmModal 
                 isOpen={deleteModal.isOpen}

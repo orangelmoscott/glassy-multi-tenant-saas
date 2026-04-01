@@ -105,7 +105,7 @@ const LandingPage = () => {
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Facturación Automática por Email</span></li>
                     </ul>
                     <Link to={isLoggedIn ? "/app/settings" : "/register?plan=autonomo"} className="w-full">
-                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white transition-all text-slate-700">Empezar ahora</button>
+                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white transition-all text-slate-700">Empezar Plan</button>
                     </Link>
                 </div>
 
@@ -125,7 +125,7 @@ const LandingPage = () => {
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Dashboard Multi-trabajador</span></li>
                     </ul>
                     <Link to={isLoggedIn ? "/app/settings" : "/register?plan=pro"} className="w-full">
-                        <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200/50 active:scale-95">Comenzar Pro</button>
+                        <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200/50 active:scale-95">Empezar Plan</button>
                     </Link>
                 </div>
 
@@ -144,7 +144,7 @@ const LandingPage = () => {
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span>Soporte prioritario y acceso total</span></li>
                     </ul>
                     <Link to={isLoggedIn ? "/app/settings" : "/register?plan=business"} className="w-full">
-                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white text-slate-700 transition-all">Contactar Soporte</button>
+                        <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white text-slate-700 transition-all">Empezar Plan</button>
                     </Link>
                 </div>
             </div>

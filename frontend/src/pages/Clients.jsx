@@ -146,8 +146,9 @@ const Clients = () => {
 
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto space-y-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="max-w-7xl mx-auto space-y-12">
+                {/* Header - Sticky */}
+                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
                             <Users className="text-blue-600" size={32} /> Gestión de Cartera
@@ -244,11 +245,12 @@ const Clients = () => {
             <AnimatePresence>
                 {showAddForm && (
                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-                        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-xl p-10 shadow-3xl overflow-y-auto max-h-[90vh]">
-                            <div className="flex items-center justify-between mb-8">
+                        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex items-center justify-between">
                                 <h2 className="text-2xl font-black text-slate-800">{editingClient ? 'Modificar Cliente' : 'Nuevo Registro'}</h2>
                                 <button onClick={closeModal} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-full transition-all"><X size={20}/></button>
                             </div>
+                            <div className="overflow-y-auto p-10 flex-1">
                             <form onSubmit={handleAction} className="space-y-4">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre de la Empresa</label>
@@ -289,6 +291,7 @@ const Clients = () => {
                                     {editingClient ? 'Confirmar Cambios' : 'Registrar Cliente'}
                                 </button>
                             </form>
+                            </div>
                         </motion.div>
                    </div>
                 )}
@@ -299,7 +302,7 @@ const Clients = () => {
                  {selectedClient && (
                      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
                          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-3xl">
-                             <div className="p-10 border-b border-slate-50 flex items-center justify-between">
+                             <div className="sticky top-0 bg-white z-10 p-10 border-b border-slate-50 flex items-center justify-between">
                                  <div className="flex items-center gap-5">
                                      <div className="w-16 h-16 bg-blue-50 rounded-[20px] flex items-center justify-center text-blue-600 font-black text-2xl">
                                          {selectedClient.companyName.charAt(0)}
@@ -318,24 +321,50 @@ const Clients = () => {
                                  {loadingDetails ? (
                                     <div className="text-center py-20 animate-pulse font-bold text-slate-400 uppercase tracking-widest">Consultando registros...</div>
                                  ) : clientAssignments.length > 0 ? (
-                                    clientAssignments.map(as => (
-                                        <div key={as._id} className="bg-white p-5 rounded-2xl border border-slate-100 flex items-center justify-between shadow-sm">
-                                            <div>
-                                                <p className="font-black text-slate-800">{new Date(as.date).toLocaleDateString('es-ES', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${as.status === 'completado' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                        {as.status}
-                                                    </span>
-                                                    <span className="text-[10px] font-bold text-slate-400">{as.workerId?.fullName || 'S/A'}</span>
+                                    clientAssignments.flatMap(as => {
+                                        // Si hay logs, mostramos cada log como una entrada de historial única
+                                        if (as.visitLogs && as.visitLogs.length > 0) {
+                                            return as.visitLogs.map((log, lIdx) => ({
+                                                ...as,
+                                                displayDate: log.date,
+                                                displayWorker: log.workerName || 'Staff',
+                                                isVisit: true,
+                                                logId: `${as._id}-${lIdx}`
+                                            }));
+                                        }
+                                        // Si no hay logs (ej: servicios antiguos), mostramos la asignación base
+                                        return [{
+                                            ...as,
+                                            displayDate: as.date,
+                                            displayWorker: as.workerId?.fullName || 'S/A',
+                                            isVisit: false,
+                                            logId: as._id
+                                        }];
+                                    })
+                                    .sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate)) // Más reciente primero
+                                    .map((entry) => (
+                                        <div key={entry.logId} className="bg-white p-6 rounded-[30px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${entry.status === 'completado' ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
+                                                    <CheckCircle2 size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-black text-slate-800 text-sm">
+                                                        {new Date(entry.displayDate).toLocaleDateString('es-ES', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                    </p>
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.displayWorker}</span>
+                                                        {entry.isVisit && <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-[8px] font-black uppercase">Visita</span>}
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-black text-slate-900 text-lg">{as.price}€</p>
+                                                <p className="font-black text-slate-900 text-md">{entry.price}€</p>
                                                 <button 
-                                                    onClick={() => window.open(`https://glassy-backend.onrender.com/assignments/${as._id}/invoice`, '_blank')}
-                                                    className="text-[10px] text-blue-600 font-black hover:underline uppercase tracking-widest"
+                                                    onClick={() => window.open(`https://glassy-backend.onrender.com/assignments/${entry._id}/invoice`, '_blank')}
+                                                    className="text-[9px] text-blue-600 font-extrabold hover:underline uppercase tracking-widest"
                                                 >
-                                                    Descargar PDF
+                                                    Ver Factura
                                                 </button>
                                             </div>
                                         </div>

@@ -100,7 +100,8 @@ const Workers = () => {
     return (
         <DashboardLayout>
             <div className="max-w-6xl mx-auto space-y-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                {/* Header - Sticky */}
+                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
                         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
                             <HardHat className="text-blue-600" size={32} /> Squad de Operarios
@@ -159,11 +160,12 @@ const Workers = () => {
             <AnimatePresence>
                 {showAddForm && (
                    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-lg p-10 shadow-3xl overflow-hidden relative">
-                            <div className="flex items-center justify-between mb-8">
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-lg shadow-3xl overflow-hidden flex flex-col max-h-[90vh] relative">
+                            <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex items-center justify-between">
                                 <h2 className="text-2xl font-black text-slate-800">{editingWorker ? 'Modificar Perfil' : 'Dar de Alta Operario'}</h2>
                                 <button onClick={closeModal} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24}/></button>
                             </div>
+                            <div className="overflow-y-auto p-10 flex-1">
                             <form onSubmit={handleAction} className="space-y-4">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
@@ -205,6 +207,7 @@ const Workers = () => {
                                     {editingWorker ? 'Actualizar Datos' : 'Autorizar Nuevo Acceso'}
                                 </button>
                             </form>
+                            </div>
                         </motion.div>
                    </div>
                 )}

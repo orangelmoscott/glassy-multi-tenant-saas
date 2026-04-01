@@ -84,7 +84,7 @@ const MyRoutes = () => {
                       status: 'en_ruta',
                       progressInfo: {
                           ...a.progressInfo,
-                          text: `${(a.visitsDone || 0) + 1}/${a.expectedVisits || 1} este mes`
+                          text: `${(a.visitsDone || 0) + 1}/${a.expectedVisits || 1} este servicio`
                       }
                   } : a));
             }
@@ -175,6 +175,17 @@ const MyRoutes = () => {
                                                 </div>
                                                 <div>
                                                     <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none mb-2">{job.clientId?.companyName}</h3>
+                                                    {job.expectedVisits > 1 && (
+                                                        <div className="flex items-center gap-2 mb-3">
+                                                            <div className="flex-1 h-1.5 w-32 bg-slate-100 rounded-full overflow-hidden">
+                                                                <div 
+                                                                    className="h-full bg-blue-500 rounded-full shadow-sm shadow-blue-200" 
+                                                                    style={{ width: `${Math.min(((job.visitsDone || 0) / (job.expectedVisits || 1)) * 100, 100)}%` }}
+                                                                ></div>
+                                                            </div>
+                                                            <span className="text-[9px] font-black text-slate-400">Progreso Total</span>
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-center gap-2 text-slate-400 font-bold text-sm">
                                                         <MapPin size={16} className="text-blue-500" />
                                                         {job.clientId?.address}
