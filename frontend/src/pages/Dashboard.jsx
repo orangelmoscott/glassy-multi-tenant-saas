@@ -11,17 +11,19 @@ import DashboardLayout from '../components/DashboardLayout';
 
 const Dashboard = () => {
     const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [month, setMonth] = useState(new Date().getMonth());
+    const [year, setYear] = useState(new Date().getFullYear());
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
 
     useEffect(() => {
         fetchStats();
-    }, []);
+    }, [month, year]);
 
     const fetchStats = async () => {
+        setLoading(true);
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/dashboard/stats', {
+            const res = await axios.get(`https://glassy-backend.onrender.com/dashboard/stats?month=${month}&year=${year}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStats(res.data);
@@ -90,9 +92,28 @@ const Dashboard = () => {
                         </h1>
                         <p className="text-slate-500 mt-2 font-medium italic">Monitoriza el rendimiento de {user.companyName} en tiempo real.</p>
                     </div>
-                    <div className="bg-white px-6 py-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
+                    <div className="bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
                         <Calendar className="text-blue-500" size={20} />
-                        <span className="font-bold text-slate-700">{new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase()}</span>
+                        <div className="flex items-center gap-2">
+                             <select 
+                                 value={month} 
+                                 onChange={(e) => setMonth(parseInt(e.target.value))}
+                                 className="outline-none font-bold text-slate-700 bg-transparent cursor-pointer uppercase text-sm"
+                             >
+                                 {['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'].map((m, i) => (
+                                     <option key={i} value={i}>{m}</option>
+                                 ))}
+                             </select>
+                             <select 
+                                 value={year} 
+                                 onChange={(e) => setYear(parseInt(e.target.value))}
+                                 className="outline-none font-bold text-slate-700 bg-transparent cursor-pointer text-sm"
+                             >
+                                 {[2024, 2025, 2026, 2027].map(y => (
+                                     <option key={y} value={y}>{y}</option>
+                                 ))}
+                             </select>
+                        </div>
                     </div>
                 </div>
 

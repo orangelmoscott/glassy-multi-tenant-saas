@@ -13,8 +13,11 @@ router.get('/stats', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const year = req.query.year ? parseInt(req.query.year) : now.getFullYear();
+        const month = req.query.month ? parseInt(req.query.month) : now.getMonth(); // 0-indexed
+
+        const startOfMonth = new Date(year, month, 1);
+        const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
         // 1. Clientes Activos
         const totalClients = await Client.countDocuments({ 
