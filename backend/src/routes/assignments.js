@@ -261,16 +261,57 @@ router.get('/my-history', authenticate, async (req, res) => {
 
 const { checkPlanLimit } = require('../middlewares/checkPlan');
 
+const findConflict = async (clientId, dateStr, tenantId, excludeId = null) => {
+    const targetDate = new Date(dateStr);
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const query = {
+        clientId,
+        tenantId,
+        date: { $gte: startOfDay, $lte: endOfDay },
+        isDeleted: { $ne: true }
+    };
+    if (excludeId) query._id = { $ne: excludeId };
+
+    return await Assignment.findOne(query).populate('workerId', 'fullName username');
+};
+
 /**
  * POST | Crear nueva asignación (Ruta Mensual/Servicio único)
  */
 router.post('/', authenticate, checkTrialStatus, checkPlanLimit('rutas_dia'), async (req, res) => {
     try {
-        const { clientId, date, notes, workerId, price, extraServices } = req.body;
+        const { clientId, date, notes, workerId, price, extraServices, forceReassign } = req.body;
         
         const client = await Client.findById(clientId);
         if (!client) return res.status(404).send({ message: 'Cliente no encontrado' });
         
+        const conflict = await findConflict(clientId, date || new Date(), req.user.tenantId);
+        if (conflict) {
+            if (!forceReassign) {
+                return res.status(409).json({
+                    error: 'CLIENT_ALREADY_ASSIGNED',
+                    message: `Este servicio ya está asignado a ${conflict.workerId?.fullName || conflict.workerId?.username} en esta misma fecha. ¿Deseas hacer el cambio y reasignarlo a este nuevo cristalero?`,
+                    conflictId: conflict._id,
+                    workerName: conflict.workerId?.fullName || conflict.workerId?.username
+                });
+            } else {
+                conflict.workerId = workerId;
+                if (price !== undefined) conflict.price = price;
+                if (notes !== undefined) conflict.notes = notes;
+                if (extraServices) conflict.extraServices = extraServices;
+                await conflict.save();
+                const populated = await Assignment.findById(conflict._id).populate([
+                    { path: 'clientId', select: 'companyName address' },
+                    { path: 'workerId', select: 'fullName username' }
+                ]);
+                return res.status(200).send(populated);
+            }
+        }
+
         let expectedVisits = 1;
         if (client.frequency === 'semanal') expectedVisits = 4;
         if (client.frequency === 'quincenal') expectedVisits = 2;
@@ -374,10 +415,25 @@ router.patch('/:id/status', authenticate, checkTrialStatus, async (req, res) => 
  */
 router.put('/:id', authenticate, checkTrialStatus, async (req, res) => {
     try {
-        const { clientId, date, notes, workerId, price, extraServices, status } = req.body;
+        const { clientId, date, notes, workerId, price, extraServices, status, forceReassign } = req.body;
         
         const assignment = await Assignment.findOne({ _id: req.params.id, tenantId: req.user.tenantId });
         if (!assignment) return res.status(404).send({ message: 'Asignación no encontrada' });
+
+        const conflict = await findConflict(clientId || assignment.clientId, date || assignment.date, req.user.tenantId, req.params.id);
+        if (conflict) {
+            if (!forceReassign) {
+                return res.status(409).json({
+                    error: 'CLIENT_ALREADY_ASSIGNED',
+                    message: `Este servicio ya está asignado a ${conflict.workerId?.fullName || conflict.workerId?.username} en esta misma fecha. ¿Deseas hacer el cambio y sobreescribir dicha asignación por la tuya actual?`,
+                    conflictId: conflict._id,
+                    workerName: conflict.workerId?.fullName || conflict.workerId?.username
+                });
+            } else {
+                // If forceReassign is true, we delete the conflict because we're moving this current assignment 'over' it.
+                await Assignment.deleteOne({ _id: conflict._id });
+            }
+        }
 
         // Update fields if provided
         if (clientId) assignment.clientId = clientId;

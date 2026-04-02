@@ -10,6 +10,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 import ConfirmModal from '../components/ConfirmModal';
 import UpgradeModal from '../components/UpgradeModal';
+import AlertModal from '../components/AlertModal';
+import ReassignModal from '../components/ReassignModal';
 
 const Assignments = () => {
     const [assignments, setAssignments] = useState([]);
@@ -37,6 +39,8 @@ const Assignments = () => {
     const [replicateModal, setReplicateModal] = useState({ isOpen: false });
     const [isProcessing, setIsProcessing] = useState(false);
     const [upgradeModal, setUpgradeModal] = useState({ isOpen: false, message: '', upgradeTo: '' });
+    const [alertModal, setAlertModal] = useState({ isOpen: false, title: '', message: '' });
+    const [reassignModal, setReassignModal] = useState({ isOpen: false, message: '', data: null });
 
     const [formData, setFormData] = useState({
         clientId: '',
@@ -99,7 +103,7 @@ const Assignments = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setAssignments(assignments.map(a => a._id === editingId ? res.data : a));
-                alert('Asignación actualizada');
+                setAlertModal({ isOpen: true, title: '¡Actualizado!', message: 'Asignación actualizada exitosamente.' });
             } else {
                 const res = await axios.post('https://glassy-backend.onrender.com/assignments', formData, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -120,15 +124,63 @@ const Assignments = () => {
                     upgradeTo: err.response.data.upgrade_to 
                 });
                 setShowAddModal(false);
+            } else if (err.response?.data?.error === 'CLIENT_ALREADY_ASSIGNED') {
+                 setReassignModal({
+                    isOpen: true,
+                    message: err.response.data.message,
+                    data: formData
+                 });
+                 setShowAddModal(false);
             } else {
-                alert(err.response?.data?.message || 'Error al procesar servicio');
+                setAlertModal({ isOpen: true, title: 'Error', message: err.response?.data?.message || 'Error al procesar servicio' });
             }
+        }
+    };
+
+    const confirmReassignment = async () => {
+        if (!reassignModal.data) return;
+        setIsProcessing(true);
+        try {
+            const formDataWithForce = { ...reassignModal.data, forceReassign: true };
+            if (editingId) {
+                const res = await axios.put(`https://glassy-backend.onrender.com/assignments/${editingId}`, formDataWithForce, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                // Find and remove the conflict we just consumed, and update the current one
+                setAssignments(prev => {
+                    const filtered = prev.filter(a => a._id !== err?.response?.data?.conflictId);
+                    return filtered.map(a => a._id === editingId ? res.data : a);
+                });
+                setAlertModal({ isOpen: true, title: '¡Actualizado!', message: 'Asignación actualizada exitosamente.' });
+            } else {
+                const res = await axios.post('https://glassy-backend.onrender.com/assignments', formDataWithForce, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                // In a creation, the assignment just gets over the conflicted one, let's just fetch everything or update array
+                // The backend returned the updated conflicting assignment.
+                setAssignments(prev => {
+                    const filtered = prev.filter(a => a._id !== res.data._id);
+                    return [res.data, ...filtered];
+                });
+                setAlertModal({ isOpen: true, title: '¡Ruta Reasignada!', message: 'La ruta ha sido unificada y asignada con éxito al nuevo cristalero.' });
+            }
+            fetchAssignments();
+            setReassignModal({ isOpen: false, message: '', data: null });
+            setEditingId(null);
+            setFormData({ clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: [] });
+        } catch (error) {
+             setAlertModal({ isOpen: true, title: 'Error', message: 'No se pudo realizar la reasignación.' });
+        } finally {
+            setIsProcessing(false);
         }
     };
 
     const handleCreateRoute = async (e) => {
         e.preventDefault();
-        if (routeData.clientIds.length === 0) return alert('Selecciona al menos un cliente');
+        if (routeData.clientIds.length === 0) {
+             setAlertModal({ isOpen: true, message: 'Selecciona al menos un cliente para la ruta.' });
+             return;
+        }
         
         try {
             setLoading(true);
@@ -149,7 +201,7 @@ const Assignments = () => {
             setAssignments([...newAssignments, ...assignments]);
             setShowRouteModal(false);
             setRouteData({ workerId: '', date: '', clientIds: [], notes: '' });
-            alert('Ruta completa asignada exitosamente');
+            setAlertModal({ isOpen: true, title: '¡Genial!', message: 'Ruta completa asignada exitosamente' });
         } catch (err) {
             if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
                 setUpgradeModal({ 
@@ -158,8 +210,11 @@ const Assignments = () => {
                     upgradeTo: err.response.data.upgrade_to 
                 });
                 setShowRouteModal(false);
+            } else if (err.response?.data?.error === 'CLIENT_ALREADY_ASSIGNED') {
+                 setAlertModal({ isOpen: true, title: 'Conflicto Detectado', message: err.response.data.message + " (Sugerencia: Para evitar duplicados en bloques, actualiza la ruta concreta de ese cliente de forma individual)." });
+                 setShowRouteModal(false);
             } else {
-                alert('Error al asignar ruta completa');
+                setAlertModal({ isOpen: true, title: 'Error', message: 'Error al asignar ruta completa' });
             }
         } finally {
             setLoading(false);
@@ -186,7 +241,7 @@ const Assignments = () => {
             });
 
             if (prevAssignments.length === 0) {
-                alert('No hay rutas en el mes anterior para replicar.');
+                setAlertModal({ isOpen: true, message: 'No hay rutas en el mes anterior para replicar.' });
                 return;
             }
 
@@ -204,7 +259,7 @@ const Assignments = () => {
 
             await Promise.all(promises);
             fetchAssignments();
-            alert(`Se han replicado ${prevAssignments.length} rutas con éxito.`);
+            setAlertModal({ isOpen: true, title: '¡Éxito!', message: `Se han replicado ${prevAssignments.length} rutas con éxito.` });
         } catch (err) {
              if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
                 setUpgradeModal({ 
@@ -212,8 +267,10 @@ const Assignments = () => {
                     message: err.response.data.message, 
                     upgradeTo: err.response.data.upgrade_to 
                 });
+            } else if (err.response?.data?.error === 'CLIENT_ALREADY_ASSIGNED') {
+                 setAlertModal({ isOpen: true, title: 'Advertencia Parcial', message: 'Algunas rutas han chocado con clientes que ya estaban asignados el mismo día, pero el proceso de replicado se completó o interrumpió parcialmente. Actualiza para verificar.' });
             } else {
-                alert('Error al replicar el mes.');
+                setAlertModal({ isOpen: true, title: 'Error', message: 'Error al replicar el mes.' });
             }
         } finally {
             setLoading(false);
@@ -230,7 +287,7 @@ const Assignments = () => {
             setAssignments(assignments.filter(a => a._id !== deleteModal.assignmentId));
             setDeleteModal({ isOpen: false, assignmentId: null });
         } catch (err) {
-            alert('Error al eliminar asignación');
+            setAlertModal({ isOpen: true, title: 'Error', message: 'Error al eliminar asignación' });
         } finally {
             setIsProcessing(false);
         }
@@ -251,7 +308,7 @@ const Assignments = () => {
             link.click();
             link.remove();
         } catch (err) {
-            alert('Error al generar PDF. Asegúrate de tener datos de empresa configurados.');
+            setAlertModal({ isOpen: true, title: 'Oops', message: 'Error al generar PDF. Asegúrate de tener datos de empresa configurados.' });
         }
     };
 
@@ -262,9 +319,9 @@ const Assignments = () => {
             const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${emailModal.assignmentId}/send-invoice`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            alert(res.data.message);
+            setAlertModal({ isOpen: true, title: 'Email Enviado', message: res.data.message });
         } catch (err) {
-            alert(err.response?.data?.message || 'Error al enviar email');
+            setAlertModal({ isOpen: true, title: 'Error Envío', message: err.response?.data?.message || 'Error al enviar email' });
         } finally {
             setIsProcessing(false);
             setEmailModal({ isOpen: false, assignmentId: null });
@@ -873,6 +930,24 @@ const Assignments = () => {
                 onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })}
                 message={upgradeModal.message}
                 upgradeTo={upgradeModal.upgradeTo}
+            />
+
+            <AlertModal 
+                isOpen={alertModal.isOpen} 
+                onClose={() => setAlertModal({ isOpen: false, title: '', message: '' })}
+                title={alertModal.title}
+                message={alertModal.message}
+            />
+
+            <ReassignModal
+                isOpen={reassignModal.isOpen}
+                onClose={() => {
+                    setReassignModal({ isOpen: false, message: '', data: null });
+                    setEditingId(null);
+                }}
+                onConfirm={confirmReassignment}
+                message={reassignModal.message}
+                loading={isProcessing}
             />
         </DashboardLayout>
     );
