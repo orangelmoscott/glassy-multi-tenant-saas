@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Client = require('../models/Client');
 const { authenticate, authorize } = require('../middlewares/auth');
-const { checkClientLimit, checkTrialStatus } = require('../middlewares/planGuard');
+const { checkTrialStatus } = require('../middlewares/planGuard');
+const { checkPlanLimit } = require('../middlewares/checkPlan');
 
 /**
  * GET /clients — Listar solo mis clientes (Aislamiento Multi-tenant)
@@ -70,7 +71,7 @@ router.get('/', authenticate, async (req, res) => {
 /**
  * POST /clients — Crear cliente en mi Tenant (Protegido por Plan SaaS)
  */
-router.post('/', authenticate, authorize(['owner', 'admin']), checkTrialStatus, checkClientLimit, async (req, res) => {
+router.post('/', authenticate, authorize(['owner', 'admin']), checkTrialStatus, checkPlanLimit('clientes'), async (req, res) => {
     try {
         const clientData = {
             ...req.body,

@@ -49,15 +49,21 @@ const checkPlanLimit = (resourceType) => {
             if (resourceType === 'clientes') {
                 currentCount = await Client.countDocuments({ tenantId, isDeleted: false });
             } else if (resourceType === 'cristaleros') {
-                currentCount = await Worker.countDocuments({ tenantId, role: 'worker', isDeleted: false });
+                currentCount = await Worker.countDocuments({ tenantId, role: 'cristalero', isDeleted: { $ne: true } });
             } else if (resourceType === 'rutas_dia') {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const endOfDay = new Date();
+                // Verificar la fecha que se está intentando agendar (si viene en body), sino usar hoy
+                const targetDate = req.body.date ? new Date(req.body.date) : new Date();
+                if (isNaN(targetDate.getTime())) {
+                    return res.status(400).json({ message: 'Fecha inválida solicitada.' });
+                }
+                const startOfDay = new Date(targetDate);
+                startOfDay.setHours(0, 0, 0, 0);
+                const endOfDay = new Date(targetDate);
                 endOfDay.setHours(23, 59, 59, 999);
+                
                 currentCount = await Assignment.countDocuments({
                     tenantId,
-                    date: { $gte: today, $lte: endOfDay },
+                    date: { $gte: startOfDay, $lte: endOfDay },
                     isDeleted: { $ne: true }
                 });
             }
