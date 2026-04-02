@@ -5,11 +5,12 @@ const Client = require('../models/Client');
 const User = require('../models/User');
 const Expense = require('../models/Expense');
 const { authenticate } = require('../middlewares/auth');
+const { requireProfessionalPlan } = require('../middlewares/planGuard');
 
 /**
  * GET | Obtener Estadísticas Globales del Negocio
  */
-router.get('/stats', authenticate, async (req, res) => {
+router.get('/stats', authenticate, requireProfessionalPlan, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const now = new Date();

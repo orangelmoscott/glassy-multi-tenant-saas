@@ -15,8 +15,8 @@ import Workers from './pages/Workers';
 import MyRoutes from './pages/MyRoutes';
 import Billing from './pages/Billing';
 
-// Componente Profesional de Guardia de Ruta (RBAC)
-const ProtectedRoute = ({ children, allowedRoles }) => {
+// Componente Profesional de Guardia de Ruta (RBAC & Planes)
+const ProtectedRoute = ({ children, allowedRoles, requireProPlan = false }) => {
     const userString = localStorage.getItem('glassy_user');
     if (!userString) return <Navigate to="/login" replace />;
     
@@ -25,6 +25,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         const isWorker = user.role === 'worker' || user.role === 'cristalero';
         return <Navigate to={isWorker ? "/app/my-routes" : "/app/clients"} replace />;
     }
+
+    if (requireProPlan) {
+        const userPlan = user.planId || user.plan || 'starter';
+        if (['starter', 'autonomo'].includes(userPlan)) {
+            return <Navigate to="/app/clients" replace />;
+        }
+    }
+
     return children;
 };
 
@@ -107,13 +115,13 @@ function App() {
                 
                 {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
                 <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
-                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
+                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireProPlan={true}><Dashboard /></ProtectedRoute>} />
                 <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
                 <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
                 <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
                 <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
-                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Expenses /></ProtectedRoute>} />
-                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Billing /></ProtectedRoute>} />
+                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireProPlan={true}><Expenses /></ProtectedRoute>} />
+                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireProPlan={true}><Billing /></ProtectedRoute>} />
 
                 {/* Canales de Campo (Operarios) */}
                 <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'cristalero', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />

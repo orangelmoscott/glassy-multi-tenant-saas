@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Expense = require('../models/Expense');
 const { authenticate } = require('../middlewares/auth');
+const { requireProfessionalPlan } = require('../middlewares/planGuard');
 
 /**
  * GET | Listar Gastos de la Empresa
  */
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, requireProfessionalPlan, async (req, res) => {
     try {
         const tenantId = req.user.tenantId;
         const expenses = await Expense.find({ tenantId }).sort({ date: -1 });
@@ -19,7 +20,7 @@ router.get('/', authenticate, async (req, res) => {
 /**
  * POST | Crear Nuevo Gasto
  */
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, requireProfessionalPlan, async (req, res) => {
     try {
         const newExpense = new Expense({
             ...req.body,
@@ -36,7 +37,7 @@ router.post('/', authenticate, async (req, res) => {
 /**
  * DELETE | Borrar Gasto
  */
-router.delete('/:id', authenticate, async (req, res) => {
+router.delete('/:id', authenticate, requireProfessionalPlan, async (req, res) => {
     try {
         await Expense.findOneAndDelete({ _id: req.params.id, tenantId: req.user.tenantId });
         res.send({ message: 'Gasto eliminado' });

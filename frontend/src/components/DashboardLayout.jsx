@@ -23,13 +23,13 @@ const DashboardLayout = ({ children }) => {
     }, [isOwner, user.plan, user.planId, user.trialDaysLeft]);
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'] },
+        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'autonomo'] },
         { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['owner', 'admin'] },
         { icon: HardHat, label: 'Operarios', path: '/app/workers', roles: ['owner', 'admin'] },
         { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['owner', 'admin'] },
         { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker', 'cristalero'] },
-        { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'] },
-        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'] },
+        { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'autonomo'] },
+        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'autonomo'] },
         { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
     ];
 
@@ -38,7 +38,13 @@ const DashboardLayout = ({ children }) => {
         navigate('/login');
     };
 
-    const filteredMenu = menuItems.filter(item => item.roles.includes(user.role));
+    const _userPlan = user.planId || user.plan || 'starter';
+
+    const filteredMenu = menuItems.filter(item => {
+        if (!item.roles.includes(user.role)) return false;
+        if (item.restrictedPlans && item.restrictedPlans.includes(_userPlan)) return false;
+        return true;
+    });
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-x-hidden">
