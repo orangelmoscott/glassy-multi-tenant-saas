@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 import ConfirmModal from '../components/ConfirmModal';
+import UpgradeModal from '../components/UpgradeModal';
 
 const Workers = () => {
     const [workers, setWorkers] = useState([]);
@@ -22,6 +23,7 @@ const Workers = () => {
     
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, workerId: null });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [upgradeModal, setUpgradeModal] = useState({ isOpen: false, message: '', upgradeTo: '' });
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -61,7 +63,16 @@ const Workers = () => {
             }
             closeModal();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error en la operación');
+            if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
+                setUpgradeModal({ 
+                    isOpen: true, 
+                    message: err.response.data.message, 
+                    upgradeTo: err.response.data.upgrade_to 
+                });
+                closeModal();
+            } else {
+                alert(err.response?.data?.message || 'Error en la operación');
+            }
         }
     };
 
@@ -220,6 +231,13 @@ const Workers = () => {
                 message="Esta acción revocará el acceso del trabajador al sistema y lo ocultará de tus listas. Sus servicios pasados permanecerán en el historial."
                 confirmText="Sí, Eliminar Operario"
                 loading={isDeleting}
+            />
+            
+            <UpgradeModal
+                isOpen={upgradeModal.isOpen}
+                onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })}
+                message={upgradeModal.message}
+                upgradeTo={upgradeModal.upgradeTo}
             />
         </DashboardLayout>
     );

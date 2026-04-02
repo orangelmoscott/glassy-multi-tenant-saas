@@ -259,10 +259,12 @@ router.get('/my-history', authenticate, async (req, res) => {
 });
 
 
+const { checkPlanLimit } = require('../middlewares/checkPlan');
+
 /**
  * POST | Crear nueva asignación (Ruta Mensual/Servicio único)
  */
-router.post('/', authenticate, checkTrialStatus, async (req, res) => {
+router.post('/', authenticate, checkTrialStatus, checkPlanLimit('rutas_dia'), async (req, res) => {
     try {
         const { clientId, date, notes, workerId, price, extraServices } = req.body;
         

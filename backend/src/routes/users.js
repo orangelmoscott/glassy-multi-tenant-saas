@@ -21,10 +21,12 @@ router.get('/workers', authenticate, authorize(['owner', 'admin']), async (req, 
     }
 });
 
+const { checkPlanLimit } = require('../middlewares/checkPlan');
+
 /**
  * POST | Crear un nuevo operario
  */
-router.post('/workers', authenticate, authorize(['owner', 'admin']), checkTrialStatus, async (req, res) => {
+router.post('/workers', authenticate, authorize(['owner', 'admin']), checkTrialStatus, checkPlanLimit('cristaleros'), async (req, res) => {
     try {
         const { username, password, fullName, phone } = req.body;
         

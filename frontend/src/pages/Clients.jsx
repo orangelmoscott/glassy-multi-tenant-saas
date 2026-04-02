@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 import ConfirmModal from '../components/ConfirmModal';
+import UpgradeModal from '../components/UpgradeModal';
 
 const Clients = () => {
     const [clients, setClients] = useState([]);
@@ -33,6 +34,7 @@ const Clients = () => {
     // State para ConfirmModal
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, clientId: null });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [upgradeModal, setUpgradeModal] = useState({ isOpen: false, message: '', upgradeTo: '' });
 
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
@@ -73,7 +75,16 @@ const Clients = () => {
             }
             closeModal();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error en la operación');
+            if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
+                setUpgradeModal({ 
+                    isOpen: true, 
+                    message: err.response.data.message, 
+                    upgradeTo: err.response.data.upgrade_to 
+                });
+                closeModal();
+            } else {
+                alert(err.response?.data?.message || 'Error en la operación');
+            }
         }
     };
 
@@ -386,6 +397,13 @@ const Clients = () => {
                 message="Esta acción archivará al cliente y todo su historial de servicios ya no estará disponible en tu panel. ¿Estás seguro de continuar?"
                 confirmText="Sí, Eliminar Cliente"
                 loading={isDeleting}
+            />
+
+            <UpgradeModal
+                isOpen={upgradeModal.isOpen}
+                onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })}
+                message={upgradeModal.message}
+                upgradeTo={upgradeModal.upgradeTo}
             />
         </DashboardLayout>
     );

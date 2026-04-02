@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 import ConfirmModal from '../components/ConfirmModal';
+import UpgradeModal from '../components/UpgradeModal';
 
 const Assignments = () => {
     const [assignments, setAssignments] = useState([]);
@@ -35,6 +36,7 @@ const Assignments = () => {
     const [emailModal, setEmailModal] = useState({ isOpen: false, assignmentId: null });
     const [replicateModal, setReplicateModal] = useState({ isOpen: false });
     const [isProcessing, setIsProcessing] = useState(false);
+    const [upgradeModal, setUpgradeModal] = useState({ isOpen: false, message: '', upgradeTo: '' });
 
     const [formData, setFormData] = useState({
         clientId: '',
@@ -111,7 +113,16 @@ const Assignments = () => {
             });
             fetchAssignments(); // Refresh assignments after create/update
         } catch (err) {
-            alert('Error al procesar servicio');
+            if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
+                setUpgradeModal({ 
+                    isOpen: true, 
+                    message: err.response.data.message, 
+                    upgradeTo: err.response.data.upgrade_to 
+                });
+                setShowAddModal(false);
+            } else {
+                alert(err.response?.data?.message || 'Error al procesar servicio');
+            }
         }
     };
 
@@ -140,7 +151,16 @@ const Assignments = () => {
             setRouteData({ workerId: '', date: '', clientIds: [], notes: '' });
             alert('Ruta completa asignada exitosamente');
         } catch (err) {
-            alert('Error al asignar ruta completa');
+            if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
+                setUpgradeModal({ 
+                    isOpen: true, 
+                    message: err.response.data.message, 
+                    upgradeTo: err.response.data.upgrade_to 
+                });
+                setShowRouteModal(false);
+            } else {
+                alert('Error al asignar ruta completa');
+            }
         } finally {
             setLoading(false);
         }
@@ -186,7 +206,15 @@ const Assignments = () => {
             fetchAssignments();
             alert(`Se han replicado ${prevAssignments.length} rutas con éxito.`);
         } catch (err) {
-            alert('Error al replicar el mes.');
+             if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
+                setUpgradeModal({ 
+                    isOpen: true, 
+                    message: err.response.data.message, 
+                    upgradeTo: err.response.data.upgrade_to 
+                });
+            } else {
+                alert('Error al replicar el mes.');
+            }
         } finally {
             setLoading(false);
         }
@@ -838,6 +866,13 @@ const Assignments = () => {
                 message={`¿Copiar todas las rutas del mes anterior al mes actual?`}
                 confirmText="Sí, Replicar Rutas"
                 loading={loading}
+            />
+
+            <UpgradeModal
+                isOpen={upgradeModal.isOpen}
+                onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })}
+                message={upgradeModal.message}
+                upgradeTo={upgradeModal.upgradeTo}
             />
         </DashboardLayout>
     );
