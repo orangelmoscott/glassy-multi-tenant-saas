@@ -434,6 +434,50 @@ router.put('/:id', authenticate, checkTrialStatus, async (req, res) => {
                 await Assignment.deleteOne({ _id: conflict._id });
             }
         }
+        
+        // --- Enforce Plan Limits on Update ---
+        const targetDateStr = date || assignment.date;
+        const targetWorkerId = workerId || assignment.workerId;
+        
+        // Only check limits if bringing assignment to a new worker or a new day
+        if (workerId?.toString() !== assignment.workerId?.toString() || new Date(date || 0).getTime() !== new Date(assignment.date || 0).getTime()) {
+            const Tenant = require('../models/Tenant');
+            const { PLAN_LIMITS } = require('../middlewares/checkPlan');
+            
+            const tenant = await Tenant.findById(req.user.tenantId);
+            const planId = tenant.planId || 'autonomo';
+            const limits = PLAN_LIMITS[planId];
+            
+            if (limits && limits.max_rutas_dia !== -1) {
+                const targetDate = new Date(targetDateStr);
+                const startOfDay = new Date(targetDate);
+                startOfDay.setHours(0, 0, 0, 0);
+                const endOfDay = new Date(targetDate);
+                endOfDay.setHours(23, 59, 59, 999);
+                
+                const uniqueWorkers = await Assignment.distinct('workerId', {
+                    tenantId: req.user.tenantId,
+                    date: { $gte: startOfDay, $lte: endOfDay },
+                    isDeleted: { $ne: true },
+                    _id: { $ne: req.params.id } // Exclude this assignment
+                });
+                
+                let currentCount = uniqueWorkers.length;
+                if (!uniqueWorkers.some(id => id.toString() === targetWorkerId.toString())) {
+                    currentCount += 1;
+                }
+                
+                if (currentCount > limits.max_rutas_dia) {
+                    const upgrade_to = planId === 'autonomo' ? 'pro' : 'business';
+                    return res.status(403).json({
+                        error: 'PLAN_LIMIT_REACHED',
+                        message: `No puedes asignar esto a un nuevo cristalero. Has alcanzado el límite de rutas diarias (rutas_dia) para tu plan actual.`,
+                        upgrade_to
+                    });
+                }
+            }
+        }
+        // --- End of Plan Limits Update Check ---
 
         // Update fields if provided
         if (clientId) assignment.clientId = clientId;

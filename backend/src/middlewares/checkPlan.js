@@ -61,11 +61,21 @@ const checkPlanLimit = (resourceType) => {
                 const endOfDay = new Date(targetDate);
                 endOfDay.setHours(23, 59, 59, 999);
                 
-                currentCount = await Assignment.countDocuments({
+                // Fetch distinct workerIds operating on this targetDate
+                const uniqueWorkers = await Assignment.distinct('workerId', {
                     tenantId,
                     date: { $gte: startOfDay, $lte: endOfDay },
                     isDeleted: { $ne: true }
                 });
+                
+                currentCount = uniqueWorkers.length;
+                
+                // If creating an assignment, we must check if the requested workerId is already in uniqueWorkers
+                // If it IS in uniqueWorkers, then we are just adding clients to an existing 'Ruta', which shouldn't count against limit
+                if (req.body.workerId && uniqueWorkers.some(id => id.toString() === req.body.workerId.toString())) {
+                    // It's part of an already counted route, so we let it pass.
+                    currentCount = Math.max(0, currentCount - 1);
+                }
             }
 
             if (currentCount >= limit) {
