@@ -4,7 +4,8 @@ const Client = require('../models/Client');
 const Assignment = require('../models/Assignment');
 
 const PLAN_LIMITS = {
-    autonomo: { max_clientes: 40, max_cristaleros: 1, max_rutas_dia: 1 },
+    starter: { max_clientes: 10, max_cristaleros: 1, max_rutas_dia: 1 },
+    basico: { max_clientes: 40, max_cristaleros: 1, max_rutas_dia: 1 },
     pro: { max_clientes: 150, max_cristaleros: 5, max_rutas_dia: 5 },
     business: { max_clientes: -1, max_cristaleros: -1, max_rutas_dia: -1 }
 };
@@ -30,7 +31,10 @@ const checkPlanLimit = (resourceType) => {
                 return res.status(403).json({ error: 'SUBSCRIPTION_INACTIVE', message: 'Tu suscripción no está activa.' });
             }
 
-            const planId = tenant.planId || 'autonomo'; // default
+            let planId = tenant.planId || 'basico';
+            // Compatibilidad con nombre anterior
+            if (planId === 'autonomo') planId = 'basico';
+            
             const limits = PLAN_LIMITS[planId];
 
             if (!limits) {

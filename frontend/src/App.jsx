@@ -17,7 +17,7 @@ import Billing from './pages/Billing';
 import ResetPassword from './pages/ResetPassword';
 
 // Componente Profesional de Guardia de Ruta (RBAC & Planes)
-const ProtectedRoute = ({ children, allowedRoles, requireExclusivePlan = false }) => {
+const ProtectedRoute = ({ children, allowedRoles, requireExclusivePlan = false, tier = 'pro' }) => {
     const userString = localStorage.getItem('glassy_user');
     if (!userString) return <Navigate to="/login" replace />;
     
@@ -28,8 +28,15 @@ const ProtectedRoute = ({ children, allowedRoles, requireExclusivePlan = false }
     }
 
     if (requireExclusivePlan) {
-        const userPlan = user.planId || user.plan || 'starter';
-        if (['starter'].includes(userPlan)) {
+        const userPlan = (user.planId || user.plan || 'starter').toLowerCase();
+        
+        // Tier 'pro' bloquea starter y basico
+        if (tier === 'pro' && ['starter', 'basico', 'autonomo'].includes(userPlan)) {
+            return <Navigate to="/app/clients" replace />;
+        }
+        
+        // Tier 'basico' bloquea solo starter
+        if (tier === 'basico' && userPlan === 'starter') {
             return <Navigate to="/app/clients" replace />;
         }
     }
@@ -115,14 +122,14 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
                 {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
-                <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
-                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={false}><Dashboard /></ProtectedRoute>} />
+                <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true} tier="pro"><Dashboard /></ProtectedRoute>} />
+                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true} tier="pro"><Dashboard /></ProtectedRoute>} />
                 <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
                 <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
                 <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
                 <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
-                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={false}><Expenses /></ProtectedRoute>} />
-                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={false}><Billing /></ProtectedRoute>} />
+                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true} tier="pro"><Expenses /></ProtectedRoute>} />
+                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true} tier="basico"><Billing /></ProtectedRoute>} />
 
                 {/* Canales de Campo (Operarios) */}
                 <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'cristalero', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />

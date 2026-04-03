@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 
 const RegisterCompany = () => {
     const [searchParams] = useSearchParams();
-    const planFromUrl = searchParams.get('plan') || 'autonomo';
+    const planFromUrl = searchParams.get('plan') || 'basico';
 
     const [formData, setFormData] = useState({
         companyName: '',

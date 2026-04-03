@@ -158,9 +158,9 @@ const Login = () => {
                             <ShieldCheck size={14} className="text-blue-500"/>
                             Protocolo de Aislamiento Activo
                         </div>
-                         <div className="flex items-center gap-3 text-slate-500 text-xs font-bold uppercase tracking-widest">
+                         <div className="flex items-center gap-3 text-slate-500 text-xs font-bold uppercase tracking-widest leading-tight">
                             <Sparkles size={14} className="text-amber-500"/>
-                            Plan Starter (7 Días de Prueba)
+                            7 Días de Prueba Incluidos
                         </div>
                     </div>
                 </div>

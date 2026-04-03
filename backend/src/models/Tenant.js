@@ -15,7 +15,7 @@ const tenantSchema = new mongoose.Schema({
     stripeSubscriptionId: { type: String, default: '' },
     planId: { 
         type: String, 
-        enum: ['autonomo', 'pro', 'business', 'starter'], // Added starter for legacy/trial
+        enum: ['basico', 'pro', 'business', 'starter', 'autonomo'], // autonomo for back-compat
         default: 'starter' 
     },
     planActivo: { type: Boolean, default: false },

@@ -24,21 +24,21 @@ const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
 
   const plans = [
     {
-        id: 'autonomo',
-        name: 'Plan Autónomo',
+        id: 'basico',
+        name: 'Plan Básico',
         price: '29€',
-        description: 'Ideal para operarios independientes.',
-        features: ['Hasta 40 Clientes', '1 Cristalero / 1 Ruta', 'Facturación Automática', 'IVA 21% Desglosado'],
+        description: 'Ideal para autónomos independientes.',
+        features: ['Hasta 40 Clientes', '1 Cristalero / 1 Ruta', 'Facturación Incluida', 'Soporte por Email'],
         cta: 'Suscribirse',
         color: 'from-blue-600 to-indigo-500',
-        current: currentPlan === 'autonomo'
+        current: currentPlan === 'basico' || currentPlan === 'autonomo'
     },
     {
         id: 'pro',
         name: 'Plan Pro',
         price: '49€',
         description: 'Perfecto para equipos en crecimiento.',
-        features: ['Hasta 150 Clientes', '5 Cristaleros / 5 Rutas', 'Gestión Avanzada', 'Soporte Premium'],
+        features: ['Hasta 150 Clientes', '5 Cristaleros / 5 Rutas', 'Analíticas y Gastos', 'Gestión Avanzada'],
         cta: 'Suscribirse',
         color: 'from-indigo-600 to-cyan-500',
         highlight: true,
@@ -49,7 +49,7 @@ const PricingModal = ({ isOpen, onClose, currentPlan, onSelectPlan }) => {
         name: 'Plan Business',
         price: '99€',
         description: 'Para flotas y grandes empresas.',
-        features: ['Clientes Ilimitados', 'Cristaleros Ilimitados', 'Todas las Funciones', 'Soporte 24/7'],
+        features: ['Clientes Ilimitados', 'Cristaleros Ilimitados', 'Todas las Funciones', 'Soporte VIP 24/7'],
         cta: 'Suscribirse',
         color: 'from-slate-900 to-slate-700',
         current: currentPlan === 'business'

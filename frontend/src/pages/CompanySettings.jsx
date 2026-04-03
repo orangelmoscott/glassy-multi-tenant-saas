@@ -266,7 +266,7 @@ const CompanySettings = () => {
                                     <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
                                         <FileBadge size={14} className="text-blue-400" /> Facturación ilimitada
                                     </div>
-                                    {['starter', 'trial'].includes(tenant.planId) && (
+                                    {!tenant.planActivo && (
                                         <div className="mt-4 p-3 bg-amber-500/20 rounded-xl border border-amber-500/30 flex items-center gap-3">
                                             <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-slate-900">
                                                 <Sparkles size={16} />
@@ -290,7 +290,7 @@ const CompanySettings = () => {
                         </div>
 
                         {/* Trial Countdown Card */}
-                        {['starter', 'trial'].includes(tenant.planId) && (
+                        {!tenant.planActivo && (
                             <div className="bg-amber-50 p-8 rounded-[40px] border-2 border-amber-200/50 shadow-xl shadow-amber-900/5 relative overflow-hidden group">
                                 <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
                                 <div className="relative z-10">

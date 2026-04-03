@@ -21,8 +21,8 @@ async function checkClientLimit(req, res, next) {
 
         const limits = {
             'starter': 10,
-            'autonomo': 100, // Aumentado para ser más competitivo
-            'pro': 300,
+            'autonomo': 40, 
+            'pro': 150,
             'business': Infinity
         };
 
@@ -44,21 +44,42 @@ async function checkClientLimit(req, res, next) {
 }
 
 /**
- * Middleware para bloquear funcionalidades exclusivas (ej. Rutas en Plan Básico)
+ * Middleware para bloquear funcionalidades exclusivas (ej. Dashboard, Facturación, Gastos)
+ * Solo disponible para planes PRO y BUSINESS.
  */
 async function requireProfessionalPlan(req, res, next) {
     try {
         const tenant = await Tenant.findById(req.user.tenantId);
-        // Ahora permitimos 'autonomo' acceder a estas funciones (Dashboard profesional y Facturación)
-        if (['starter'].includes(tenant.planId)) {
+        
+        // Bloquear si es starter o basico
+        if (['starter', 'basico'].includes(tenant.planId)) {
             return res.status(403).send({ 
-                message: 'Funcionalidad exclusiva de Planes de Pago (Autónomo, Pro o Business)', 
+                message: 'Funcionalidad exclusiva de Planes Pro o Business', 
                 upgradeSuggested: true 
             });
         }
         next();
     } catch (error) {
         res.status(500).send({ message: 'Error al verificar jerarquía de plan' });
+    }
+}
+
+/**
+ * Middleware para el Plan Básico (anterior Autónomo)
+ * Permite acceso a Facturación pero no a Analíticas/Gastos.
+ */
+async function requireBasicoPlan(req, res, next) {
+    try {
+        const tenant = await Tenant.findById(req.user.tenantId);
+        if (['starter'].includes(tenant.planId)) {
+            return res.status(403).send({ 
+                message: 'Funcionalidad exclusiva de Plan Básico o superior', 
+                upgradeSuggested: true 
+            });
+        }
+        next();
+    } catch (error) {
+        res.status(500).send({ message: 'Error al verificar plan básico' });
     }
 }
 
@@ -92,4 +113,4 @@ async function checkTrialStatus(req, res, next) {
     }
 }
 
-module.exports = { checkClientLimit, requireProfessionalPlan, checkTrialStatus };
+module.exports = { checkClientLimit, requireProfessionalPlan, requireBasicoPlan, checkTrialStatus };

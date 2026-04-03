@@ -87,12 +87,10 @@ router.post('/login', async (req, res) => {
             { expiresIn: '8h' }
         );
 
-        // Cálculo de días restantes de prueba (Starter)
+        // Cálculo de días restantes (Solo si el plan no está activo/pagado)
         const trialLimit = 7 * 24 * 60 * 60 * 1000;
-        const tenantCreated = new Date(user.tenantId.createdAt);
-        const now = new Date();
-        const diff = now - tenantCreated;
-        const daysLeft = Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000)));
+        const diff = new Date() - new Date(user.tenantId.createdAt);
+        const daysLeft = !user.tenantId.planActivo ? Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000))) : null;
 
         res.send({
             token,

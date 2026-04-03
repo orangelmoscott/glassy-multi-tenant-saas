@@ -11,10 +11,10 @@ router.get('/my-company', authenticate, async (req, res) => {
         const tenant = await Tenant.findById(req.user.tenantId).lean();
         if (!tenant) return res.status(404).send({ message: 'Empresa no encontrada' });
         
-        // Cálculo días restantes (Starter)
+        // Cálculo días restantes (Cualquier plan NO pagado tiene 7 días de prueba)
         const trialLimit = 7 * 24 * 60 * 60 * 1000;
         const diff = new Date() - new Date(tenant.createdAt);
-        tenant.trialDaysLeft = tenant.planId === 'starter' ? Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000))) : null;
+        tenant.trialDaysLeft = !tenant.planActivo ? Math.max(0, Math.ceil((trialLimit - diff) / (24 * 60 * 60 * 1000))) : null;
 
         res.send(tenant);
     } catch (error) {

@@ -65,12 +65,12 @@ const LandingPage = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-wrap justify-center gap-4 mb-20"
           >
-            <Link to="/register?plan=autonomo">
+            <Link to="/register?plan=basico">
                 <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-slate-800 transition-all hover:-translate-y-1 shadow-xl">
                 Prueba Gratuita 7 días <ArrowRight size={20} />
                 </button>
             </Link>
-            <Link to="/register?plan=autonomo">
+            <Link to="/register?plan=basico">
                 <button className="bg-white text-slate-900 px-8 py-4 rounded-2xl border border-slate-200 font-bold hover:bg-slate-50 transition-all">
                 Ver Demo
                 </button>
@@ -141,7 +141,7 @@ const LandingPage = () => {
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mt-12">
                 {/* Autónomo */}
                 <div className="p-8 rounded-3xl border border-slate-100 bg-slate-50 flex flex-col text-left hover:shadow-lg transition-all">
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">Plan Autónomo</h3>
+                    <h3 className="text-xl font-bold text-slate-800 mb-2">Plan Básico</h3>
                     <p className="text-sm text-slate-500 mb-4 h-10">Para cristaleros independientes.</p>
                     <div className="flex items-baseline gap-1 mb-6">
                         <span className="text-4xl font-extrabold text-slate-900">29€</span>
@@ -150,10 +150,10 @@ const LandingPage = () => {
                     <ul className="space-y-4 mb-8 flex-1 text-slate-600 text-sm">
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Hasta 40 Clientes</span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>1 Cristalero Activo</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>1 Ruta Diaria</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Acceso a Facturación por Email</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Facturación Incluida</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Soporte por Email</span></li>
                     </ul>
-                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=autonomo"} className="w-full">
+                    <Link to={isLoggedIn ? "/app/settings" : "/register?plan=basico"} className="w-full">
                         <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white transition-all text-slate-700">Empezar Plan</button>
                     </Link>
                 </div>

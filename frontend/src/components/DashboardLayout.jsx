@@ -17,19 +17,19 @@ const DashboardLayout = ({ children }) => {
     const isOwner = user.role === 'owner' || user.role === 'admin';
 
     React.useEffect(() => {
-        if (isOwner && (user.plan === 'starter' || user.planId === 'starter') && user.trialDaysLeft <= 0) {
+        if (isOwner && !user.planActivo && user.trialDaysLeft <= 0) {
             console.log("Trial expired notice triggered");
         }
-    }, [isOwner, user.plan, user.planId, user.trialDaysLeft]);
+    }, [isOwner, user.planActivo, user.trialDaysLeft]);
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
+        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'basico', 'autonomo'] },
         { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['owner', 'admin'] },
         { icon: HardHat, label: 'Operarios', path: '/app/workers', roles: ['owner', 'admin'] },
         { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['owner', 'admin'] },
         { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker', 'cristalero'] },
         { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
-        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
+        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'basico', 'autonomo'] },
         { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
     ];
 
@@ -38,7 +38,7 @@ const DashboardLayout = ({ children }) => {
         navigate('/login');
     };
 
-    const _userPlan = user.planId || user.plan || 'starter';
+    const _userPlan = (user.planId || user.plan || 'starter').toLowerCase();
 
     const filteredMenu = menuItems.filter(item => {
         if (!item.roles.includes(user.role)) return false;
@@ -118,7 +118,7 @@ const DashboardLayout = ({ children }) => {
                             </button>
                         </div>
                         
-                        {isOwner && (user.plan === 'starter' || user.planId === 'starter') && (
+                        {isOwner && !user.planActivo && (
                             <div className={`mt-6 p-4 rounded-2xl border shadow-sm transition-colors ${user.trialDaysLeft <= 0 ? 'bg-red-50 border-red-200' : 'bg-gradient-to-tr from-amber-50 to-orange-50 border-amber-100/50'}`}>
                                 <div className={`flex items-center gap-2 mb-2 font-extrabold text-[10px] uppercase tracking-tighter ${user.trialDaysLeft <= 0 ? 'text-red-700' : 'text-amber-700'}`}>
                                     <Sparkles size={14} className={user.trialDaysLeft > 0 ? "animate-pulse" : ""} /> {user.trialDaysLeft <= 0 ? 'PERIODO EXPIRADO' : 'Periodo de Prueba'}
@@ -167,7 +167,7 @@ const DashboardLayout = ({ children }) => {
             </main>
 
             {/* Trial Expiry Overlay - SOLO si está en starter Y no ha pagado Y no está en settings */}
-            {isOwner && (user.plan === 'starter' || user.planId === 'starter') && !user.planActivo && (user.trialDaysLeft ?? 1) <= 0 && location.pathname !== '/app/settings' && (
+            {isOwner && !user.planActivo && (user.trialDaysLeft ?? 1) <= 0 && location.pathname !== '/app/settings' && (
                 <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
