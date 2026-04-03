@@ -202,32 +202,35 @@ const Login = () => {
                             </div>
                         )}
 
-                        {!recoveryStatus?.type === 'success' ? (
-                             <form onSubmit={handleForgotPassword} className="space-y-6">
-                             <div className="space-y-2">
-                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
-                                 <div className="relative group">
-                                     <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
-                                     <input 
-                                         type="email" placeholder="admin@empresa.com" required
-                                         className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
-                                         onChange={(e) => setRecoveryEmail(e.target.value)}
-                                         value={recoveryEmail}
-                                     />
-                                 </div>
-                             </div>
- 
-                             <button 
-                                 disabled={recoveryLoading}
-                                 className="w-full bg-blue-600 text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-70"
-                             >
-                                 {recoveryLoading ? 'Procesando...' : 'Enviar instrucciones'}
-                                 {!recoveryLoading && <ChevronRight size={20} />}
-                             </button>
-                         </form>
+                        {recoveryStatus?.type !== 'success' ? (
+                            <form onSubmit={handleForgotPassword} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                    <input 
+                                        type="email" placeholder="admin@empresa.com" required
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                        onChange={(e) => setRecoveryEmail(e.target.value)}
+                                        value={recoveryEmail}
+                                    />
+                                </div>
+                            </div>
+
+                            <button 
+                                disabled={recoveryLoading}
+                                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-70"
+                            >
+                                {recoveryLoading ? 'Procesando...' : 'Enviar instrucciones'}
+                                {!recoveryLoading && <ChevronRight size={20} />}
+                            </button>
+                        </form>
                         ) : (
                             <button 
-                                onClick={() => setShowForgotModal(false)}
+                                onClick={() => {
+                                    setShowForgotModal(false);
+                                    setRecoveryStatus(null);
+                                }}
                                 className="w-full bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 transition-all"
                             >
                                 Entendido
