@@ -70,7 +70,7 @@ const LandingPage = () => {
                 Prueba Gratuita 7 días <ArrowRight size={20} />
                 </button>
             </Link>
-            <Link to="/register">
+            <Link to="/register?plan=autonomo">
                 <button className="bg-white text-slate-900 px-8 py-4 rounded-2xl border border-slate-200 font-bold hover:bg-slate-50 transition-all">
                 Ver Demo
                 </button>

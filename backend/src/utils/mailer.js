@@ -38,4 +38,19 @@ const sendInvoiceEmail = async (to, subject, htmlContent, pdfBuffer, pdfFilename
     }
 };
 
-module.exports = { sendInvoiceEmail };
+const sendHTMLEmail = async (to, subject, htmlContent) => {
+    try {
+        await transporter.sendMail({
+            from: `"Glassy SaaS" <${process.env.EMAIL_USER}>`,
+            to,
+            subject,
+            html: htmlContent
+        });
+        return true;
+    } catch (error) {
+        console.error('Error al enviar email HTML:', error);
+        throw error;
+    }
+};
+
+module.exports = { sendInvoiceEmail, sendHTMLEmail };
