@@ -17,7 +17,8 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
 
         // Mapeo de IDs de precios de Stripe (debes asegurar que coincidan con los que creamos)
         const priceIds = {
-            'autonomo': 'price_1TGQMNBFGOxLufnn2SfOQ2zA',
+            'basico': 'price_1TGQMNBFGOxLufnn2SfOQ2zA',
+            'autonomo': 'price_1TGQMNBFGOxLufnn2SfOQ2zA', // Retrocompatibilidad
             'pro': 'price_1TGQMOBFGOxLufnnDtecYCBG',
             'business': 'price_1TGPx5BFGOxLufnnM50qMNz7'
         };
