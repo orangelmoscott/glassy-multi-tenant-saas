@@ -288,6 +288,34 @@ const CompanySettings = () => {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Trial Countdown Card */}
+                        {['starter', 'trial'].includes(tenant.planId) && (
+                            <div className="bg-amber-50 p-8 rounded-[40px] border-2 border-amber-200/50 shadow-xl shadow-amber-900/5 relative overflow-hidden group">
+                                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
+                                            <Sparkles size={20} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest leading-none mb-1">Días de prueba</p>
+                                            <h4 className="text-xl font-black text-amber-900 leading-none">{tenant.trialDaysLeft} días</h4>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs font-bold text-amber-700/80 leading-relaxed mb-6">
+                                        Tu acceso gratuito finalizará pronto. Suscríbete ahora para mantener todas tus rutas y datos a salvo.
+                                    </p>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsPricingModalOpen(true)}
+                                        className="w-full bg-amber-500 text-white py-3 rounded-2xl text-xs font-black hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 active:scale-95"
+                                    >
+                                        ACTIVAR CUENTA AHORA
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column: Information Forms */}
