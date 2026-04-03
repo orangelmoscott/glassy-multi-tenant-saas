@@ -151,7 +151,7 @@ const LandingPage = () => {
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Hasta 40 Clientes</span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>1 Cristalero Activo</span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>1 Ruta Diaria</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Facturación Automática por Email</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Acceso a Facturación por Email</span></li>
                     </ul>
                     <Link to={isLoggedIn ? "/app/settings" : "/register?plan=autonomo"} className="w-full">
                         <button className="w-full py-3 rounded-xl border-2 border-slate-200 font-bold hover:bg-white transition-all text-slate-700">Empezar Plan</button>
@@ -171,7 +171,8 @@ const LandingPage = () => {
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Hasta 150 Clientes</span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>5 Cristaleros Activos</span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>5 Rutas Diarias</span></li>
-                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Dashboard Multi-trabajador</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Dashboard Profesional de Rendimiento</span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-blue-500 shrink-0 mt-0.5"/> <span>Módulo de Facturación Avanzada</span></li>
                     </ul>
                     <Link to={isLoggedIn ? "/app/settings" : "/register?plan=pro"} className="w-full">
                         <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-extrabold hover:bg-blue-700 transition-all shadow-lg shadow-blue-200/50 active:scale-95">Empezar Plan</button>
@@ -189,7 +190,8 @@ const LandingPage = () => {
                     <ul className="space-y-4 mb-8 flex-1 text-slate-600 text-sm">
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Clientes Ilimitados</strong></span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Cristaleros Ilimitados</strong></span></li>
-                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Rutas Ilimitadas</strong></span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span><strong className="text-slate-800">Facturación y Dashboard Adicional</strong></span></li>
+                        <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span>Dashboard de Inteligencia de Negocio</span></li>
                         <li className="flex items-start gap-2"><CheckCircle size={18} className="text-slate-800 shrink-0 mt-0.5"/> <span>Soporte prioritario y acceso total</span></li>
                     </ul>
                     <Link to={isLoggedIn ? "/app/settings" : "/register?plan=business"} className="w-full">
