@@ -116,13 +116,13 @@ function App() {
                 <Route path="/reset-password/:token" element={<ResetPassword />} />
                 {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
                 <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Dashboard /></ProtectedRoute>} />
-                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true}><Dashboard /></ProtectedRoute>} />
+                <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={false}><Dashboard /></ProtectedRoute>} />
                 <Route path="/app/clients" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Clients /></ProtectedRoute>} />
                 <Route path="/app/settings" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><CompanySettings /></ProtectedRoute>} />
                 <Route path="/app/workers" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Workers /></ProtectedRoute>} />
                 <Route path="/app/assignments" element={<ProtectedRoute allowedRoles={['owner', 'admin']}><Assignments /></ProtectedRoute>} />
-                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true}><Expenses /></ProtectedRoute>} />
-                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true}><Billing /></ProtectedRoute>} />
+                <Route path="/app/expenses" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={false}><Expenses /></ProtectedRoute>} />
+                <Route path="/app/billing" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={false}><Billing /></ProtectedRoute>} />
 
                 {/* Canales de Campo (Operarios) */}
                 <Route path="/app/my-routes" element={<ProtectedRoute allowedRoles={['worker', 'cristalero', 'owner', 'admin']}><MyRoutes /></ProtectedRoute>} />

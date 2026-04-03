@@ -45,6 +45,8 @@ router.get('/stats', authenticate, requireProfessionalPlan, async (req, res) => 
             date: { $gte: startOfMonth, $lte: endOfMonth }
         });
 
+        const trialLimit = 7 * 24 * 60 * 60 * 1000;
+
         const stats = {
             totalClients,
             totalWorkers,
