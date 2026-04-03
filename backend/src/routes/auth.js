@@ -7,8 +7,6 @@ const Tenant = require('../models/Tenant');
 
 /**
  * REGISTRO SAAS (Empresa + Dueño)
- * 1. Crea la Empresa (Tenant)
- * 2. Crea el Usuario (Owner)
  */
 router.post('/register-company', async (req, res) => {
     try {
@@ -19,14 +17,21 @@ router.post('/register-company', async (req, res) => {
             return res.status(400).send({ message: 'Todos los campos básicos son obligatorios.' });
         }
 
-        // 1. Crear la Empresa (Tenant) con el plan seleccionado
+        // Verificaciones de unicidad para evitar Error 500 por duplicados en DB
+        const emailExists = await Tenant.findOne({ email });
+        if (emailExists) return res.status(400).send({ message: 'El email de empresa ya está registrado.' });
+
+        const userExists = await User.findOne({ username });
+        if (userExists) return res.status(400).send({ message: 'El nombre de usuario ya está en uso.' });
+
+        // 1. Crear la Empresa (Tenant)
         const tenant = new Tenant({
             name: companyName,
             nif,
             email,
             phone: phone || '',
             planId: plan || 'starter',
-            subscriptionStatus: plan === 'starter' ? 'trial' : 'incomplete'
+            subscriptionStatus: 'trial' // Trial por defecto al registrarse
         });
         await tenant.save();
 
@@ -35,10 +40,10 @@ router.post('/register-company', async (req, res) => {
         const user = new User({
             username,
             password: hashedPassword,
-            role: 'owner', // El que se registra de cero es el dueño
+            role: 'owner',
             fullName,
             phone,
-            tenantId: tenant._id // Vincular a la empresa recién creada
+            tenantId: tenant._id
         });
         await user.save();
 
@@ -48,7 +53,8 @@ router.post('/register-company', async (req, res) => {
 
         res.status(201).send({ message: 'Empresa registrada con éxito', userId: user._id, tenantId: tenant._id });
     } catch (error) {
-        res.status(500).send({ message: 'Error en el registro del SaaS', error: error.message });
+        console.error('Error en registro:', error);
+        res.status(500).send({ message: 'Error en el servidor al registrar empresa.' });
     }
 });
 
@@ -97,7 +103,7 @@ router.post('/login', async (req, res) => {
             plan: user.tenantId.planId,
             planId: user.tenantId.planId,
             planActivo: user.tenantId.planActivo,
-            trialDaysLeft: user.tenantId.planId === 'starter' ? daysLeft : null,
+            trialDaysLeft: daysLeft,
             userId: user._id
         });
 
@@ -139,7 +145,8 @@ router.post('/forgot-password', async (req, res) => {
         const html = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 24px;">
                 <h2 style="color: #0f172a;">Recuperación de Contraseña - Glassy</h2>
-                <p>Has solicitado restablecer tu contraseña. Haz clic en el botón de abajo para continuar:</p>
+                <p>Has solicitado restablecer tu contraseña para la empresa <strong>${tenant.name}</strong>.</p>
+                <p>Haz clic en el botón de abajo para continuar:</p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 12px; font-weight: bold;">Restablecer Contraseña</a>
                 </div>

@@ -23,13 +23,13 @@ const DashboardLayout = ({ children }) => {
     }, [isOwner, user.plan, user.planId, user.trialDaysLeft]);
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'autonomo'] },
+        { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
         { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['owner', 'admin'] },
         { icon: HardHat, label: 'Operarios', path: '/app/workers', roles: ['owner', 'admin'] },
         { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['owner', 'admin'] },
         { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker', 'cristalero'] },
-        { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'autonomo'] },
-        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'autonomo'] },
+        { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
+        { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
         { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
     ];
 
