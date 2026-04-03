@@ -21,8 +21,8 @@ async function checkClientLimit(req, res, next) {
 
         const limits = {
             'starter': 10,
-            'autonomo': 40,
-            'pro': 150,
+            'autonomo': 100, // Aumentado para ser más competitivo
+            'pro': 300,
             'business': Infinity
         };
 
@@ -49,9 +49,10 @@ async function checkClientLimit(req, res, next) {
 async function requireProfessionalPlan(req, res, next) {
     try {
         const tenant = await Tenant.findById(req.user.tenantId);
-        if (['starter', 'autonomo'].includes(tenant.planId)) {
+        // Ahora permitimos 'autonomo' acceder a estas funciones (Dashboard profesional y Facturación)
+        if (['starter'].includes(tenant.planId)) {
             return res.status(403).send({ 
-                message: 'Funcionalidad exclusiva de Planes Superiores (Pro o Business)', 
+                message: 'Funcionalidad exclusiva de Planes de Pago (Autónomo, Pro o Business)', 
                 upgradeSuggested: true 
             });
         }
