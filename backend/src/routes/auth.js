@@ -138,9 +138,9 @@ router.post('/forgot-password', async (req, res) => {
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
         await user.save();
 
-        // Enviar email
+        // Enviar email con HASH para soporte universal de rutas en SPAs
         const baseUrl = process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
-        const resetUrl = `${baseUrl}/reset-password/${token}`;
+        const resetUrl = `${baseUrl}/#/reset-password/${token}`;
         const html = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 24px;">
                 <h2 style="color: #0f172a;">Recuperación de Contraseña - Glassy</h2>
