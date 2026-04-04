@@ -118,12 +118,15 @@ const { sendHTMLEmail } = require('../utils/mailer');
  */
 router.post('/forgot-password', async (req, res) => {
     try {
-        const { email } = req.body;
-        // Buscar el tenant que tiene ese email
-        const tenant = await Tenant.findOne({ email });
+        const { email, companyName } = req.body;
+        // Validación cruzada para asegurar aislamiento entre empresas
+        const tenant = await Tenant.findOne({ 
+            email: email.toLowerCase().trim(),
+            name: { $regex: new RegExp(`^${companyName.trim()}$`, 'i') } // Case-insensitive
+        });
+
         if (!tenant) {
-            // El usuario pidió explícitamente validar si el correo existe
-            return res.status(404).send({ message: 'No existe ninguna cuenta asociada a este correo electrónico.' });
+            return res.status(404).send({ message: 'No se encontró ninguna cuenta que coincida con ese Email y Empresa.' });
         }
 
         // Buscar al dueño de ese tenant

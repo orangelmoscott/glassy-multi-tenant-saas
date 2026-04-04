@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
@@ -13,6 +13,7 @@ const Login = () => {
     // Modal de recuperación
     const [showForgotModal, setShowForgotModal] = useState(false);
     const [recoveryEmail, setRecoveryEmail] = useState('');
+    const [recoveryCompanyName, setRecoveryCompanyName] = useState('');
     const [recoveryLoading, setRecoveryLoading] = useState(false);
     const [recoveryStatus, setRecoveryStatus] = useState(null);
 
@@ -25,7 +26,10 @@ const Login = () => {
         setRecoveryLoading(true);
         setRecoveryStatus(null);
         try {
-            await axios.post('https://glassy-backend.onrender.com/auth/forgot-password', { email: recoveryEmail });
+            await axios.post('https://glassy-backend.onrender.com/auth/forgot-password', { 
+                email: recoveryEmail,
+                companyName: recoveryCompanyName
+            });
             setRecoveryStatus({ type: 'success', text: 'Instrucciones enviadas. Revisa tu correo.' });
         } catch (err) {
             setRecoveryStatus({ type: 'error', text: err.response?.data?.message || 'Error al procesar la solicitud' });
@@ -204,18 +208,31 @@ const Login = () => {
 
                         {recoveryStatus?.type !== 'success' ? (
                             <form onSubmit={handleForgotPassword} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
-                                <div className="relative group">
-                                    <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
-                                    <input 
-                                        type="email" placeholder="admin@empresa.com" required
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
-                                        onChange={(e) => setRecoveryEmail(e.target.value)}
-                                        value={recoveryEmail}
-                                    />
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre de tu Empresa</label>
+                                    <div className="relative group">
+                                        <Building className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                        <input 
+                                            type="text" placeholder="Glassy S.L." required
+                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                            onChange={(e) => setRecoveryCompanyName(e.target.value)}
+                                            value={recoveryCompanyName}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
+                                    <div className="relative group">
+                                        <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                        <input 
+                                            type="email" placeholder="admin@empresa.com" required
+                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                            onChange={(e) => setRecoveryEmail(e.target.value)}
+                                            value={recoveryEmail}
+                                        />
+                                    </div>
+                                </div>
 
                             <button 
                                 disabled={recoveryLoading}
