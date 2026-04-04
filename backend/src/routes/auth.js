@@ -122,8 +122,8 @@ router.post('/forgot-password', async (req, res) => {
         // Buscar el tenant que tiene ese email
         const tenant = await Tenant.findOne({ email });
         if (!tenant) {
-            // No revelamos si el email existe por seguridad, pero enviamos 200
-            return res.send({ message: 'Si el correo está registrado, recibirás instrucciones.' });
+            // El usuario pidió explícitamente validar si el correo existe
+            return res.status(404).send({ message: 'No existe ninguna cuenta asociada a este correo electrónico.' });
         }
 
         // Buscar al dueño de ese tenant
@@ -138,9 +138,9 @@ router.post('/forgot-password', async (req, res) => {
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
         await user.save();
 
-        // Enviar email con HASH para soporte universal de rutas en SPAs
+        // Enviar email de recuperación (Requiere configuración de Rewrite en Render: /* -> /index.html)
         const baseUrl = process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
-        const resetUrl = `${baseUrl}/#/reset-password/${token}`;
+        const resetUrl = `${baseUrl}/reset-password/${token}`;
         const html = `
             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 24px;">
                 <h2 style="color: #0f172a;">Recuperación de Contraseña - Glassy</h2>
