@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: glassy-frontend
+    name: glassy-app
     env: static
     buildCommand: "cd frontend && npm install && npm run build"
     staticPublishPath: "frontend/dist"
