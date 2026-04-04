@@ -1,0 +1,21 @@
+services:
+  - type: static
+    name: glassy-frontend
+    buildCommand: "cd frontend && npm install && npm run build"
+    publishPath: "frontend/dist"
+    routes:
+      - source: "/login"
+        destination: "/index.html"
+        type: rewrite
+      - source: "/register"
+        destination: "/index.html"
+        type: rewrite
+      - source: "/reset-password/*"
+        destination: "/index.html"
+        type: rewrite
+      - source: "/app/*"
+        destination: "/index.html"
+        type: rewrite
+      - source: "/*"
+        destination: "/index.html"
+        type: rewrite
