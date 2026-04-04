@@ -30,6 +30,12 @@ const CompanySettings = () => {
 
         if (status === 'success' && sessionId) {
             checkPaymentStatus(sessionId);
+        } else if (status === 'cancel') {
+            // Limpiar URL y mostrar mensaje amigable
+            window.history.replaceState({}, document.title, '/app/settings');
+            setError('Pago cancelado. Puedes reactivar tu suscripción cuando quieras.');
+            setTimeout(() => setError(null), 5000); // limpiar mensaje tras 5s
+            fetchSettings();
         } else {
             fetchSettings();
         }
