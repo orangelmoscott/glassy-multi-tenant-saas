@@ -321,13 +321,6 @@ const Login = () => {
                                 </button>
                             )}
                         </form>
-
-                                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 transition-all"
-                            >
-                                Entendido
-                            </button>
-                        )}
-                       
                     </motion.div>
                 </div>
             )}
