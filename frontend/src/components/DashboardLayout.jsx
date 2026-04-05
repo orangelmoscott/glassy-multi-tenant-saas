@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Users, Calendar, BarChart3, Settings, 
@@ -16,7 +17,44 @@ const DashboardLayout = ({ children }) => {
     const user = userString ? JSON.parse(userString) : { role: 'cristalero', username: 'Usuario' };
     const isOwner = user.role === 'owner' || user.role === 'admin';
 
-    React.useEffect(() => {
+    // AUTO-HEAL: Sincronizar pago si hay una sesión pendiente y el plan parece inactivo
+    useEffect(() => {
+        const checkPendingSession = async () => {
+            const pendingSessionId = localStorage.getItem('stripe_pending_session');
+            if (isOwner && !user.planActivo && pendingSessionId) {
+                try {
+                    console.log("Detectada sesión de Stripe pendiente. Intentando sincronizar...");
+                    const res = await axios.post(
+                        'https://glassy-backend.onrender.com/tenant/sync-subscription', 
+                        { sessionId: pendingSessionId },
+                        { headers: { Authorization: `Bearer ${user.token}` }}
+                    );
+                    
+                    if (res.data.tenant && res.data.tenant.planActivo) {
+                        const updatedTenant = res.data.tenant;
+                        // Actualizar localStorage
+                        const newUser = { 
+                            ...user, 
+                            plan: updatedTenant.planId, 
+                            planId: updatedTenant.planId,
+                            planActivo: true,
+                            trialDaysLeft: null 
+                        };
+                        localStorage.setItem('glassy_user', JSON.stringify(newUser));
+                        localStorage.removeItem('stripe_pending_session');
+                        // Recargar para aplicar cambios globales
+                        window.location.reload();
+                    }
+                } catch (err) {
+                    console.error("Error en auto-heal synchronization:", err);
+                }
+            }
+        };
+
+        checkPendingSession();
+    }, [isOwner, user.planActivo, user.token]);
+
+    useEffect(() => {
         if (isOwner && !user.planActivo && user.trialDaysLeft <= 0) {
             console.log("Trial expired notice triggered");
         }

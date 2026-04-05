@@ -83,6 +83,8 @@ const Login = () => {
                     tenantId: response.data.tenantId,
                     companyName: response.data.companyName || 'Mi Empresa',
                     plan: response.data.plan || 'starter',
+                    planId: response.data.planId || response.data.plan || 'starter',
+                    planActivo: response.data.planActivo, // CRITICAL: Save subscription status!
                     trialDaysLeft: response.data.trialDaysLeft,
                     userId: response.data.userId,
                     fullName: response.data.fullName || response.data.username

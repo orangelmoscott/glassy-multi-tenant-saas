@@ -146,6 +146,23 @@ const CompanySettings = () => {
             throw err;
         }
     };
+    const handleManageBilling = async () => {
+        try {
+            setSaving(true);
+            const res = await axios.post('https://glassy-backend.onrender.com/stripe/create-portal-session', {
+                origin: window.location.origin
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.url) {
+                window.location.href = res.data.url;
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Error al abrir el portal de facturación');
+        } finally {
+            setSaving(false);
+        }
+    };
 
     // Pantalla de sincronización de pago (mientras esperamos o mostramos éxito)
     if (paymentActivated) return (
@@ -287,10 +304,24 @@ const CompanySettings = () => {
 
                                 <button 
                                     type="button" 
-                                    onClick={() => setIsPricingModalOpen(true)}
-                                    className="w-full bg-white/10 hover:bg-white/20 border border-white/10 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-inner"
+                                    onClick={() => {
+                                        if (tenant.planActivo) {
+                                            handleManageBilling();
+                                        } else {
+                                            setIsPricingModalOpen(true);
+                                        }
+                                    }}
+                                    className="w-full bg-white/10 hover:bg-white/20 border border-white/10 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-inner disabled:opacity-50"
+                                    disabled={saving}
                                 >
-                                    <Sparkles size={14} className="text-amber-400" /> Gestionar Suscripción
+                                    {saving ? (
+                                        <RefreshCcw className="animate-spin" size={14} />
+                                    ) : (
+                                        <>
+                                            <Sparkles size={14} className="text-amber-400" /> 
+                                            {tenant.planActivo ? 'Gestionar Facturación / Cancelar' : 'Gestionar Suscripción'}
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

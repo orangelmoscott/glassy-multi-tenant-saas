@@ -65,14 +65,36 @@ router.post('/sync-subscription', authenticate, async (req, res) => {
  */
 router.patch('/update', authenticate, authorize(['owner', 'admin']), async (req, res) => {
     try {
-        // SEGURIDAD: Solo se actualiza el tenantId del usuario autenticado
+        // SEGURIDAD: Solo permitir campos no sensibles.
+        // NUNCA permitir que el usuario actualice planActivo, subscriptionStatus, etc. por aquí.
+        const allowedUpdates = [
+            'name', 'nif', 'address', 'phone', 'email', 
+            'logo', 'bankAccount', 'website'
+        ];
+        
+        const updates = {};
+        Object.keys(req.body).forEach(key => {
+            if (allowedUpdates.includes(key)) {
+                updates[key] = req.body[key];
+            }
+        });
+
+        // Solo si hay algo que actualizar
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).send({ message: 'No se enviaron campos válidos para actualizar.' });
+        }
+
         const tenant = await Tenant.findByIdAndUpdate(
             req.user.tenantId, 
-            req.body, 
+            updates, 
             { new: true }
         );
+
+        if (!tenant) return res.status(404).send({ message: 'Empresa no encontrada' });
+
         res.send({ message: 'Empresa actualizada con éxito', tenant });
     } catch (error) {
+        console.error('Error al actualizar empresa:', error);
         res.status(500).send({ message: 'Error al actualizar empresa' });
     }
 });

@@ -85,4 +85,30 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * POST | Crear Sesión del Portal del Cliente
+ * Permite al usuario gestionar su facturación, ver facturas pasadas y CANCELAR su suscripción.
+ */
+router.post('/create-portal-session', authenticate, async (req, res) => {
+    try {
+        const tenant = await Tenant.findById(req.user.tenantId);
+        if (!tenant || !tenant.stripeCustomerId) {
+            return res.status(400).send({ message: 'No tienes una suscripción activa para gestionar.' });
+        }
+
+        // URL a la que volverá tras cerrar el portal
+        const returnUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
+
+        const portalSession = await stripe.billingPortal.sessions.create({
+            customer: tenant.stripeCustomerId,
+            return_url: `${returnUrl}/app/settings`,
+        });
+
+        res.send({ url: portalSession.url });
+    } catch (error) {
+        console.error('ERROR PORTAL STRIPE:', error);
+        res.status(500).send({ message: 'Error al abrir el portal de facturación' });
+    }
+});
+
 module.exports = router;
