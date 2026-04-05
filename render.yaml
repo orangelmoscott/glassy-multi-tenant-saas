@@ -11,9 +11,7 @@ services:
       - source: "/register"
         destination: "/index.html"
         type: rewrite
-      - source: "/reset-password/*"
-        destination: "/index.html"
-        type: rewrite
+
       - source: "/app/*"
         destination: "/index.html"
         type: rewrite

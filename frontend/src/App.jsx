@@ -14,7 +14,7 @@ import Assignments from './pages/Assignments';
 import Workers from './pages/Workers';
 import MyRoutes from './pages/MyRoutes';
 import Billing from './pages/Billing';
-import ResetPassword from './pages/ResetPassword';
+
 
 // Componente Profesional de Guardia de Ruta (RBAC & Planes)
 const ProtectedRoute = ({ children, allowedRoles, requireExclusivePlan = false, tier = 'pro' }) => {
@@ -120,7 +120,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/register" element={<RegisterCompany />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/reset-password/:token" element={<ResetPassword />} />
+                
                 {/* Rutas Corporativas (Solo para Dueños/Administradores) */}
                 <Route path="/app" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true} tier="pro"><Dashboard /></ProtectedRoute>} />
                 <Route path="/app/dashboard" element={<ProtectedRoute allowedRoles={['owner', 'admin']} requireExclusivePlan={true} tier="pro"><Dashboard /></ProtectedRoute>} />
