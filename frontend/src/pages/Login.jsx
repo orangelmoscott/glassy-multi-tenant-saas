@@ -16,6 +16,9 @@ const Login = () => {
     const [recoveryCompanyName, setRecoveryCompanyName] = useState('');
     const [recoveryLoading, setRecoveryLoading] = useState(false);
     const [recoveryStatus, setRecoveryStatus] = useState(null);
+    const [recoveryStep, setRecoveryStep] = useState(1); // 1: Pedir código, 2: Resetear
+    const [recoveryCode, setRecoveryCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,14 +28,41 @@ const Login = () => {
         e.preventDefault();
         setRecoveryLoading(true);
         setRecoveryStatus(null);
+        
         try {
-            await axios.post('https://glassy-backend.onrender.com/auth/forgot-password', { 
-                email: recoveryEmail,
-                companyName: recoveryCompanyName
-            });
-            setRecoveryStatus({ type: 'success', text: 'Instrucciones enviadas. Revisa tu correo.' });
+            const API_URL = 'https://glassy-backend.onrender.com'; // Usando tu URL actual
+            if (recoveryStep === 1) {
+                // Paso 1: Solicitar Código OTP
+                await axios.post(`${API_URL}/auth/forgot-password`, { 
+                    email: recoveryEmail, 
+                    companyName: recoveryCompanyName 
+                });
+                setRecoveryStatus({ type: 'success', text: 'Código enviado. Revisa tu bandeja de entrada.' });
+                setRecoveryStep(2);
+            } else {
+                // Paso 2: Resetear con Código OTP
+                await axios.post(`${API_URL}/auth/reset-password`, { 
+                    email: recoveryEmail, 
+                    companyName: recoveryCompanyName,
+                    otp: recoveryCode,
+                    password: newPassword
+                });
+                setRecoveryStatus({ type: 'success', text: '¡Contraseña actualizada! Ya puedes iniciar sesión.' });
+                
+                // Limpiar y cerrar tras éxito
+                setTimeout(() => {
+                    setShowForgotModal(false);
+                    setRecoveryStep(1);
+                    setRecoveryCode('');
+                    setNewPassword('');
+                    setRecoveryStatus(null);
+                }, 3000);
+            }
         } catch (err) {
-            setRecoveryStatus({ type: 'error', text: err.response?.data?.message || 'Error al procesar la solicitud' });
+            setRecoveryStatus({ 
+                type: 'error', 
+                text: err.response?.data?.message || 'Error en la solicitud. Verifica los datos.' 
+            });
         } finally {
             setRecoveryLoading(false);
         }
@@ -191,63 +221,107 @@ const Login = () => {
                             <X size={20} className="text-slate-400" />
                         </button>
 
-                        <div className="flex flex-col items-center mb-8 text-center">
+                        <div className="flex flex-col items-center mb-8 text-center px-4">
                             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
-                                <Lock size={24} />
+                                {recoveryStep === 1 ? <Mail size={24} /> : <ShieldCheck size={24} />}
                             </div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Recuperar acceso</h2>
-                            <p className="text-slate-500 text-sm font-medium mt-2">Introduce el email de tu empresa</p>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                                {recoveryStep === 1 ? 'Recuperar acceso' : 'Verificando Código'}
+                            </h2>
+                            <p className="text-slate-500 text-sm font-medium mt-2">
+                                {recoveryStep === 1 
+                                    ? 'Confirmaremos tu identidad corporativa' 
+                                    : 'Introduce el código de 6 dígitos enviado a tu email'
+                                }
+                            </p>
                         </div>
 
                         {recoveryStatus && (
-                            <div className={`p-4 rounded-2xl text-sm font-bold mb-6 flex items-center gap-3 ${recoveryStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                                {recoveryStatus.type === 'success' && <ShieldCheck size={18} />}
+                            <div className={`mx-4 p-4 rounded-2xl text-sm font-bold mb-6 flex items-center gap-3 ${recoveryStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
+                                {recoveryStatus.type === 'success' ? <ShieldCheck size={18} /> : <X size={18} />}
                                 {recoveryStatus.text}
                             </div>
                         )}
 
-                        {recoveryStatus?.type !== 'success' ? (
-                            <form onSubmit={handleForgotPassword} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre de tu Empresa</label>
-                                    <div className="relative group">
-                                        <Building className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
-                                        <input 
-                                            type="text" placeholder="Glassy S.L." required
-                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
-                                            onChange={(e) => setRecoveryCompanyName(e.target.value)}
-                                            value={recoveryCompanyName}
-                                        />
+                        <form onSubmit={handleForgotPassword} className="space-y-6 px-4">
+                            {recoveryStep === 1 ? (
+                                <>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre de tu Empresa</label>
+                                        <div className="relative group">
+                                            <Building className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                            <input 
+                                                type="text" placeholder="Glassy S.L." required
+                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                                onChange={(e) => setRecoveryCompanyName(e.target.value)}
+                                                value={recoveryCompanyName}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
-                                    <div className="relative group">
-                                        <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
-                                        <input 
-                                            type="email" placeholder="admin@empresa.com" required
-                                            className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
-                                            onChange={(e) => setRecoveryEmail(e.target.value)}
-                                            value={recoveryEmail}
-                                        />
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
+                                        <div className="relative group">
+                                            <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                            <input 
+                                                type="email" placeholder="admin@empresa.com" required
+                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                                onChange={(e) => setRecoveryEmail(e.target.value)}
+                                                value={recoveryEmail}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Código de Seguridad (OTP)</label>
+                                        <div className="relative group">
+                                            <ShieldCheck className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                            <input 
+                                                type="text" placeholder="123456" required
+                                                maxLength={6}
+                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-black text-2xl tracking-[10px] text-center"
+                                                onChange={(e) => setRecoveryCode(e.target.value)}
+                                                value={recoveryCode}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nueva Contraseña</label>
+                                        <div className="relative group">
+                                            <Lock className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                            <input 
+                                                type="password" placeholder="••••••••" required
+                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                                onChange={(e) => setNewPassword(e.target.value)}
+                                                value={newPassword}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
 
                             <button 
                                 disabled={recoveryLoading}
                                 className="w-full bg-blue-600 text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-70"
                             >
-                                {recoveryLoading ? 'Procesando...' : 'Enviar instrucciones'}
+                                {recoveryLoading ? 'Procesando...' : (recoveryStep === 1 ? 'Enviar código' : 'Restablecer contraseña')}
                                 {!recoveryLoading && <ChevronRight size={20} />}
                             </button>
+
+                            {recoveryStep === 2 && (
+                                <button 
+                                    type="button"
+                                    onClick={() => setRecoveryStep(1)}
+                                    className="w-full text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors mt-2"
+                                >
+                                    Volver al paso anterior
+                                </button>
+                            )}
                         </form>
-                        ) : (
-                            <button 
-                                onClick={() => {
-                                    setShowForgotModal(false);
-                                    setRecoveryStatus(null);
-                                }}
+
                                 className="w-full bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 transition-all"
                             >
                                 Entendido

@@ -113,9 +113,6 @@ router.post('/login', async (req, res) => {
 const crypto = require('crypto');
 const { sendHTMLEmail } = require('../utils/mailer');
 
-/**
- * SOLICITAR RECUPERACIÓN DE CONTRASEÑA
- */
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email, companyName } = req.body;
@@ -135,29 +132,26 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(404).send({ message: 'Usuario no encontrado.' });
         }
 
-        // Generar token
-        const token = crypto.randomBytes(20).toString('hex');
-        user.resetPasswordToken = token;
+        // Generar OTP de 6 dígitos
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.resetPasswordToken = otp;
         user.resetPasswordExpires = Date.now() + 3600000; // 1 hora
         await user.save();
 
-        // Enviar email de recuperación (Requiere configuración de Rewrite en Render: /* -> /index.html)
-        const baseUrl = process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
-        const resetUrl = `${baseUrl}/reset-password/${token}`;
         const html = `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 24px;">
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 24px;">
                 <h2 style="color: #0f172a;">Recuperación de Contraseña - Glassy</h2>
                 <p>Has solicitado restablecer tu contraseña para la empresa <strong>${tenant.name}</strong>.</p>
-                <p>Haz clic en el botón de abajo para continuar:</p>
+                <p>Tu código de seguridad es:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                    <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 12px; font-weight: bold;">Restablecer Contraseña</a>
+                    <span style="background-color: #f1f5f9; color: #1e293b; padding: 15px 30px; border-radius: 15px; font-size: 32px; font-weight: bold; letter-spacing: 5px; border: 1px solid #cbd5e1;">${otp}</span>
                 </div>
-                <p style="color: #64748b; font-size: 14px;">Este enlace expirará en 1 hora. Si no solicitaste este cambio, puedes ignorar este correo.</p>
+                <p style="color: #64748b; font-size: 14px;">Introduce este código en la aplicación para continuar. El código expirará en 1 hora. Si no solicitaste este cambio, puedes ignorar este correo.</p>
             </div>
         `;
 
-        await sendHTMLEmail(tenant.email, 'Restablecer contraseña - Glassy SaaS', html);
-        res.send({ message: 'Si el correo está registrado, recibirás instrucciones.' });
+        await sendHTMLEmail(tenant.email, `Tu código de seguridad: ${otp} - Glassy`, html);
+        res.send({ message: 'Si el correo está registrado, recibirás un código de 6 dígitos.' });
 
     } catch (error) {
         console.error('Error en forgot-password:', error);
@@ -166,21 +160,33 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 /**
- * RESTABLECER CONTRASEÑA
+ * RESTABLECER CONTRASEÑA CON OTP
  */
-router.post('/reset-password/:token', async (req, res) => {
+router.post('/reset-password', async (req, res) => {
     try {
-        const { password } = req.body;
+        const { email, companyName, otp, password } = req.body;
+
+        const tenant = await Tenant.findOne({ 
+            email: email.toLowerCase().trim(),
+            name: { $regex: new RegExp(`^${companyName.trim()}$`, 'i') } 
+        });
+
+        if (!tenant) {
+            return res.status(404).send({ message: 'Información de empresa no válida.' });
+        }
+
         const user = await User.findOne({
-            resetPasswordToken: req.params.token,
+            _id: tenant.ownerId,
+            resetPasswordToken: otp,
             resetPasswordExpires: { $gt: Date.now() }
         });
 
         if (!user) {
-            return res.status(400).send({ message: 'El token es inválido o ha expirado.' });
+            return res.status(400).send({ message: 'Código inválido o expirado. Por favor, solicita uno nuevo.' });
         }
 
         // Hashear nueva contraseña
+        const bcrypt = require('bcryptjs');
         user.password = await bcrypt.hash(password, 10);
         user.resetPasswordToken = null;
         user.resetPasswordExpires = null;
@@ -188,7 +194,8 @@ router.post('/reset-password/:token', async (req, res) => {
 
         res.send({ message: 'Contraseña actualizada con éxito. Ya puedes iniciar sesión.' });
     } catch (error) {
-        res.status(500).send({ message: 'Error al restablecer contraseña.' });
+        console.error('Error en reset-password:', error);
+        res.status(500).send({ message: 'Error al restablecer la contraseña.' });
     }
 });
 
