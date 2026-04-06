@@ -131,16 +131,26 @@ const MyRoutes = () => {
         <DashboardLayout>
             <div className="max-w-4xl mx-auto space-y-4 md:space-y-8 pb-10 px-4 pt-10">
                 {/* Perfil del Operario */}
-                <div className="bg-white p-6 md:p-8 rounded-[30px] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex items-center gap-4 md:gap-5">
-                        <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-blue-200">
+                {/* Perfil del Operario (Responsive y Blindado) */}
+                <div className="bg-white p-4 md:p-8 rounded-[30px] border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 overflow-hidden">
+                    <div className="flex items-center gap-4 md:gap-5 min-w-0 flex-1">
+                        {/* Avatar / Iniciales */}
+                        <div className="w-14 h-14 md:w-20 md:h-20 shrink-0 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center text-white font-black text-2xl md:text-3xl shadow-xl shadow-blue-200">
                             {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username?.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">{user.fullName || user.username}</h2>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{user.role}</span>
-                                <span className="text-slate-400 font-bold text-sm tracking-tight">{user.companyName}</span>
+                        
+                        {/* Textos: Nombre y Empresa */}
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight truncate">
+                                {user.fullName || user.username}
+                            </h2>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1">
+                                <span className="bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                                    {user.role}
+                                </span>
+                                <span className="text-slate-400 font-bold text-xs md:text-sm tracking-tight truncate max-w-[150px] md:max-w-none">
+                                    {user.companyName}
+                                </span>
                             </div>
                         </div>
                     </div>
