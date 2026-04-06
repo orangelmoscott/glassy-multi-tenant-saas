@@ -13,6 +13,7 @@ const MyRoutes = () => {
     const [assignments, setAssignments] = useState([]);
     const [history, setHistory] = useState([]);
     const [activeTab, setActiveTab] = useState('pendientes');
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(true);
     const [selectedJob, setSelectedJob] = useState(null);
     const [isSigning, setIsSigning] = useState(false);
@@ -33,13 +34,33 @@ const MyRoutes = () => {
             const res = await axios.get('https://glassy-backend.onrender.com/assignments/my', {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setAssignments(res.data);
+            const data = res.data;
+            setAssignments(data);
+            
+            // Lógica inteligente para seleccionar el día inicial
+            if (data.length > 0) {
+                const today = new Date().toISOString().split('T')[0];
+                const datesWithWork = [...new Set(data.map(a => new Date(a.date).toISOString().split('T')[0]))].sort();
+                
+                if (datesWithWork.includes(today)) {
+                    setSelectedDate(today);
+                } else if (datesWithWork.length > 0) {
+                    setSelectedDate(datesWithWork[0]); // Seleccionar el día más próximo si no hay nada hoy
+                }
+            }
+
             setLoading(false);
         } catch (err) {
             console.error(err);
             setLoading(false);
         }
     };
+
+    // Obtener días únicos que tienen asignaciones
+    const uniqueDates = [...new Set(assignments.map(a => new Date(a.date).toISOString().split('T')[0]))].sort();
+    
+    // Filtrar asignaciones por fecha seleccionada
+    const filteredAssignments = assignments.filter(a => new Date(a.date).toISOString().split('T')[0] === selectedDate);
 
     const fetchMyHistory = async () => {
         try {
@@ -125,6 +146,43 @@ const MyRoutes = () => {
                     </div>
                 </div>
 
+                {/* SELECTOR DE FECHA HORIZONTAL (Premium mobile-first) */}
+                {activeTab === 'pendientes' && (
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between px-2">
+                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mi Calendario de Rutas</p>
+                             <div className="h-1 flex-1 mx-4 bg-slate-100 rounded-full opacity-50"></div>
+                        </div>
+                        <div className="flex overflow-x-auto gap-3 pb-4 px-1 no-scrollbar lg:justify-start">
+                            <style>{`
+                                .no-scrollbar::-webkit-scrollbar { display: none; }
+                                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                            `}</style>
+                            {uniqueDates.length === 0 ? (
+                                <div className="text-slate-400 text-xs font-bold py-2">No hay rutas programadas</div>
+                            ) : (
+                                uniqueDates.map(dateStr => (
+                                    <button
+                                        key={dateStr}
+                                        onClick={() => setSelectedDate(dateStr)}
+                                        className={`flex flex-col items-center min-w-[90px] md:min-w-[110px] p-4 rounded-3xl transition-all duration-300 border-2 ${
+                                            selectedDate === dateStr 
+                                            ? 'bg-slate-900 text-white border-slate-900 shadow-xl shadow-slate-200 scale-105' 
+                                            : 'bg-white text-slate-400 border-slate-50 hover:border-blue-100'
+                                        }`}
+                                    >
+                                        <span className={`text-[9px] font-black uppercase tracking-widest mb-1 ${selectedDate === dateStr ? 'text-blue-400' : 'text-slate-400'}`}>
+                                            {new Date(dateStr + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'short' })}
+                                        </span>
+                                        <span className="text-lg font-black">{new Date(dateStr + 'T12:00:00').getDate()}</span>
+                                        <span className="text-[9px] font-bold uppercase">{new Date(dateStr + 'T12:00:00').toLocaleDateString('es-ES', { month: 'short' })}</span>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Tab Selector */}
                 <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-fit mx-auto md:mx-0">
                     <button 
@@ -145,14 +203,14 @@ const MyRoutes = () => {
                     <div className="space-y-6">
                         {loading ? (
                             [1,2].map(i => <div key={i} className="h-28 bg-slate-50 border border-slate-100 rounded-[35px] animate-pulse"></div>)
-                        ) : assignments.length === 0 ? (
+                        ) : filteredAssignments.length === 0 ? (
                             <div className="bg-white p-12 rounded-[40px] text-center border border-dashed border-slate-200">
                                 <CheckCircle className="mx-auto text-emerald-100 mb-4" size={64} />
-                                <h3 className="text-xl font-black text-slate-800 uppercase italic">¡Todo al día!</h3>
-                                <p className="text-slate-400 font-medium mt-2">No tienes servicios pendientes para gestionar.</p>
+                                <h3 className="text-xl font-black text-slate-800 uppercase italic">Libre por hoy</h3>
+                                <p className="text-slate-400 font-medium mt-2">No tienes servicios asignados para este día.</p>
                             </div>
                         ) : (
-                            assignments.map((job) => (
+                            filteredAssignments.map((job) => (
                                 <motion.div 
                                     key={job._id}
                                     initial={{ opacity: 0, scale: 0.95 }}
