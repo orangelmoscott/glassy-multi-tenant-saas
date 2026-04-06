@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
+import RouteMap from '../components/RouteMap';
 
 const MyRoutes = () => {
     const [assignments, setAssignments] = useState([]);
@@ -197,19 +198,27 @@ const MyRoutes = () => {
                 <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100 w-fit mx-auto md:mx-0">
                     <button 
                         onClick={() => setActiveTab('pendientes')}
-                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'pendientes' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'pendientes' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         Pendientes
                     </button>
                     <button 
+                        onClick={() => setActiveTab('mapa')}
+                        className={`flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'mapa' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        Mapa
+                    </button>
+                    <button 
                         onClick={() => setActiveTab('historial')}
-                        className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'historial' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`flex-1 md:flex-none px-6 md:px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'historial' ? 'bg-slate-900 text-white shadow-lg scale-105' : 'text-slate-400 hover:text-slate-600'}`}
                     >
                         Historial
                     </button>
                 </div>
 
-                {activeTab === 'pendientes' ? (
+                {activeTab === 'mapa' ? (
+                    <RouteMap assignments={filteredAssignments} />
+                ) : activeTab === 'pendientes' ? (
                     <div className="space-y-6">
                         {loading ? (
                             [1,2].map(i => <div key={i} className="h-28 bg-slate-50 border border-slate-100 rounded-[35px] animate-pulse"></div>)
