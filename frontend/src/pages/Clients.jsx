@@ -372,7 +372,23 @@ const Clients = () => {
                                             <div className="text-right">
                                                 <p className="font-black text-slate-900 text-md">{entry.price}€</p>
                                                 <button 
-                                                    onClick={() => window.open(`https://glassy-backend.onrender.com/assignments/${entry._id}/invoice`, '_blank')}
+                                                    onClick={async (e) => {
+                                                        const btn = e.target;
+                                                        const prevText = btn.innerText;
+                                                        try {
+                                                            btn.innerText = 'Cargando...';
+                                                            const response = await axios.get(`https://glassy-backend.onrender.com/assignments/${entry._id}/invoice`, {
+                                                                headers: { Authorization: `Bearer ${token}` },
+                                                                responseType: 'blob'
+                                                            });
+                                                            const url = window.URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}));
+                                                            window.open(url, '_blank');
+                                                        } catch (err) {
+                                                            alert('Error al generar PDF o la configuración de empresa está incompleta.');
+                                                        } finally {
+                                                            btn.innerText = prevText;
+                                                        }
+                                                    }}
                                                     className="text-[9px] text-blue-600 font-extrabold hover:underline uppercase tracking-widest"
                                                 >
                                                     Ver Factura

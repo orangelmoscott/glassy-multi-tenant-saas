@@ -42,8 +42,8 @@ const generateInvoicePDF = (data) => {
 
         // --- INFO BLOQUES ---
         doc.fillColor('#9CA3AF').fontSize(8).font('Helvetica-Bold').text('CLIENTE', 50, 140);
-        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold').text(client.companyName, 50, 155);
-        doc.fillColor('#4B5563').fontSize(9).font('Helvetica').text(client.address || '', 50, 170, { width: 250 });
+        doc.fillColor('#111827').fontSize(11).font('Helvetica-Bold').text(client.companyName || 'Cliente Eliminado / No Disponible', 50, 155);
+        doc.fillColor('#4B5563').fontSize(9).font('Helvetica').text(client.address || 'Sin dirección', 50, 170, { width: 250 });
         let nextClientY = doc.y + 5;
         doc.text(`NIF/CIF: ${client.nif || 'N/A'}`, 50, nextClientY);
         if (client.phone) {
