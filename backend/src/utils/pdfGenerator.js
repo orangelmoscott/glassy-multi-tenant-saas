@@ -17,7 +17,7 @@ const generateInvoicePDF = (data) => {
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', () => resolve(Buffer.concat(buffers)));
 
-        const { tenant, client, assignment } = data;
+        const { tenant = {}, client = {}, assignment } = data;
 
         // --- HELPER PARA LÍNEAS ---
         const hr = (y) => doc.moveTo(50, y).lineTo(550, y).lineWidth(1).stroke('#F3F4F6');

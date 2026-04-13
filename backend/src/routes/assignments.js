@@ -17,8 +17,10 @@ router.get('/:id/invoice', authenticate, async (req, res) => {
             .populate('clientId');
         
         if (!assignment) return res.status(404).send({ message: 'Ruta no encontrada' });
+        if (!assignment.clientId) return res.status(400).send({ message: 'El cliente asociado a esta ruta ya no existe o fue eliminado.' });
 
         const tenant = await Tenant.findById(req.user.tenantId);
+        if (!tenant) return res.status(400).send({ message: 'No se encontraron los datos de la empresa. Configura tu perfil primero.' });
         
         // Asignar número de factura si no tiene
         if (!assignment.invoiceNumber) {
@@ -252,7 +254,13 @@ router.get('/my-history', authenticate, async (req, res) => {
         .limit(20)
         .lean();
 
-        res.send(assignments);
+        // Strip financial data — cristaleros should not see billing amounts
+        const sanitized = assignments.map(a => {
+            const { price, extraServices, ...rest } = a;
+            return rest;
+        });
+
+        res.send(sanitized);
     } catch (error) {
         res.status(500).send({ message: 'Error al obtener tu historial' });
     }

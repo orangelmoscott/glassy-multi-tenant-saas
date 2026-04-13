@@ -307,10 +307,7 @@ const MyRoutes = () => {
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs font-black text-slate-900">{job.price?.toFixed(2)}€</p>
-                                        {job.extraServices?.length > 0 && (
-                                            <p className="text-[9px] text-emerald-600 font-bold">+{job.extraServices.reduce((s, e) => s + e.price, 0).toFixed(2)}€ Extras</p>
-                                        )}
+                                        <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Completado</span>
                                     </div>
                                 </motion.div>
                             ))

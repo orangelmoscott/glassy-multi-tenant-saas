@@ -20,6 +20,7 @@ const Assignments = () => {
     const [loading, setLoading] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
     const [extraServiceData, setExtraServiceData] = useState({ description: '', price: '' });
+    const [editingExtraIdx, setEditingExtraIdx] = useState(null);
     const [filterWorkerId, setFilterWorkerId] = useState('');
     const [selectedAssignmentForLogs, setSelectedAssignmentForLogs] = useState(null);
     const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
@@ -665,31 +666,83 @@ const Assignments = () => {
                                             />
                                             <button 
                                                 type="button" 
-                                                className="px-4 py-3 bg-blue-100 text-blue-600 rounded-xl hover:bg-blue-200 transition-colors font-bold"
+                                                className={`px-4 py-3 ${editingExtraIdx !== null ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'} rounded-xl transition-colors font-bold`}
                                                 onClick={() => {
                                                     if (extraServiceData.description && extraServiceData.price) {
-                                                        setFormData({
-                                                            ...formData,
-                                                            extraServices: [...formData.extraServices, {
+                                                        if (editingExtraIdx !== null) {
+                                                            // Update existing extra
+                                                            const updated = [...formData.extraServices];
+                                                            updated[editingExtraIdx] = {
                                                                 description: extraServiceData.description,
                                                                 price: parseFloat(extraServiceData.price)
-                                                            }]
-                                                        });
+                                                            };
+                                                            setFormData({ ...formData, extraServices: updated });
+                                                            setEditingExtraIdx(null);
+                                                        } else {
+                                                            // Add new extra
+                                                            setFormData({
+                                                                ...formData,
+                                                                extraServices: [...formData.extraServices, {
+                                                                    description: extraServiceData.description,
+                                                                    price: parseFloat(extraServiceData.price)
+                                                                }]
+                                                            });
+                                                        }
                                                         setExtraServiceData({ description: '', price: '' });
                                                     }
                                                 }}
                                             >
-                                                <Plus size={20} />
+                                                {editingExtraIdx !== null ? <Save size={20} /> : <Plus size={20} />}
                                             </button>
+                                            {editingExtraIdx !== null && (
+                                                <button 
+                                                    type="button" 
+                                                    className="px-3 py-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 transition-colors"
+                                                    onClick={() => {
+                                                        setEditingExtraIdx(null);
+                                                        setExtraServiceData({ description: '', price: '' });
+                                                    }}
+                                                >
+                                                    <X size={20} />
+                                                </button>
+                                            )}
                                         </div>
                                         
                                         {/* Lista de Extras Añadidos */}
                                         {formData.extraServices.length > 0 && (
                                             <div className="mt-3 space-y-2">
                                                 {formData.extraServices.map((ex, idx) => (
-                                                    <div key={idx} className="flex items-center justify-between text-sm px-4 py-2 bg-blue-50 text-blue-800 rounded-lg">
-                                                        <span className="font-bold">{ex.description}</span>
-                                                        <span className="font-extrabold">+{ex.price}€</span>
+                                                    <div key={idx} className="flex items-center justify-between text-sm px-4 py-3 bg-blue-50 text-blue-800 rounded-lg group">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold">{ex.description}</span>
+                                                            <span className="font-extrabold text-blue-600">+{ex.price}€</span>
+                                                        </div>
+                                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setExtraServiceData({ description: ex.description, price: ex.price });
+                                                                    setEditingExtraIdx(idx);
+                                                                }}
+                                                                className="p-1.5 bg-blue-100 hover:bg-blue-200 rounded text-blue-600 transition-colors"
+                                                            >
+                                                                <PenTool size={14} />
+                                                            </button>
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const updated = formData.extraServices.filter((_, i) => i !== idx);
+                                                                    setFormData({ ...formData, extraServices: updated });
+                                                                    if (editingExtraIdx === idx) {
+                                                                        setEditingExtraIdx(null);
+                                                                        setExtraServiceData({ description: '', price: '' });
+                                                                    }
+                                                                }}
+                                                                className="p-1.5 bg-red-100 hover:bg-red-200 rounded text-red-600 transition-colors"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ))}
                                                 <div className="text-right text-sm font-black text-slate-900 mt-2 pr-2">

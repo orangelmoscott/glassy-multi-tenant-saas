@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building, AlertTriangle } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
@@ -9,6 +9,17 @@ const Login = () => {
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [sessionExpired, setSessionExpired] = useState(false);
+
+    // Detectar si el usuario fue redirigido por sesión expirada
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('expired') === '1') {
+            setSessionExpired(true);
+            // Limpiar el parámetro de la URL para que no se muestre al refrescar manualmente
+            window.history.replaceState({}, document.title, '/login');
+        }
+    }, []);
     
     // Modal de recuperación
     const [showForgotModal, setShowForgotModal] = useState(false);
@@ -127,6 +138,17 @@ const Login = () => {
                         <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">Acceso a tu Panel</h1>
                         <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 opacity-70">SaaS Management Solution</p>
                     </div>
+
+                    {sessionExpired && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm mb-6 rounded-2xl font-medium flex items-center gap-3"
+                        >
+                            <AlertTriangle size={20} className="text-amber-500 flex-shrink-0" />
+                            <span>Tu sesión ha expirado por inactividad. Inicia sesión de nuevo para continuar.</span>
+                        </motion.div>
+                    )}
 
                     {error && (
                         <motion.div 
