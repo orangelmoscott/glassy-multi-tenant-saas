@@ -27,7 +27,7 @@ router.post('/create-checkout-session', authenticate, async (req, res) => {
         if (!priceId) return res.status(400).send({ message: 'Plan no válido' });
 
         // Determinar base URL para el redireccionamiento (Dinámica desde el origen o configuración)
-        let baseUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
+        let baseUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy.es';
         // Eliminar barra final si existe
         if (baseUrl.endsWith('/')) baseUrl = baseUrl.slice(0, -1);
 
@@ -97,7 +97,7 @@ router.post('/create-portal-session', authenticate, async (req, res) => {
         }
 
         // URL a la que volverá tras cerrar el portal
-        const returnUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy-saas.onrender.com';
+        const returnUrl = req.body.origin || process.env.BASE_URL_FRONTEND || 'https://glassy.es';
 
         const portalSession = await stripe.billingPortal.sessions.create({
             customer: tenant.stripeCustomerId,
