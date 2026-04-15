@@ -34,7 +34,7 @@ const Workers = () => {
 
     const fetchWorkers = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/users/workers', {
+            const res = await axios.get('https://glassy.es/api/users/workers', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setWorkers(res.data);
@@ -49,13 +49,13 @@ const Workers = () => {
         e.preventDefault();
         try {
             if (editingWorker) {
-                const res = await axios.patch(`https://glassy-backend.onrender.com/users/workers/${editingWorker._id}`, formData, {
+                const res = await axios.patch(`https://glassy.es/api/users/workers/${editingWorker._id}`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setWorkers(workers.map(w => w._id === editingWorker._id ? res.data : w));
                 alert('Operario actualizado con éxito');
             } else {
-                const res = await axios.post('https://glassy-backend.onrender.com/users/workers', formData, {
+                const res = await axios.post('https://glassy.es/api/users/workers', formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setWorkers([...workers, res.data]);
@@ -84,7 +84,7 @@ const Workers = () => {
         if (!deleteModal.workerId) return;
         setIsDeleting(true);
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/users/workers/${deleteModal.workerId}`, {
+            await axios.delete(`https://glassy.es/api/users/workers/${deleteModal.workerId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setWorkers(workers.filter(w => w._id !== deleteModal.workerId));

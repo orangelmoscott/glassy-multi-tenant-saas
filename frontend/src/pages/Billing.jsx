@@ -31,7 +31,7 @@ const Billing = () => {
 
     const fetchHistory = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/assignments', {
+            const res = await axios.get('https://glassy.es/api/assignments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             // Solo mostrar los completados en facturación
@@ -45,7 +45,7 @@ const Billing = () => {
 
     const handleDownloadPDF = async (id) => {
         try {
-            const response = await axios.get(`https://glassy-backend.onrender.com/assignments/${id}/invoice`, {
+            const response = await axios.get(`https://glassy.es/api/assignments/${id}/invoice`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'blob'
             });
@@ -66,7 +66,7 @@ const Billing = () => {
         if (!emailModal.invoiceId) return;
         setIsProcessing(true);
         try {
-            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${emailModal.invoiceId}/send-invoice`, {}, {
+            const res = await axios.post(`https://glassy.es/api/assignments/${emailModal.invoiceId}/send-invoice`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             alert(res.data.message);
@@ -82,7 +82,7 @@ const Billing = () => {
         if (!deleteModal.invoiceId) return;
         setIsProcessing(true);
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/assignments/${deleteModal.invoiceId}`, {
+            await axios.delete(`https://glassy.es/api/assignments/${deleteModal.invoiceId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAssignments(assignments.filter(a => a._id !== deleteModal.invoiceId));

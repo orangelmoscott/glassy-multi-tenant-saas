@@ -46,7 +46,7 @@ const Clients = () => {
 
     const fetchClients = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/clients', {
+            const res = await axios.get('https://glassy.es/api/clients', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClients(res.data);
@@ -61,13 +61,13 @@ const Clients = () => {
         e.preventDefault();
         try {
             if (editingClient) {
-                const res = await axios.patch(`https://glassy-backend.onrender.com/clients/${editingClient._id}`, formData, {
+                const res = await axios.patch(`https://glassy.es/api/clients/${editingClient._id}`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setClients(clients.map(c => c._id === editingClient._id ? res.data.client || res.data : c));
                 alert('Cliente actualizado con éxito');
             } else {
-                const res = await axios.post('https://glassy-backend.onrender.com/clients', formData, {
+                const res = await axios.post('https://glassy.es/api/clients', formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setClients([...clients, res.data.client]);
@@ -96,7 +96,7 @@ const Clients = () => {
         if (!deleteModal.clientId) return;
         setIsDeleting(true);
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/clients/${deleteModal.clientId}`, {
+            await axios.delete(`https://glassy.es/api/clients/${deleteModal.clientId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClients(clients.filter(c => c._id !== deleteModal.clientId));
@@ -142,7 +142,7 @@ const Clients = () => {
         setSelectedClient(client);
         setLoadingDetails(true);
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/assignments', {
+            const res = await axios.get('https://glassy.es/api/assignments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setClientAssignments(res.data.filter(a => a.clientId?._id === client._id));
@@ -377,7 +377,7 @@ const Clients = () => {
                                                         const prevText = btn.innerText;
                                                         try {
                                                             btn.innerText = 'Cargando...';
-                                                            const response = await axios.get(`https://glassy-backend.onrender.com/assignments/${entry._id}/invoice`, {
+                                                            const response = await axios.get(`https://glassy.es/api/assignments/${entry._id}/invoice`, {
                                                                 headers: { Authorization: `Bearer ${token}` },
                                                                 responseType: 'blob'
                                                             });

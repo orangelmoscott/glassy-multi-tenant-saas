@@ -25,7 +25,7 @@ const DashboardLayout = ({ children }) => {
                 try {
                     console.log("Detectada sesión de Stripe pendiente. Intentando sincronizar...");
                     const res = await axios.post(
-                        'https://glassy-backend.onrender.com/tenant/sync-subscription', 
+                        'https://glassy.es/api/tenant/sync-subscription', 
                         { sessionId: pendingSessionId },
                         { headers: { Authorization: `Bearer ${user.token}` }}
                     );

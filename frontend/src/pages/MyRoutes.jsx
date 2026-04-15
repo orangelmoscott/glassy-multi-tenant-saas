@@ -32,7 +32,7 @@ const MyRoutes = () => {
 
     const fetchMyAssignments = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/assignments/my', {
+            const res = await axios.get('https://glassy.es/api/assignments/my', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const data = res.data;
@@ -65,7 +65,7 @@ const MyRoutes = () => {
 
     const fetchMyHistory = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/assignments/my-history', {
+            const res = await axios.get('https://glassy.es/api/assignments/my-history', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setHistory(res.data);
@@ -93,7 +93,7 @@ const MyRoutes = () => {
                 extraServices: currentExtras
             };
 
-            await axios.patch(`https://glassy-backend.onrender.com/assignments/${selectedJob._id}/complete`, body, {
+            await axios.patch(`https://glassy.es/api/assignments/${selectedJob._id}/complete`, body, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             

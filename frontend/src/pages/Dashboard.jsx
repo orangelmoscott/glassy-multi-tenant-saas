@@ -24,7 +24,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`https://glassy-backend.onrender.com/dashboard/stats?month=${month}&year=${year}`, {
+            const res = await axios.get(`https://glassy.es/api/dashboard/stats?month=${month}&year=${year}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setStats(res.data);

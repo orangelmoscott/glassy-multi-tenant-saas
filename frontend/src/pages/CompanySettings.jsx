@@ -45,7 +45,7 @@ const CompanySettings = () => {
     const checkPaymentStatus = async (sessionId) => {
         try {
             const res = await axios.post(
-                'https://glassy-backend.onrender.com/tenant/sync-subscription', 
+                'https://glassy.es/api/tenant/sync-subscription', 
                 { sessionId },
                 { headers: { Authorization: `Bearer ${token}` }}
             );
@@ -83,7 +83,7 @@ const CompanySettings = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/tenant/my-company', {
+            const res = await axios.get('https://glassy.es/api/tenant/my-company', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTenant(res.data);
@@ -111,7 +111,7 @@ const CompanySettings = () => {
         setError(null);
         setSuccess(false);
         try {
-            await axios.patch('https://glassy-backend.onrender.com/tenant/update', tenant, {
+            await axios.patch('https://glassy.es/api/tenant/update', tenant, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSuccess(true);
@@ -126,7 +126,7 @@ const CompanySettings = () => {
     const handlePlanUpdate = async (planId) => {
         try {
             // Ya no es un simple patch, es una creación de sesión de pago profesional
-            const res = await axios.post('https://glassy-backend.onrender.com/stripe/create-checkout-session', { 
+            const res = await axios.post('https://glassy.es/api/stripe/create-checkout-session', { 
                 planId,
                 origin: window.location.origin 
             }, {
@@ -149,7 +149,7 @@ const CompanySettings = () => {
     const handleManageBilling = async () => {
         try {
             setSaving(true);
-            const res = await axios.post('https://glassy-backend.onrender.com/stripe/create-portal-session', {
+            const res = await axios.post('https://glassy.es/api/stripe/create-portal-session', {
                 origin: window.location.origin
             }, {
                 headers: { Authorization: `Bearer ${token}` }

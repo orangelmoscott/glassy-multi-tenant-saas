@@ -29,7 +29,7 @@ const Expenses = () => {
 
     const fetchExpenses = async () => {
         try {
-            const res = await axios.get('https://glassy-backend.onrender.com/expenses', {
+            const res = await axios.get('https://glassy.es/api/expenses', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setExpenses(res.data);
@@ -43,7 +43,7 @@ const Expenses = () => {
     const handleCreate = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('https://glassy-backend.onrender.com/expenses', newExpense, {
+            await axios.post('https://glassy.es/api/expenses', newExpense, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setIsModalOpen(false);
@@ -63,7 +63,7 @@ const Expenses = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Eliminar este gasto?')) return;
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/expenses/${id}`, {
+            await axios.delete(`https://glassy.es/api/expenses/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             fetchExpenses();

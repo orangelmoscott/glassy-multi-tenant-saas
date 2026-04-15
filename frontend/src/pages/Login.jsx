@@ -41,7 +41,7 @@ const Login = () => {
         setRecoveryStatus(null);
         
         try {
-            const API_URL = 'https://glassy-backend.onrender.com'; // Usando tu URL actual
+            const API_URL = 'https://glassy.es/api'; // Usando tu URL actual
             if (recoveryStep === 1) {
                 // Paso 1: Solicitar Código OTP
                 await axios.post(`${API_URL}/auth/forgot-password`, { 
@@ -84,7 +84,7 @@ const Login = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.post('https://glassy-backend.onrender.com/auth/login', formData);
+            const response = await axios.post('https://glassy.es/api/auth/login', formData);
             if (response.data.token) {
                 // Guardar sesión profesional
                 localStorage.setItem('glassy_user', JSON.stringify({

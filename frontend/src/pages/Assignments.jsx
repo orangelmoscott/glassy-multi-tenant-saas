@@ -69,7 +69,7 @@ const Assignments = () => {
             queryParams.append('month', filterMonth);
             queryParams.append('year', filterYear);
 
-            const res = await axios.get(`https://glassy-backend.onrender.com/assignments?${queryParams.toString()}`, {
+            const res = await axios.get(`https://glassy.es/api/assignments?${queryParams.toString()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAssignments(res.data);
@@ -83,8 +83,8 @@ const Assignments = () => {
         setLoading(true);
         try {
             const [clientRes, workerRes] = await Promise.all([
-                axios.get('https://glassy-backend.onrender.com/clients?isDeleted=false', { headers: { Authorization: `Bearer ${token}` } }), // Filter out deleted clients
-                axios.get('https://glassy-backend.onrender.com/users/workers', { headers: { Authorization: `Bearer ${token}` } })
+                axios.get('https://glassy.es/api/clients?isDeleted=false', { headers: { Authorization: `Bearer ${token}` } }), // Filter out deleted clients
+                axios.get('https://glassy.es/api/users/workers', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setClients(clientRes.data);
             setWorkers(workerRes.data);
@@ -100,13 +100,13 @@ const Assignments = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                const res = await axios.put(`https://glassy-backend.onrender.com/assignments/${editingId}`, formData, {
+                const res = await axios.put(`https://glassy.es/api/assignments/${editingId}`, formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setAssignments(assignments.map(a => a._id === editingId ? res.data : a));
                 setAlertModal({ isOpen: true, title: '¡Actualizado!', message: 'Asignación actualizada exitosamente.' });
             } else {
-                const res = await axios.post('https://glassy-backend.onrender.com/assignments', formData, {
+                const res = await axios.post('https://glassy.es/api/assignments', formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setAssignments([res.data, ...assignments]);
@@ -144,7 +144,7 @@ const Assignments = () => {
         try {
             const formDataWithForce = { ...reassignModal.data, forceReassign: true };
             if (editingId) {
-                const res = await axios.put(`https://glassy-backend.onrender.com/assignments/${editingId}`, formDataWithForce, {
+                const res = await axios.put(`https://glassy.es/api/assignments/${editingId}`, formDataWithForce, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 // Find and remove the conflict we just consumed, and update the current one
@@ -154,7 +154,7 @@ const Assignments = () => {
                 });
                 setAlertModal({ isOpen: true, title: '¡Actualizado!', message: 'Asignación actualizada exitosamente.' });
             } else {
-                const res = await axios.post('https://glassy-backend.onrender.com/assignments', formDataWithForce, {
+                const res = await axios.post('https://glassy.es/api/assignments', formDataWithForce, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 // In a creation, the assignment just gets over the conflicted one, let's just fetch everything or update array
@@ -187,7 +187,7 @@ const Assignments = () => {
             setLoading(true);
             const promises = routeData.clientIds.map(clientId => {
                 const client = clients.find(c => c._id === clientId);
-                return axios.post('https://glassy-backend.onrender.com/assignments', {
+                return axios.post('https://glassy.es/api/assignments', {
                     clientId,
                     workerId: routeData.workerId,
                     date: routeData.date,
@@ -232,7 +232,7 @@ const Assignments = () => {
             const prevYear = filterMonth === 1 ? filterYear - 1 : filterYear;
             
             // 1. Obtener asignaciones del mes anterior
-            const res = await axios.get('https://glassy-backend.onrender.com/assignments', {
+            const res = await axios.get('https://glassy.es/api/assignments', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
@@ -249,7 +249,7 @@ const Assignments = () => {
             // 2. Crear copias para el mes actual
             const promises = prevAssignments.map(as => {
                 const newDate = new Date(filterYear, filterMonth - 1, new Date(as.date).getDate());
-                return axios.post('https://glassy-backend.onrender.com/assignments', {
+                return axios.post('https://glassy.es/api/assignments', {
                     clientId: as.clientId?._id || as.clientId,
                     workerId: as.workerId?._id || as.workerId,
                     date: newDate,
@@ -282,7 +282,7 @@ const Assignments = () => {
         if (!deleteModal.assignmentId) return;
         setIsProcessing(true);
         try {
-            await axios.delete(`https://glassy-backend.onrender.com/assignments/${deleteModal.assignmentId}`, {
+            await axios.delete(`https://glassy.es/api/assignments/${deleteModal.assignmentId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAssignments(assignments.filter(a => a._id !== deleteModal.assignmentId));
@@ -296,7 +296,7 @@ const Assignments = () => {
 
     const handleDownloadPDF = async (id) => {
         try {
-            const response = await axios.get(`https://glassy-backend.onrender.com/assignments/${id}/invoice`, {
+            const response = await axios.get(`https://glassy.es/api/assignments/${id}/invoice`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'blob'
             });
@@ -317,7 +317,7 @@ const Assignments = () => {
         if (!emailModal.assignmentId) return;
         setIsProcessing(true);
         try {
-            const res = await axios.post(`https://glassy-backend.onrender.com/assignments/${emailModal.assignmentId}/send-invoice`, {}, {
+            const res = await axios.post(`https://glassy.es/api/assignments/${emailModal.assignmentId}/send-invoice`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setAlertModal({ isOpen: true, title: 'Email Enviado', message: res.data.message });

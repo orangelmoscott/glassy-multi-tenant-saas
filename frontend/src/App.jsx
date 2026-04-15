@@ -69,7 +69,7 @@ function useGlobalStripeSync() {
 
             try {
                 const res = await axios.post(
-                    'https://glassy-backend.onrender.com/tenant/sync-subscription',
+                    'https://glassy.es/api/tenant/sync-subscription',
                     { sessionId },
                     { headers: { Authorization: `Bearer ${user.token}` } }
                 );
