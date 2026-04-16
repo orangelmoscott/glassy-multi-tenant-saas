@@ -45,14 +45,14 @@ mongoose.connect(process.env.MONGO_URI_SAAS)
 // ==============================
 // RUTAS PRINCIPALES
 // ==============================
-app.use('/auth', authRoutes);
-app.use('/clients', clientRoutes);
-app.use('/tenant', tenantRoutes);
-app.use('/assignments', assignmentRoutes);
-app.use('/users', userRoutes);
-app.use('/dashboard', dashboardRoutes);
-app.use('/expenses', expenseRoutes);
-app.use('/stripe', stripeRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/tenant', tenantRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // Ruta de Salud del SaaS
 app.get('/', (req, res) => {
