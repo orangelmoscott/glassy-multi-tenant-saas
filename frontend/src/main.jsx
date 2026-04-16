@@ -17,7 +17,11 @@ let isLoggingOut = false; // Evita múltiples redirects si varias peticiones fal
 axios.interceptors.response.use(
   (response) => response, // Si la respuesta es OK, no hacer nada
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // Solo interceptar errores 401 de NUESTRO backend, NO de APIs externas (Mapbox, etc.)
+    const requestUrl = error.config?.url || '';
+    const isOwnBackend = requestUrl.includes('glassy.es') || requestUrl.startsWith('/api');
+
+    if (error.response && error.response.status === 401 && isOwnBackend) {
       // Solo actuar si hay una sesión activa (evitar bucles en la pantalla de login)
       const hasSession = localStorage.getItem('glassy_user');
       if (hasSession && !isLoggingOut) {
