@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   Building, Mail, Phone, CreditCard, Shield, 
   Upload, Save, RefreshCcw, Sparkles, CheckCircle,
-  FileBadge, MapPin, Briefcase, PartyPopper, X
+  FileBadge, MapPin, Briefcase, PartyPopper, X, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -16,14 +16,12 @@ const CompanySettings = () => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-    const [paymentActivated, setPaymentActivated] = useState(false); // overlay post-pago
+    const [paymentActivated, setPaymentActivated] = useState(false);
     
-    // Sesión
     const user = JSON.parse(localStorage.getItem('glassy_user') || '{}');
     const token = user.token;
 
     useEffect(() => {
-        // Primero sincronizar pago si venimos de Stripe, luego cargar settings
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session_id');
         const status = params.get('status');
@@ -31,17 +29,15 @@ const CompanySettings = () => {
         if (status === 'success' && sessionId) {
             checkPaymentStatus(sessionId);
         } else if (status === 'cancel') {
-            // Limpiar URL y mostrar mensaje amigable
             window.history.replaceState({}, document.title, '/app/settings');
             setError('Pago cancelado. Puedes reactivar tu suscripción cuando quieras.');
-            setTimeout(() => setError(null), 5000); // limpiar mensaje tras 5s
+            setTimeout(() => setError(null), 5000);
             fetchSettings();
         } else {
             fetchSettings();
         }
     }, []);
     
-    // Auto-Heal DEFINITIVO: Sincronizar con Stripe y recargar la página completa
     const checkPaymentStatus = async (sessionId) => {
         try {
             const res = await axios.post(
@@ -51,24 +47,17 @@ const CompanySettings = () => {
             );
             
             const updatedTenant = res.data.tenant;
-
-            // 1. Actualizar localStorage CON el nuevo planId
             const currentUser = JSON.parse(localStorage.getItem('glassy_user') || '{}');
             const newUser = { 
                 ...currentUser, 
                 plan: updatedTenant.planId, 
                 planId: updatedTenant.planId,
                 planActivo: true,
-                trialDaysLeft: null  // Ya no está en prueba
+                trialDaysLeft: null
             };
             localStorage.setItem('glassy_user', JSON.stringify(newUser));
-            
-            // 2. Limpiar URL para que no se repita la sincronización
             window.history.replaceState({}, document.title, '/app/settings');
 
-            // 3. Mostrar overlay de éxito 2s y luego RECARGAR la página completa
-            //    Esto garantiza que DashboardLayout re-lea el localStorage actualizado
-            //    y elimine el overlay de 'trial expirado' definitivamente.
             setPaymentActivated(true);
             setTimeout(() => {
                 window.location.reload();
@@ -76,7 +65,6 @@ const CompanySettings = () => {
 
         } catch (err) {
             console.error('Error al sincronizar pago:', err);
-            // Si falla la sync automática, al menos cargar settings normalmente
             fetchSettings();
         }
     };
@@ -125,7 +113,6 @@ const CompanySettings = () => {
 
     const handlePlanUpdate = async (planId) => {
         try {
-            // Ya no es un simple patch, es una creación de sesión de pago profesional
             const res = await axios.post('https://glassy.es/api/stripe/create-checkout-session', { 
                 planId,
                 origin: window.location.origin 
@@ -133,9 +120,7 @@ const CompanySettings = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             
-            // Redirigir a Stripe Checkout
             if (res.data.url) {
-                // Guardar para Auto-Heal global
                 if (res.data.id) {
                     localStorage.setItem('stripe_pending_session', res.data.id);
                 }
@@ -146,6 +131,7 @@ const CompanySettings = () => {
             throw err;
         }
     };
+
     const handleManageBilling = async () => {
         try {
             setSaving(true);
@@ -164,139 +150,104 @@ const CompanySettings = () => {
         }
     };
 
-    // Pantalla de sincronización de pago (mientras esperamos o mostramos éxito)
     if (paymentActivated) return (
         <div className="fixed inset-0 bg-white z-[200] flex flex-col items-center justify-center gap-6">
             <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
+                initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 200 }}
-                className="w-28 h-28 bg-green-100 rounded-[40px] flex items-center justify-center"
+                className="w-24 h-24 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-500 border border-emerald-100"
             >
-                <CheckCircle className="text-green-600" size={64} strokeWidth={1.5} />
+                <CheckCircle size={48} />
             </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-center">
-                <h2 className="text-3xl font-black text-slate-900 mb-2">¡Pago Confirmado!</h2>
-                <p className="text-slate-500 font-medium">Tu suscripción está activa. Redirigiendo al panel...</p>
-            </motion.div>
-            <div className="animate-spin text-blue-500"><RefreshCcw size={24} /></div>
+            <div className="text-center">
+                <h2 className="text-2xl font-bold text-[#0a2540]">¡Pago Confirmado!</h2>
+                <p className="text-[#697386] font-medium">Actualizando tu suscripción...</p>
+            </div>
         </div>
     );
 
     if (loading) return (
         <DashboardLayout>
-            <div className="flex items-center justify-center h-[70vh]">
-                <div className="animate-spin text-blue-600"><RefreshCcw size={40} /></div>
+            <div className="flex items-center justify-center h-[60vh]">
+                <RefreshCcw className="animate-spin text-[#635bff]" size={32} />
             </div>
         </DashboardLayout>
     );
 
     return (
         <DashboardLayout>
-            <div className="max-w-5xl mx-auto space-y-10">
+            <div className="space-y-10">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-4">
-                            <Briefcase className="text-blue-600" size={36} /> Perfil Corporativo
-                        </h1>
-                        <p className="text-slate-500 mt-2 font-medium">Configura la identidad de tu empresa para facturas y servicios.</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Ajustes de Empresa</h1>
+                        <p className="text-sm text-[#697386] mt-1">Configura tu identidad corporativa y facturación.</p>
                     </div>
                 </div>
 
-                {/* Banner de Errores o Éxito */}
+                {/* Notifications */}
                 <AnimatePresence>
                     {error && (
                         <motion.div 
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="mb-8 p-4 bg-red-50 border border-red-100 rounded-3xl flex items-center gap-4 text-red-600 shadow-xl shadow-red-200/20"
+                            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 text-rose-800"
                         >
-                            <div className="w-10 h-10 bg-red-500 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-red-500/30">
-                                <X size={20} />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs font-bold uppercase tracking-widest leading-none mb-1">Error de Sistema</p>
-                                <p className="text-sm font-bold opacity-90">{error}</p>
-                            </div>
-                            <button onClick={() => setError(null)} className="p-2 hover:bg-red-100 rounded-xl transition-colors">
-                                <X size={16} />
-                            </button>
+                            <AlertTriangle size={18} className="text-rose-500" />
+                            <p className="text-xs font-bold">{error}</p>
                         </motion.div>
                     )}
                     {success && (
                         <motion.div 
-                            initial={{ opacity: 0, y: -20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="mb-8 p-4 bg-green-50 border border-green-100 rounded-3xl flex items-center gap-4 text-green-600 shadow-xl shadow-green-200/20"
+                            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3 text-emerald-800"
                         >
-                            <div className="w-10 h-10 bg-green-500 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-green-500/30">
-                                <CheckCircle size={20} />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-xs font-bold uppercase tracking-widest leading-none mb-1">Operación Exitosa</p>
-                                <p className="text-sm font-bold opacity-90">Configuración guardada correctamente.</p>
-                            </div>
-                            <button onClick={() => setSuccess(false)} className="p-2 hover:bg-green-100 rounded-xl transition-colors">
-                                <X size={16} />
-                            </button>
+                            <CheckCircle size={18} className="text-emerald-500" />
+                            <p className="text-xs font-bold">Cambios guardados con éxito.</p>
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
-                    {/* Left Column: Branding (Logo) */}
+                    {/* Left Side: Logo & Plan */}
                     <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 flex flex-col items-center">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Identidad Visual</p>
+                        <div className="stripe-card p-8 flex flex-col items-center">
+                            <span className="text-[10px] font-bold text-[#697386] uppercase tracking-wider mb-6">Logo de Empresa</span>
                             
-                            <div className="relative group mb-8">
-                                <div className="w-48 h-48 bg-slate-50 border-4 border-dashed border-slate-200 rounded-[35px] flex items-center justify-center overflow-hidden transition-all group-hover:border-blue-400">
+                            <div className="relative group mb-6">
+                                <div className="w-40 h-40 bg-[#f6f9fc] border-2 border-dashed border-[#e3e8ee] rounded-2xl flex items-center justify-center overflow-hidden group-hover:border-[#635bff] transition-all">
                                     {tenant.logo ? (
-                                        <img src={tenant.logo} alt="Empresa Logo" className="w-full h-full object-contain" />
+                                        <img src={tenant.logo} alt="Logo" className="w-full h-full object-contain" />
                                     ) : (
-                                        <div className="text-center p-6">
-                                            <Upload className="mx-auto text-slate-300 mb-2" size={32} />
-                                            <span className="text-xs font-bold text-slate-400">Subir Logo PNG/JPG</span>
-                                        </div>
+                                        <Upload className="text-[#aab7c4]" size={32} />
                                     )}
                                 </div>
-                                <label className="absolute -bottom-2 -right-2 w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center cursor-pointer shadow-xl hover:bg-blue-700 transition-all hover:scale-110 active:scale-95">
-                                    <Upload size={20} />
+                                <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#635bff] text-white rounded-xl flex items-center justify-center cursor-pointer shadow-lg hover:bg-[#0a2540] transition-all">
+                                    <Upload size={18} />
                                     <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                                 </label>
                             </div>
-
-                            <p className="text-center text-[10px] text-slate-400 font-medium px-4 leading-relaxed">
-                                Este logo aparecerá en todas las facturas PDF y notificaciones enviadas a tus clientes. 
+                            <p className="text-center text-[10px] text-[#697386] font-medium leading-relaxed px-4">
+                                Se usará en facturas PDF y comunicaciones.
                             </p>
                         </div>
 
-                        {/* Plan Card */}
-                        <div className="bg-slate-900 p-8 rounded-[40px] text-white overflow-hidden relative group">
-                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-600/20 rounded-full blur-2xl group-hover:bg-blue-400/30 transition-all"></div>
-                            <div className="flex flex-col h-full relative z-10">
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Suscripción Activa</span>
-                                <h3 className="text-2xl font-extrabold capitalize mb-6">{tenant.planId || 'Starter'}</h3>
+                        {/* Plan Summary Card */}
+                        <div className="stripe-card p-8 bg-[#0a2540] text-white border-none shadow-none relative overflow-hidden">
+                            <div className="relative z-10">
+                                <span className="text-[10px] font-bold text-indigo-300/60 uppercase tracking-widest mb-1 block">Plan Actual</span>
+                                <h3 className="text-2xl font-bold capitalize mb-6">{tenant.planId || 'Starter'}</h3>
                                 
                                 <div className="space-y-3 mb-8">
-                                    <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                                        <Shield size={14} className="text-blue-400" /> Protección Multi-tenant
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                                        <FileBadge size={14} className="text-blue-400" /> Facturación ilimitada
+                                    <div className="flex items-center gap-2 text-xs font-medium text-indigo-100/70">
+                                        <Shield size={14} className="text-[#635bff]" /> Multi-tenant Seguro
                                     </div>
                                     {!tenant.planActivo && (
-                                        <div className="mt-4 p-3 bg-amber-500/20 rounded-xl border border-amber-500/30 flex items-center gap-3">
-                                            <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-slate-900">
-                                                <Sparkles size={16} />
-                                            </div>
+                                        <div className="p-3 bg-indigo-500/10 rounded-xl border border-white/5 flex items-center gap-3 mt-4">
+                                            <Sparkles className="text-amber-400" size={18} />
                                             <div>
-                                                <p className="text-[10px] font-bold text-amber-500 uppercase">Periodo de Prueba</p>
-                                                <p className="text-sm font-bold text-white">{tenant.trialDaysLeft} días restantes</p>
+                                                <p className="text-[10px] font-bold text-amber-400 uppercase leading-none mb-1">Prueba Activa</p>
+                                                <p className="text-sm font-bold">{tenant.trialDaysLeft} días restantes</p>
                                             </div>
                                         </div>
                                     )}
@@ -304,146 +255,100 @@ const CompanySettings = () => {
 
                                 <button 
                                     type="button" 
-                                    onClick={() => {
-                                        if (tenant.planActivo) {
-                                            handleManageBilling();
-                                        } else {
-                                            setIsPricingModalOpen(true);
-                                        }
-                                    }}
-                                    className="w-full bg-white/10 hover:bg-white/20 border border-white/10 py-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-inner disabled:opacity-50"
+                                    onClick={() => tenant.planActivo ? handleManageBilling() : setIsPricingModalOpen(true)}
+                                    className="w-full bg-white/10 hover:bg-white text-white hover:text-[#0a2540] border border-white/10 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2"
                                     disabled={saving}
                                 >
-                                    {saving ? (
-                                        <RefreshCcw className="animate-spin" size={14} />
-                                    ) : (
+                                    {saving ? <RefreshCcw className="animate-spin" size={14} /> : (
                                         <>
-                                            <Sparkles size={14} className="text-amber-400" /> 
-                                            {tenant.planActivo ? 'Gestionar Facturación / Cancelar' : 'Gestionar Suscripción'}
+                                            <Sparkles size={14} /> 
+                                            {tenant.planActivo ? 'Portal de Facturación' : 'Mejorar Plan'}
                                         </>
                                     )}
                                 </button>
                             </div>
+                            <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-[#635bff]/10 rounded-full blur-2xl"></div>
                         </div>
-
-                        {/* Trial Countdown Card */}
-                        {!tenant.planActivo && (
-                            <div className="bg-amber-50 p-8 rounded-[40px] border-2 border-amber-200/50 shadow-xl shadow-amber-900/5 relative overflow-hidden group">
-                                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:scale-150 transition-all duration-700"></div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <div className="w-10 h-10 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                                            <Sparkles size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest leading-none mb-1">Días de prueba</p>
-                                            <h4 className="text-xl font-black text-amber-900 leading-none">{tenant.trialDaysLeft} días</h4>
-                                        </div>
-                                    </div>
-                                    <p className="text-xs font-bold text-amber-700/80 leading-relaxed mb-6">
-                                        Tu acceso gratuito finalizará pronto. Suscríbete ahora para mantener todas tus rutas y datos a salvo.
-                                    </p>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setIsPricingModalOpen(true)}
-                                        className="w-full bg-amber-500 text-white py-3 rounded-2xl text-xs font-black hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 active:scale-95"
-                                    >
-                                        ACTIVAR CUENTA AHORA
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Right Column: Information Forms */}
-                    <div className="lg:col-span-8 space-y-8">
-                        {/* Basic Info Card */}
-                        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
-                            <h3 className="text-lg font-bold text-slate-800 mb-8 flex items-center gap-3">
-                                <Building size={20} className="text-blue-600" /> Datos de la Empresa
-                            </h3>
+                    {/* Right Side: Forms */}
+                    <div className="lg:col-span-8 space-y-6">
+                        <div className="stripe-card p-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <Building size={20} className="text-[#635bff]" />
+                                <h3 className="text-lg font-bold text-[#0a2540]">Información General</h3>
+                            </div>
                             
-                            <div className="grid md:grid-cols-2 gap-8">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Razón Social / Nombre Comercial</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Razón Social</label>
                                     <input 
                                         type="text" value={tenant.name || ''} 
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
+                                        className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
                                         onChange={(e) => setTenant({ ...tenant, name: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">NIF / CIF (Facturación)</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">NIF / CIF</label>
                                     <input 
                                         type="text" value={tenant.nif || ''}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
+                                        className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
                                         onChange={(e) => setTenant({ ...tenant, nif: e.target.value })}
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Corporativo</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-4 top-4 text-slate-400" size={20} />
-                                        <input 
-                                            type="email" value={tenant.email || ''}
-                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
-                                            onChange={(e) => setTenant({ ...tenant, email: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Teléfono de Contacto</label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-4 top-4 text-slate-400" size={20} />
-                                        <input 
-                                            type="text" value={tenant.phone || ''}
-                                            className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
-                                            onChange={(e) => setTenant({ ...tenant, phone: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 space-y-2">
-                                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Dirección Fiscal / Oficina</label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-4 top-4 text-slate-400" size={20} />
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Email Público</label>
                                     <input 
-                                        type="text" value={tenant.address || ''} placeholder="Calle Principal 123, Ciudad, CP"
-                                        className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
-                                        onChange={(e) => setTenant({ ...tenant, address: e.target.value })}
+                                        type="email" value={tenant.email || ''}
+                                        className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                        onChange={(e) => setTenant({ ...tenant, email: e.target.value })}
                                     />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Teléfono</label>
+                                    <input 
+                                        type="text" value={tenant.phone || ''}
+                                        className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                        onChange={(e) => setTenant({ ...tenant, phone: e.target.value })}
+                                    />
+                                </div>
+                                <div className="sm:col-span-2 space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Dirección Fiscal</label>
+                                    <div className="relative">
+                                        <MapPin className="absolute left-3.5 top-3.5 text-[#aab7c4]" size={18} />
+                                        <input 
+                                            type="text" value={tenant.address || ''} 
+                                            className="w-full pl-11 pr-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                            onChange={(e) => setTenant({ ...tenant, address: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Billing Detalis Card */}
-                        <div className="bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
-                            <h3 className="text-lg font-bold text-slate-800 mb-8 flex items-center gap-3">
-                                <CreditCard size={20} className="text-blue-600" /> Configuración de Pagos (Para Facturas)
-                            </h3>
-                            
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Número de Cuenta / IBAN</label>
-                                    <input 
-                                        type="text" value={tenant.bankAccount || ''} placeholder="ES00 0000 0000 0000 0000 0000"
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner font-bold text-slate-800"
-                                        onChange={(e) => setTenant({ ...tenant, bankAccount: e.target.value })}
-                                    />
-                                    <p className="text-[10px] text-slate-400 ml-1">Este número se imprimirá al pie de tus facturas para que tus clientes sepan dónde pagar.</p>
-                                </div>
+                        <div className="stripe-card p-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <CreditCard size={20} className="text-[#635bff]" />
+                                <h3 className="text-lg font-bold text-[#0a2540]">Datos de Pago para Clientes</h3>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">IBAN / Número de Cuenta</label>
+                                <input 
+                                    type="text" value={tenant.bankAccount || ''} placeholder="ES00 0000 0000 0000 0000 0000"
+                                    className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]"
+                                    onChange={(e) => setTenant({ ...tenant, bankAccount: e.target.value })}
+                                />
+                                <p className="text-[10px] text-[#697386] font-medium ml-1">Se imprimirá en tus facturas para cobros bancarios.</p>
                             </div>
                         </div>
 
-                        {/* Save Button */}
                         <div className="flex justify-end pt-4">
                             <button 
                                 disabled={saving}
-                                className={`bg-slate-900 text-white px-10 py-5 rounded-[25px] font-extrabold flex items-center gap-3 transition-all filter drop-shadow-lg active:scale-95 ${saving ? 'opacity-70 cursor-not-allowed' : 'hover:bg-slate-800 hover:-translate-y-1'}`}
+                                className="bg-[#0a2540] text-white px-8 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-[#635bff] transition-all shadow-lg active:scale-95 disabled:opacity-50"
                             >
-                                {saving ? <RefreshCcw className="animate-spin" size={20} /> : <Save size={20} />}
-                                {saving ? 'Guardando cambios...' : 'Guardar Información de Empresa'}
+                                {saving ? <RefreshCcw className="animate-spin" size={18} /> : <Save size={18} />}
+                                {saving ? 'Guardando...' : 'Guardar Configuración'}
                             </button>
                         </div>
                     </div>

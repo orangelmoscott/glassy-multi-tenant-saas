@@ -11,23 +11,20 @@ const Login = () => {
     const [error, setError] = useState(null);
     const [sessionExpired, setSessionExpired] = useState(false);
 
-    // Detectar si el usuario fue redirigido por sesión expirada
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('expired') === '1') {
             setSessionExpired(true);
-            // Limpiar el parámetro de la URL para que no se muestre al refrescar manualmente
             window.history.replaceState({}, document.title, '/login');
         }
     }, []);
     
-    // Modal de recuperación
     const [showForgotModal, setShowForgotModal] = useState(false);
     const [recoveryEmail, setRecoveryEmail] = useState('');
     const [recoveryCompanyName, setRecoveryCompanyName] = useState('');
     const [recoveryLoading, setRecoveryLoading] = useState(false);
     const [recoveryStatus, setRecoveryStatus] = useState(null);
-    const [recoveryStep, setRecoveryStep] = useState(1); // 1: Pedir código, 2: Resetear
+    const [recoveryStep, setRecoveryStep] = useState(1);
     const [recoveryCode, setRecoveryCode] = useState('');
     const [newPassword, setNewPassword] = useState('');
 
@@ -39,40 +36,32 @@ const Login = () => {
         e.preventDefault();
         setRecoveryLoading(true);
         setRecoveryStatus(null);
-        
         try {
-            const API_URL = 'https://glassy.es/api'; // Usando tu URL actual
+            const API_URL = 'https://glassy.es/api';
             if (recoveryStep === 1) {
-                // Paso 1: Solicitar Código OTP
                 await axios.post(`${API_URL}/auth/forgot-password`, { 
                     email: recoveryEmail, 
                     companyName: recoveryCompanyName 
                 });
-                setRecoveryStatus({ type: 'success', text: 'Código enviado. Revisa tu bandeja de entrada.' });
+                setRecoveryStatus({ type: 'success', text: 'Código enviado.' });
                 setRecoveryStep(2);
             } else {
-                // Paso 2: Resetear con Código OTP
                 await axios.post(`${API_URL}/auth/reset-password`, { 
                     email: recoveryEmail, 
                     companyName: recoveryCompanyName,
                     otp: recoveryCode,
                     password: newPassword
                 });
-                setRecoveryStatus({ type: 'success', text: '¡Contraseña actualizada! Ya puedes iniciar sesión.' });
-                
-                // Limpiar y cerrar tras éxito
+                setRecoveryStatus({ type: 'success', text: 'Contraseña actualizada.' });
                 setTimeout(() => {
                     setShowForgotModal(false);
                     setRecoveryStep(1);
-                    setRecoveryCode('');
-                    setNewPassword('');
-                    setRecoveryStatus(null);
-                }, 3000);
+                }, 2000);
             }
         } catch (err) {
             setRecoveryStatus({ 
                 type: 'error', 
-                text: err.response?.data?.message || 'Error en la solicitud. Verifica los datos.' 
+                text: err.response?.data?.message || 'Error en la solicitud.' 
             });
         } finally {
             setRecoveryLoading(false);
@@ -86,7 +75,6 @@ const Login = () => {
         try {
             const response = await axios.post('https://glassy.es/api/auth/login', formData);
             if (response.data.token) {
-                // Guardar sesión profesional
                 localStorage.setItem('glassy_user', JSON.stringify({
                     token: response.data.token,
                     username: response.data.username,
@@ -95,13 +83,12 @@ const Login = () => {
                     companyName: response.data.companyName || 'Mi Empresa',
                     plan: response.data.plan || 'starter',
                     planId: response.data.planId || response.data.plan || 'starter',
-                    planActivo: response.data.planActivo, // CRITICAL: Save subscription status!
+                    planActivo: response.data.planActivo,
                     trialDaysLeft: response.data.trialDaysLeft,
                     userId: response.data.userId,
                     fullName: response.data.fullName || response.data.username
                 }));
 
-                // Redirigir según rol: cristaleros a sus rutas, admin/owner al panel
                 if (response.data.role === 'cristalero') {
                     navigate('/app/my-routes');
                 } else {
@@ -116,238 +103,188 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 relative overflow-hidden font-sans">
-             {/* Background Effects */}
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-400 rounded-full blur-[120px]"></div>
+        <div className="min-h-screen bg-[#f6f9fc] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+                <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-200/30 rounded-full blur-[120px]"></div>
+                <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[120px]"></div>
             </div>
 
             <motion.div 
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-md w-full relative z-10"
+                className="w-full max-w-[440px] relative z-10"
             >
-                <div className="bg-white p-10 py-12 rounded-[40px] shadow-2xl border border-white/20 backdrop-blur-3xl relative">
-                    <div className="flex flex-col items-center mb-10 text-center">
-                        <Link to="/" className="inline-block transform hover:scale-110 transition-all duration-300">
-                            <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-cyan-400 rounded-2xl flex items-center justify-center shadow-xl mb-6">
-                                <span className="text-white font-extrabold text-3xl">G</span>
+                <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-[0_15px_35px_rgba(50,50,93,0.1),0_5px_15px_rgba(0,0,0,0.07)] border border-[#e3e8ee]">
+                    <div className="flex flex-col items-center mb-10">
+                        <Link to="/" className="mb-6">
+                            <div className="w-12 h-12 bg-[#635bff] rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 transform transition hover:scale-105 active:scale-95">
+                                <span className="text-white font-bold text-2xl tracking-tighter">G</span>
                             </div>
                         </Link>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">Acceso a tu Panel</h1>
-                        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-2 opacity-70">SaaS Management Solution</p>
+                        <h1 className="text-2xl font-bold text-[#0a2540] tracking-tight">Accede a tu cuenta</h1>
+                        <p className="text-[#697386] text-sm mt-2 font-medium">Gestión profesional de limpieza de cristales</p>
                     </div>
 
                     {sessionExpired && (
-                        <motion.div 
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="p-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm mb-6 rounded-2xl font-medium flex items-center gap-3"
-                        >
-                            <AlertTriangle size={20} className="text-amber-500 flex-shrink-0" />
-                            <span>Tu sesión ha expirado por inactividad. Inicia sesión de nuevo para continuar.</span>
-                        </motion.div>
+                        <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
+                            <AlertTriangle size={18} className="text-amber-500" />
+                            <p className="text-xs text-amber-800 font-semibold leading-tight">Sesión expirada. Por favor, identifícate de nuevo.</p>
+                        </div>
                     )}
 
                     {error && (
-                        <motion.div 
-                            initial={{ scale: 0.95 }}
-                            animate={{ scale: 1 }}
-                            className="p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm mb-8 rounded-r-xl font-medium"
-                        >
-                            {error}
-                        </motion.div>
+                        <div className="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3">
+                            <AlertTriangle size={18} className="text-rose-500" />
+                            <p className="text-xs text-rose-800 font-semibold">{error}</p>
+                        </div>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Usuario</label>
-                             <div className="relative group">
-                                <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Usuario</label>
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-3.5 text-[#aab7c4]" size={18} />
                                 <input 
-                                    type="text" name="username" placeholder="tu_usuario" required
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-sm font-medium"
+                                    type="text" name="username" placeholder="Tu usuario" required
+                                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] focus:shadow-[0_0_0_1px_#635bff] transition-all font-semibold text-[#0a2540]"
                                     onChange={handleChange}
                                 />
-                             </div>
-                        </div>
-
-                        <div className="space-y-2">
-                             <div className="flex justify-between items-center ml-1">
-                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Contraseña</label>
-                                 <button 
-                                    type="button"
-                                    onClick={() => setShowForgotModal(true)}
-                                    className="text-xs font-bold text-blue-600 hover:underline"
-                                 >
-                                    ¿La olvidaste?
-                                 </button>
-                             </div>
-                             <div className="relative group">
-                                <Lock className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
-                                <input 
-                                    type="password" name="password" placeholder="••••••••" required
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all shadow-sm"
-                                    onChange={handleChange}
-                                />
-                             </div>
-                        </div>
-
-                        <div className="space-y-4 pt-4">
-                            <button 
-                                disabled={loading}
-                                className={`w-full bg-slate-900 text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-3 transition-all shadow-xl shadow-slate-200 active:scale-95 ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-slate-800'}`}
-                            >
-                                {loading ? 'Validando...' : 'Entrar a mi Empresa'}
-                                {!loading && <ArrowRight size={20} />}
-                            </button>
-
-                            <div className="text-center">
-                                <p className="text-slate-500 text-sm">
-                                    ¿Nuevo en Glassy? <a href="/register" className="text-blue-600 font-bold hover:underline">Registra tu empresa</a>
-                                </p>
                             </div>
                         </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between items-center px-1">
+                                <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Contraseña</label>
+                                <button 
+                                    type="button" onClick={() => setShowForgotModal(true)}
+                                    className="text-xs font-bold text-[#635bff] hover:text-[#0a2540] transition-colors"
+                                >
+                                    ¿Olvidaste la clave?
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-3.5 text-[#aab7c4]" size={18} />
+                                <input 
+                                    type="password" name="password" placeholder="••••••••" required
+                                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] focus:shadow-[0_0_0_1px_#635bff] transition-all"
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        </div>
+
+                        <button 
+                            disabled={loading}
+                            className="w-full bg-[#635bff] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#0a2540] transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                        >
+                            {loading ? 'Iniciando sesión...' : 'Entrar al Panel'}
+                            {!loading && <ArrowRight size={18} />}
+                        </button>
                     </form>
 
-                    <div className="mt-8 pt-8 border-t border-slate-50 space-y-4">
-                        <div className="flex items-center gap-3 text-slate-400 text-xs font-bold uppercase tracking-widest opacity-60">
-                            <ShieldCheck size={14} className="text-blue-500"/>
-                            Protocolo de Aislamiento Activo
-                        </div>
-                         <div className="flex items-center gap-3 text-slate-500 text-xs font-bold uppercase tracking-widest leading-tight">
-                            <Sparkles size={14} className="text-amber-500"/>
-                            7 Días de Prueba Incluidos
-                        </div>
+                    <div className="mt-8 pt-8 border-t border-[#f6f9fc] flex flex-col items-center gap-4">
+                        <p className="text-sm text-[#697386] font-medium">
+                            ¿Aún no tienes cuenta? <Link to="/register" className="text-[#635bff] font-bold hover:underline">Regístrate</Link>
+                        </p>
                     </div>
                 </div>
 
-                <div className="flex justify-center mt-8">
-                    <a href="/" className="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold text-sm transition-all group">
-                        <span className="transform transition-transform group-hover:-translate-x-1">←</span> Volver a Inicio
-                    </a>
+                <div className="mt-8 text-center">
+                    <Link to="/" className="text-sm text-[#697386] font-bold hover:text-[#0a2540] transition-colors inline-flex items-center gap-2">
+                        ← Volver a la página principal
+                    </Link>
                 </div>
             </motion.div>
 
-            {/* Modal de Recuperación Profesional */}
-            {showForgotModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm">
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white max-w-md w-full rounded-[32px] shadow-2xl p-8 relative overflow-hidden"
-                    >
-                        <button 
-                            onClick={() => setShowForgotModal(false)}
-                            className="absolute top-6 right-6 p-2 rounded-full hover:bg-slate-100 transition-colors"
+            {/* Recovery Modal */}
+            <AnimatePresence>
+                {showForgotModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a2540]/40 backdrop-blur-sm">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 relative"
                         >
-                            <X size={20} className="text-slate-400" />
-                        </button>
+                            <button 
+                                onClick={() => setShowForgotModal(false)}
+                                className="absolute top-6 right-6 p-2 rounded-lg hover:bg-[#f6f9fc] transition-colors"
+                            >
+                                <X size={20} className="text-[#697386]" />
+                            </button>
 
-                        <div className="flex flex-col items-center mb-8 text-center px-4">
-                            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
-                                {recoveryStep === 1 ? <Mail size={24} /> : <ShieldCheck size={24} />}
+                            <div className="flex flex-col items-center mb-8">
+                                <div className="w-12 h-12 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center mb-4">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <h2 className="text-xl font-bold text-[#0a2540]">Recuperar acceso</h2>
+                                <p className="text-sm text-[#697386] mt-2 font-medium text-center">Te enviaremos un código de seguridad para restablecer tu contraseña.</p>
                             </div>
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                                {recoveryStep === 1 ? 'Recuperar acceso' : 'Verificando Código'}
-                            </h2>
-                            <p className="text-slate-500 text-sm font-medium mt-2">
-                                {recoveryStep === 1 
-                                    ? 'Confirmaremos tu identidad corporativa' 
-                                    : 'Introduce el código de 6 dígitos enviado a tu email'
-                                }
-                            </p>
-                        </div>
 
-                        {recoveryStatus && (
-                            <div className={`mx-4 p-4 rounded-2xl text-sm font-bold mb-6 flex items-center gap-3 ${recoveryStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-                                {recoveryStatus.type === 'success' ? <ShieldCheck size={18} /> : <X size={18} />}
-                                {recoveryStatus.text}
-                            </div>
-                        )}
+                            {recoveryStatus && (
+                                <div className={`mb-6 p-4 rounded-xl text-xs font-bold flex items-center gap-2 ${recoveryStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                                    {recoveryStatus.type === 'success' ? <ShieldCheck size={16} /> : <AlertTriangle size={16} />}
+                                    {recoveryStatus.text}
+                                </div>
+                            )}
 
-                        <form onSubmit={handleForgotPassword} className="space-y-6 px-4">
-                            {recoveryStep === 1 ? (
-                                <>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nombre de tu Empresa</label>
-                                        <div className="relative group">
-                                            <Building className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                            <form onSubmit={handleForgotPassword} className="space-y-4">
+                                {recoveryStep === 1 ? (
+                                    <>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Nombre de Empresa</label>
                                             <input 
-                                                type="text" placeholder="Glassy S.L." required
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                                type="text" placeholder="Ej: Glassy S.L." required
+                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
                                                 onChange={(e) => setRecoveryCompanyName(e.target.value)}
                                                 value={recoveryCompanyName}
                                             />
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email Profesional</label>
-                                        <div className="relative group">
-                                            <Mail className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Email registrado</label>
                                             <input 
                                                 type="email" placeholder="admin@empresa.com" required
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
                                                 onChange={(e) => setRecoveryEmail(e.target.value)}
                                                 value={recoveryEmail}
                                             />
                                         </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Código de Seguridad (OTP)</label>
-                                        <div className="relative group">
-                                            <ShieldCheck className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Código (OTP)</label>
                                             <input 
                                                 type="text" placeholder="123456" required
                                                 maxLength={6}
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-black text-2xl tracking-[10px] text-center"
+                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-black text-xl tracking-[0.5em] text-center"
                                                 onChange={(e) => setRecoveryCode(e.target.value)}
                                                 value={recoveryCode}
                                             />
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nueva Contraseña</label>
-                                        <div className="relative group">
-                                            <Lock className="absolute left-4 top-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={20}/>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Nueva clave</label>
                                             <input 
                                                 type="password" placeholder="••••••••" required
-                                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-medium"
+                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff]"
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 value={newPassword}
                                             />
                                         </div>
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                )}
 
-                            <button 
-                                disabled={recoveryLoading}
-                                className="w-full bg-blue-600 text-white py-4 rounded-2xl font-extrabold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-70"
-                            >
-                                {recoveryLoading ? 'Procesando...' : (recoveryStep === 1 ? 'Enviar código' : 'Restablecer contraseña')}
-                                {!recoveryLoading && <ChevronRight size={20} />}
-                            </button>
-
-                            {recoveryStep === 2 && (
                                 <button 
-                                    type="button"
-                                    onClick={() => setRecoveryStep(1)}
-                                    className="w-full text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors mt-2"
+                                    disabled={recoveryLoading}
+                                    className="w-full bg-[#0a2540] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#635bff] transition-all disabled:opacity-50"
                                 >
-                                    Volver al paso anterior
+                                    {recoveryLoading ? 'Cargando...' : (recoveryStep === 1 ? 'Enviar código' : 'Cambiar contraseña')}
+                                    {!recoveryLoading && <ChevronRight size={18} />}
                                 </button>
-                            )}
-                        </form>
-                    </motion.div>
-                </div>
-            )}
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

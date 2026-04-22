@@ -3,7 +3,7 @@ import axios from 'axios';
 import { 
   Receipt, Plus, Trash2, Calendar, 
   DollarSign, Tag, FileText, Search,
-  RefreshCcw, AlertCircle, ShoppingCart
+  RefreshCcw, AlertCircle, ShoppingCart, X, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -73,58 +73,56 @@ const Expenses = () => {
     };
 
     const categories = {
-        material: { label: 'Material Limpieza', color: 'bg-blue-100 text-blue-700' },
-        combustible: { label: 'Combustible / Vehículo', color: 'bg-amber-100 text-amber-700' },
-        dieta: { label: 'Dietas / Comidas', color: 'bg-purple-100 text-purple-700' },
-        seguro: { label: 'Seguros / Cuotas', color: 'bg-emerald-100 text-emerald-700' },
-        otros: { label: 'Otros Gastos', color: 'bg-slate-100 text-slate-700' }
+        material: { label: 'Material', color: 'bg-blue-50 text-blue-600 border-blue-100' },
+        combustible: { label: 'Vehículo', color: 'bg-amber-50 text-amber-600 border-amber-100' },
+        dieta: { label: 'Dietas', color: 'bg-purple-50 text-purple-600 border-purple-100' },
+        seguro: { label: 'Seguros', color: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
+        otros: { label: 'Otros', color: 'bg-slate-50 text-slate-600 border-slate-100' }
     };
 
     return (
         <DashboardLayout>
             <div className="space-y-8">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4">
-                            <Receipt className="text-red-500" size={36} /> Control de Gastos
-                        </h1>
-                        <p className="text-slate-500 mt-2 font-medium italic">Registra cada coste operativo para calcular tu beneficio real.</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Gastos</h1>
+                        <p className="text-sm text-[#697386] mt-1">Control de costes operativos y compras.</p>
                     </div>
                     <button 
                         onClick={() => setIsModalOpen(true)}
-                        className="bg-slate-900 text-white px-8 py-4 rounded-[25px] font-black flex items-center gap-3 hover:bg-slate-800 transition-all shadow-xl active:scale-95"
+                        className="bg-[#635bff] text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#4f46e5] transition-all shadow-lg shadow-indigo-100"
                     >
-                        <Plus size={20} /> Nuevo Gasto
+                        <Plus size={18} /> Nuevo Gasto
                     </button>
                 </div>
 
-                {/* Summary Mini Cards */}
+                {/* Summary Card */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-lg flex items-center gap-6">
-                        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
-                            <ShoppingCart size={30} />
+                    <div className="stripe-card p-6 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center border border-rose-100">
+                            <ShoppingCart size={24} />
                         </div>
                         <div>
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Gasto Total Acumulado</p>
-                            <h3 className="text-3xl font-black text-slate-900">
+                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-wider">Total Acumulado</p>
+                            <h3 className="text-2xl font-bold text-[#0a2540]">
                                 {expenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}€
                             </h3>
                         </div>
                     </div>
                 </div>
 
-                {/* Main Content: Expense List */}
-                <div className="bg-white rounded-[40px] border border-slate-100 shadow-2xl overflow-hidden">
-                    <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between gap-4">
-                        <h3 className="font-black text-slate-800 uppercase tracking-widest text-sm flex items-center gap-2">
-                             <Tag size={16} /> Registro de Operaciones
+                {/* Main Table Container */}
+                <div className="stripe-card overflow-hidden bg-white border border-[#e3e8ee]">
+                    <div className="p-6 border-b border-[#f6f9fc] flex flex-col md:flex-row justify-between gap-4 items-center">
+                        <h3 className="text-xs font-bold text-[#697386] uppercase tracking-wider flex items-center gap-2">
+                             <Receipt size={14} /> Registro de Gastos
                         </h3>
-                        <div className="relative">
-                            <Search className="absolute left-4 top-3 text-slate-300" size={18} />
+                        <div className="relative w-full md:w-64">
+                            <Search className="absolute left-3 top-2.5 text-[#aab7c4]" size={16} />
                             <input 
                                 type="text" placeholder="Buscar gasto..." 
-                                className="pl-12 pr-6 py-2.5 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-bold outline-none focus:bg-white focus:border-blue-400 transition-all w-full md:w-64"
+                                className="w-full pl-9 pr-4 py-2 bg-[#f6f9fc] border border-[#e3e8ee] rounded-lg text-sm font-medium outline-none focus:border-[#635bff] transition-all"
                             />
                         </div>
                     </div>
@@ -132,60 +130,57 @@ const Expenses = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Fecha</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Concepto</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Categoría</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Importe</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Acciones</th>
+                                <tr className="bg-[#fcfdfe] text-[#697386] text-[10px] font-bold uppercase tracking-wider border-b border-[#e3e8ee]">
+                                    <th className="px-6 py-4">Fecha</th>
+                                    <th className="px-6 py-4">Concepto</th>
+                                    <th className="px-6 py-4">Categoría</th>
+                                    <th className="px-6 py-4 text-right">Importe</th>
+                                    <th className="px-6 py-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                <AnimatePresence>
-                                    {expenses.map((expense) => (
-                                        <motion.tr 
-                                            key={expense._id}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            className="hover:bg-slate-50/40 transition-colors group"
-                                        >
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-3">
-                                                    <Calendar size={14} className="text-slate-300" />
-                                                    <span className="text-sm font-bold text-slate-600">{new Date(expense.date).toLocaleDateString()}</span>
+                            <tbody className="divide-y divide-[#f6f9fc]">
+                                {loading ? (
+                                    [1,2,3].map(i => <tr key={i} className="animate-pulse"><td colSpan="5" className="px-6 py-8 h-16 bg-[#fcfdfe]"></td></tr>)
+                                ) : expenses.length > 0 ? (
+                                    expenses.map((expense) => (
+                                        <tr key={expense._id} className="hover:bg-[#fcfdfe] transition-all group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2 text-xs font-semibold text-[#0a2540]">
+                                                    <Calendar size={14} className="text-[#aab7c4]" />
+                                                    {new Date(expense.date).toLocaleDateString()}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
+                                            <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{expense.description}</span>
-                                                    {expense.notes && <span className="text-[10px] text-slate-400 font-medium italic">{expense.notes}</span>}
+                                                    <span className="text-sm font-bold text-[#0a2540]">{expense.description}</span>
+                                                    {expense.notes && <span className="text-[10px] text-[#697386] font-medium truncate max-w-xs">{expense.notes}</span>}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${categories[expense.category]?.color || 'bg-slate-100 text-slate-600'}`}>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${categories[expense.category]?.color || 'bg-slate-50 text-slate-600 border-slate-100'}`}>
                                                     {categories[expense.category]?.label || 'Otro'}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 font-black text-slate-900">
+                                            <td className="px-6 py-4 text-right font-bold text-[#0a2540]">
                                                 {expense.amount.toFixed(2)}€
                                             </td>
-                                            <td className="px-8 py-6 text-right">
+                                            <td className="px-6 py-4 text-right">
                                                 <button 
                                                     onClick={() => handleDelete(expense._id)}
-                                                    className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                                    className="p-2 text-[#697386] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                                                 >
-                                                    <Trash2 size={18} />
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </td>
-                                        </motion.tr>
-                                    ))}
-                                </AnimatePresence>
-                                {expenses.length === 0 && !loading && (
+                                        </tr>
+                                    ))
+                                ) : (
                                     <tr>
-                                        <td colSpan="5" className="px-8 py-20 text-center">
-                                            <AlertCircle className="mx-auto text-slate-200 mb-4" size={48} />
-                                            <p className="text-slate-400 font-bold italic">No hay gastos registrados aún.</p>
+                                        <td colSpan="5" className="px-6 py-24 text-center">
+                                            <div className="flex flex-col items-center opacity-30">
+                                                <Receipt size={48} className="mb-4" />
+                                                <p className="text-sm font-bold">No hay gastos registrados.</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
@@ -197,92 +192,71 @@ const Expenses = () => {
                 {/* Create Modal */}
                 <AnimatePresence>
                     {isModalOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 sm:p-10">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a2540]/40 backdrop-blur-sm">
                             <motion.div 
-                                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                onClick={() => setIsModalOpen(false)}
-                                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
-                            />
-                            <motion.div 
-                                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                                animate={{ scale: 1, opacity: 1, y: 0 }}
-                                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                                className="bg-white w-full max-w-xl rounded-[45px] shadow-2xl relative z-10 overflow-hidden"
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                             >
-                                <div className="p-10 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
-                                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter flex items-center gap-3">
-                                        <Plus className="text-blue-600" /> Registrar Gasto
-                                    </h2>
+                                <div className="p-6 border-b border-[#e3e8ee] flex justify-between items-center">
+                                    <h2 className="text-xl font-bold text-[#0a2540]">Registrar Gasto</h2>
+                                    <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-[#f6f9fc] rounded-lg transition-all text-[#697386]">
+                                        <X size={20} />
+                                    </button>
                                 </div>
-                                <form onSubmit={handleCreate} className="p-10 space-y-6">
-                                    <div className="grid grid-cols-1 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descripción del Concepto</label>
-                                            <div className="relative">
-                                                <FileText className="absolute left-4 top-4 text-slate-300" size={20} />
-                                                <input 
-                                                    required type="text" placeholder="Ej: Jabón Industrial, Gasolina..."
-                                                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-bold text-slate-800"
-                                                    onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-                                                />
-                                            </div>
+                                <form onSubmit={handleCreate} className="p-6 space-y-5">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Concepto</label>
+                                        <input 
+                                            required type="text" placeholder="Ej: Material de limpieza, Combustible..."
+                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                            onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Importe (€)</label>
+                                            <input 
+                                                required type="number" step="0.01" placeholder="0.00"
+                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]"
+                                                onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+                                            />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Importe (€)</label>
-                                                <div className="relative">
-                                                    <DollarSign className="absolute left-4 top-4 text-slate-300" size={20} />
-                                                    <input 
-                                                        required type="number" step="0.01" placeholder="0.00"
-                                                        className="w-full pl-12 pr-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-bold text-slate-800 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                        onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fecha</label>
-                                                <input 
-                                                    required type="date" value={newExpense.date}
-                                                    className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-bold text-slate-800"
-                                                    onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoría Operativa</label>
-                                            <select 
-                                                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-bold text-slate-800 appearance-none"
-                                                onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                                                value={newExpense.category}
-                                            >
-                                                {Object.entries(categories).map(([val, { label }]) => (
-                                                    <option key={val} value={val}>{label}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Notas Adicionales (Opcional)</label>
-                                            <textarea 
-                                                className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-blue-500 transition-all font-bold text-slate-800 h-24 resize-none"
-                                                placeholder="Detalles sobre el gasto..."
-                                                onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Fecha</label>
+                                            <input 
+                                                required type="date" value={newExpense.date}
+                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                                onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
                                             />
                                         </div>
                                     </div>
-                                    <div className="pt-4 flex gap-4">
-                                        <button 
-                                            type="button" onClick={() => setIsModalOpen(false)}
-                                            className="flex-1 py-5 bg-slate-100 text-slate-500 rounded-[20px] font-black hover:bg-slate-200 transition-all"
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Categoría</label>
+                                        <select 
+                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540] appearance-none"
+                                            onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                                            value={newExpense.category}
                                         >
-                                            CANCELAR
-                                        </button>
-                                        <button 
-                                            type="submit"
-                                            className="flex-2 px-10 py-5 bg-slate-900 text-white rounded-[20px] font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
-                                        >
-                                            GUARDAR GASTO
-                                        </button>
+                                            {Object.entries(categories).map(([val, { label }]) => (
+                                                <option key={val} value={val}>{label}</option>
+                                            ))}
+                                        </select>
                                     </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Notas</label>
+                                        <textarea 
+                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-medium text-[#0a2540] h-24 resize-none"
+                                            placeholder="Detalles opcionales..."
+                                            onChange={(e) => setNewExpense({ ...newExpense, notes: e.target.value })}
+                                        />
+                                    </div>
+                                    <button 
+                                        type="submit"
+                                        className="w-full bg-[#635bff] text-white py-4 rounded-xl font-bold text-sm hover:bg-[#4f46e5] shadow-lg shadow-indigo-100 transition-all mt-2"
+                                    >
+                                        Guardar Gasto
+                                    </button>
                                 </form>
                             </motion.div>
                         </div>

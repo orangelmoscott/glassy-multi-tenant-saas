@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Users, UserPlus, Phone, Shield, Search, 
-  Key, Save, X, RefreshCcw, Smile, HardHat, Trash2, Edit2
+  Key, Save, X, RefreshCcw, Smile, HardHat, Trash2, Edit2, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -53,13 +53,11 @@ const Workers = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setWorkers(workers.map(w => w._id === editingWorker._id ? res.data : w));
-                alert('Operario actualizado con éxito');
             } else {
                 const res = await axios.post('https://glassy.es/api/users/workers', formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setWorkers([...workers, res.data]);
-                alert('Operario creado con éxito');
             }
             closeModal();
         } catch (err) {
@@ -110,57 +108,53 @@ const Workers = () => {
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto space-y-8">
-                {/* Header - Sticky */}
-                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-8">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                            <HardHat className="text-blue-600" size={32} /> Squad de Operarios
-                        </h1>
-                        <p className="text-slate-500 mt-1 font-medium italic">Gestiona los accesos y perfiles de tu equipo de campo.</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Operarios</h1>
+                        <p className="text-sm text-[#697386] mt-1">Gestión de accesos y perfiles del equipo de campo.</p>
                     </div>
                     
                     <button 
                         onClick={() => setShowAddForm(true)}
-                        className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all hover:scale-105 shadow-xl active:scale-95"
+                        className="bg-[#635bff] text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#4f46e5] transition-all shadow-lg shadow-indigo-100"
                     >
-                        <UserPlus size={20} /> Nuevo Operario
+                        <UserPlus size={18} /> Nuevo Operario
                     </button>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
-                        [1,2,3].map(i => <div key={i} className="h-48 bg-slate-100 rounded-[35px] animate-pulse"></div>)
+                        [1,2,3].map(i => <div key={i} className="h-48 bg-white rounded-xl border border-[#e3e8ee] animate-pulse shadow-sm"></div>)
                     ) : workers.length === 0 ? (
-                        <div className="col-span-full py-20 text-center opacity-30 italic">No hay operarios registrados en tu empresa.</div>
+                        <div className="col-span-full py-20 text-center text-[#697386] italic text-sm">No hay operarios registrados.</div>
                     ) : (
                         workers.map(w => (
                             <motion.div
                                 key={w._id}
                                 layout
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-white p-8 rounded-[40px] border border-slate-50 shadow-sm hover:shadow-2xl transition-all group"
+                                className="stripe-card group p-6"
                             >
                                 <div className="flex items-start justify-between mb-6">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                                        <Smile size={32} />
+                                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-[#635bff] border border-indigo-100 shadow-sm">
+                                        <Smile size={24} />
                                     </div>
-                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => startEdit(w)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit2 size={18}/></button>
-                                        <button onClick={() => handleDelete(w._id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18}/></button>
+                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => startEdit(w)} className="p-2 text-[#697386] hover:text-[#635bff] hover:bg-[#f6f9fc] rounded-lg transition-all"><Edit2 size={16}/></button>
+                                        <button onClick={() => handleDelete(w._id)} className="p-2 text-[#697386] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Trash2 size={16}/></button>
                                     </div>
                                 </div>
-                                <h3 className="text-xl font-black text-slate-900 mb-1">{w.fullName}</h3>
-                                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">
-                                     <Shield size={12} className="text-blue-500" /> ID: {w.username}
-                                </div>
+                                <h3 className="text-lg font-bold text-[#0a2540] mb-1">{w.fullName}</h3>
+                                <p className="text-xs text-[#697386] font-semibold flex items-center gap-1.5 mb-6 uppercase tracking-wider">
+                                     <Shield size={12} className="text-[#635bff]" /> ID: {w.username}
+                                </p>
                                 
-                                <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                        <Phone size={14} className="text-blue-400" /> {w.phone || 'N/A'}
+                                <div className="pt-4 border-t border-[#f6f9fc] flex items-center justify-between">
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#425466]">
+                                        <Phone size={14} className="text-[#635bff]" /> {w.phone || 'Sin telf.'}
                                     </div>
-                                    <span className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-black rounded-full uppercase tracking-widest border border-green-100 italic">Activo</span>
+                                    <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full uppercase tracking-widest border border-emerald-100">Activo</span>
                                 </div>
                             </motion.div>
                         ))
@@ -170,52 +164,52 @@ const Workers = () => {
 
             <AnimatePresence>
                 {showAddForm && (
-                   <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-lg shadow-3xl overflow-hidden flex flex-col max-h-[90vh] relative">
-                            <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex items-center justify-between">
-                                <h2 className="text-2xl font-black text-slate-800">{editingWorker ? 'Modificar Perfil' : 'Dar de Alta Operario'}</h2>
-                                <button onClick={closeModal} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><X size={24}/></button>
+                   <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a2540]/40 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                            <div className="p-6 border-b border-[#e3e8ee] flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-[#0a2540]">{editingWorker ? 'Editar Operario' : 'Alta de Operario'}</h2>
+                                <button onClick={closeModal} className="p-2 hover:bg-[#f6f9fc] rounded-lg transition-all text-[#697386]"><X size={20}/></button>
                             </div>
-                            <div className="overflow-y-auto p-10 flex-1">
-                            <form onSubmit={handleAction} className="space-y-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                            <div className="overflow-y-auto p-6">
+                            <form onSubmit={handleAction} className="space-y-5">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase">Nombre Completo</label>
                                     <input 
                                         type="text" required placeholder="Ej: Roberto Alcaraz"
                                         value={formData.fullName}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold transition-all"
+                                        className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
                                         onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Usuario (Inválido edit)</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase">Usuario</label>
                                         <input 
                                             type="text" required disabled={editingWorker}
                                             value={formData.username}
-                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold disabled:opacity-50" 
+                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540] disabled:opacity-40" 
                                             onChange={(e) => setFormData({...formData, username: e.target.value})} 
                                         />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{editingWorker ? 'Nueva Contraseña (opc)' : 'Contraseña'}</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase">{editingWorker ? 'Nueva Pass' : 'Contraseña'}</label>
                                         <input 
                                             type="password" required={!editingWorker}
-                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" 
+                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold" 
                                             onChange={(e) => setFormData({...formData, password: e.target.value})} 
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Teléfono de Contacto</label>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-[#697386] uppercase">Teléfono Movil</label>
                                     <input 
                                         type="text" value={formData.phone}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" 
+                                        className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none" 
                                         onChange={(e) => setFormData({...formData, phone: e.target.value})} 
                                     />
                                 </div>
-                                <button className="w-full bg-blue-600 text-white py-5 rounded-[25px] font-black mt-6 hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all active:scale-95 uppercase tracking-widest text-sm">
-                                    {editingWorker ? 'Actualizar Datos' : 'Autorizar Nuevo Acceso'}
+                                <button className="w-full bg-[#635bff] text-white py-4 rounded-xl font-bold text-sm hover:bg-[#4f46e5] shadow-lg shadow-indigo-100 transition-all mt-4">
+                                    {editingWorker ? 'Guardar Cambios' : 'Registrar Operario'}
                                 </button>
                             </form>
                             </div>
@@ -223,13 +217,14 @@ const Workers = () => {
                    </div>
                 )}
             </AnimatePresence>
+            
             <ConfirmModal 
                 isOpen={deleteModal.isOpen}
                 onClose={() => setDeleteModal({ isOpen: false, workerId: null })}
                 onConfirm={confirmDeleteWorker}
-                title="¿Eliminar este operario?"
-                message="Esta acción revocará el acceso del trabajador al sistema y lo ocultará de tus listas. Sus servicios pasados permanecerán en el historial."
-                confirmText="Sí, Eliminar Operario"
+                title="¿Eliminar operario?"
+                message="Se revocará el acceso inmediatamente."
+                confirmText="Eliminar"
                 loading={isDeleting}
             />
             

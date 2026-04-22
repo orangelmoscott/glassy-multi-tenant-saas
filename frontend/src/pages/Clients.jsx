@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Users, UserPlus, Search, Filter, MoreVertical, 
-  Trash2, Edit2, FileText, TrendingUp, AlertCircle, CheckCircle2, X, MapPin
+  Trash2, Edit2, FileText, TrendingUp, AlertCircle, CheckCircle2, X, MapPin, ChevronRight, Briefcase, Plus, Phone, Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -18,7 +18,6 @@ const Clients = () => {
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
     const [tenantInfo, setTenantInfo] = useState({ plan: 'starter', clientLimit: 10 });
     
-    // State para Edición
     const [editingClient, setEditingClient] = useState(null);
     const [formData, setFormData] = useState({
         companyName: '',
@@ -31,7 +30,6 @@ const Clients = () => {
         frequency: 'mensual'
     });
     
-    // State para ConfirmModal
     const [deleteModal, setDeleteModal] = useState({ isOpen: false, clientId: null });
     const [isDeleting, setIsDeleting] = useState(false);
     const [upgradeModal, setUpgradeModal] = useState({ isOpen: false, message: '', upgradeTo: '' });
@@ -65,13 +63,11 @@ const Clients = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setClients(clients.map(c => c._id === editingClient._id ? res.data.client || res.data : c));
-                alert('Cliente actualizado con éxito');
             } else {
                 const res = await axios.post('https://glassy.es/api/clients', formData, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setClients([...clients, res.data.client]);
-                alert('Cliente registrado con éxito');
             }
             closeModal();
         } catch (err) {
@@ -153,98 +149,109 @@ const Clients = () => {
         }
     };
 
-    const usagePercentage = (clients.length / tenantInfo.clientLimit) * 100;
-
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto space-y-12">
-                {/* Header - Sticky */}
-                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-8">
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                            <Users className="text-blue-600" size={32} /> Gestión de Cartera
-                        </h1>
-                        <p className="text-slate-500 mt-1 font-medium italic">Administra tu cartera empresarial con Glassy SaaS.</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Clientes</h1>
+                        <p className="text-sm text-[#697386] mt-1">Gestión de cartera y seguimientos de servicio.</p>
                     </div>
                     
-                    <div className="flex items-center gap-4">
-                        <div className="relative group flex-1">
-                            <Search className="absolute left-3 top-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="relative flex-1 md:w-64">
+                            <Search className="absolute left-3 top-2.5 text-[#aab7c4]" size={16} />
                             <input 
-                                type="text" placeholder="Buscar cliente..." 
+                                type="text" placeholder="Filtrar por nombre..." 
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-2xl outline-none focus:border-blue-500 shadow-sm w-full md:w-64 transition-all"
+                                className="w-full pl-9 pr-4 py-2 bg-white border border-[#e3e8ee] rounded-lg outline-none focus:border-[#635bff] shadow-sm text-sm transition-all"
                             />
                         </div>
                         <button 
                             onClick={() => setShowAddForm(true)}
-                            className="bg-slate-900 text-white px-6 py-3.5 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all hover:scale-105 shadow-xl shadow-slate-200 active:scale-95 whitespace-nowrap"
+                            className="bg-[#635bff] text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#4f46e5] transition-all shadow-lg shadow-indigo-100"
                         >
-                            <UserPlus size={20} /> Nuevo Cliente
+                            <Plus size={18} /> Nuevo Cliente
                         </button>
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Clients Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
-                        [1,2,3].map(i => <div key={i} className="h-56 bg-white rounded-[40px] border border-slate-50 animate-pulse shadow-sm"></div>)
+                        [1,2,3,4,5,6].map(i => <div key={i} className="h-64 bg-white rounded-2xl border border-[#e3e8ee] animate-pulse"></div>)
                     ) : filteredClients.length === 0 ? (
-                        <div className="col-span-full py-20 text-center opacity-30 italic">No se encontraron clientes que coincidan con la búsqueda.</div>
+                        <div className="col-span-full py-32 text-center flex flex-col items-center opacity-30">
+                            <Users size={48} className="mb-4" />
+                            <p className="text-sm font-bold">No se encontraron clientes.</p>
+                        </div>
                     ) : (
                         filteredClients.map((client) => (
                             <motion.div
                                 key={client._id}
                                 layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="bg-white p-6 md:p-8 rounded-[40px] border border-slate-50 shadow-sm hover:shadow-2xl transition-all group relative overflow-hidden"
+                                className="stripe-card p-8 group flex flex-col justify-between"
                             >
-                                <div className="flex items-start justify-between mb-6">
-                                    <div className="w-16 h-16 bg-blue-50 rounded-[20px] flex items-center justify-center text-blue-600 font-black text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                                        {client.companyName.charAt(0)}
+                                <div>
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-[#635bff] font-bold text-2xl border border-indigo-100">
+                                            {client.companyName.charAt(0)}
+                                        </div>
+                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => startEdit(client)} className="p-2 text-[#697386] hover:text-[#635bff] hover:bg-[#f6f9fc] rounded-lg transition-all"><Edit2 size={16}/></button>
+                                            <button onClick={() => handleDeleteClient(client._id)} className="p-2 text-[#697386] hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Trash2 size={16}/></button>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => startEdit(client)} className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit2 size={18}/></button>
-                                        <button onClick={() => handleDeleteClient(client._id)} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18}/></button>
+                                    <h3 className="text-xl font-bold text-[#0a2540] mb-2 truncate">{client.companyName}</h3>
+                                    <div className="space-y-2 mb-8">
+                                        <div className="flex items-center gap-2 text-xs text-[#697386] font-medium">
+                                            <MapPin size={14} className="text-[#635bff]" />
+                                            <span className="truncate">{client.address}</span>
+                                        </div>
+                                        {client.phone && (
+                                            <div className="flex items-center gap-2 text-xs text-[#697386] font-medium">
+                                                <Phone size={14} className="text-[#635bff]" />
+                                                <span>{client.phone}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                                <h3 className="text-xl font-black text-slate-900 mb-1 leading-tight">{client.companyName}</h3>
-                                <p className="text-sm text-slate-400 font-bold mb-6 flex items-center gap-2">
-                                    <MapPin size={14} className="text-blue-400" /> {client.address}
-                                </p>
-                                
-                                <div className="space-y-4 pt-6 border-t border-slate-50">
-                                    <div className="flex flex-col gap-1 text-xs font-bold uppercase tracking-widest text-slate-400">
-                                        <div className="flex justify-between mb-2">
-                                            <span>Plan ({client.frequency}):</span>
-                                            <span className="text-slate-900 font-black">{client.basePrice}€</span>
+                                    
+                                    <div className="pt-6 border-t border-[#f6f9fc] space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#697386]">Igualada ({client.frequency})</span>
+                                            <span className="text-[#0a2540] font-bold">{client.basePrice}€</span>
                                         </div>
                                         {client.monthlyProgress && (
-                                            <div className="flex flex-col gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-2">
-                                                <div className="flex justify-between text-[10px] text-slate-500 font-bold">
-                                                    <span>Progreso del Mes</span>
-                                                    <span className="text-blue-600 font-black tracking-widest">{client.monthlyProgress.completed} / {client.monthlyProgress.expected}</span>
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-[10px] text-[#697386] font-bold uppercase tracking-wider">
+                                                    <span>Progreso Mensual</span>
+                                                    <span>{client.monthlyProgress.completed} / {client.monthlyProgress.expected}</span>
                                                 </div>
-                                                <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                                                    <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.min((client.monthlyProgress.completed / client.monthlyProgress.expected) * 100, 100)}%` }}></div>
+                                                <div className="w-full bg-[#f6f9fc] rounded-full h-2 overflow-hidden border border-[#e3e8ee]">
+                                                    <div 
+                                                        className="bg-[#635bff] h-full transition-all duration-1000" 
+                                                        style={{ width: `${Math.min((client.monthlyProgress.completed / client.monthlyProgress.expected) * 100, 100)}%` }}
+                                                    ></div>
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button 
-                                            onClick={() => window.location.href='/app/assignments'}
-                                            className="w-full py-3.5 rounded-2xl bg-blue-600 font-black text-[10px] text-white uppercase tracking-widest hover:bg-blue-700 transition-all shadow-sm flex items-center justify-center gap-2"
-                                        >
-                                            + Asignar
-                                        </button>
-                                        <button 
-                                            onClick={() => fetchClientDetails(client)}
-                                            className="w-full py-3.5 rounded-2xl bg-white font-black text-[10px] text-slate-600 uppercase tracking-widest border border-slate-200 hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-                                        >
-                                            Historial
-                                        </button>
-                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 mt-8 pt-2">
+                                    <button 
+                                        onClick={() => window.location.href='/app/assignments'}
+                                        className="flex-[2] py-3 rounded-xl bg-[#0a2540] text-white text-xs font-bold hover:bg-[#635bff] transition-all flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        Asignar Ruta
+                                    </button>
+                                    <button 
+                                        onClick={() => fetchClientDetails(client)}
+                                        className="flex-1 py-3 rounded-xl bg-white border border-[#e3e8ee] text-[#0a2540] text-xs font-bold hover:bg-[#f6f9fc] transition-all"
+                                    >
+                                        Detalles
+                                    </button>
                                 </div>
                             </motion.div>
                         ))
@@ -252,88 +259,110 @@ const Clients = () => {
                 </div>
             </div>
 
-            {/* Modal de Cliente (Cargar / Editar) */}
+            {/* Modal Form */}
             <AnimatePresence>
                 {showAddForm && (
-                   <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-                        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh]">
-                            <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex items-center justify-between">
-                                <h2 className="text-2xl font-black text-slate-800">{editingClient ? 'Modificar Cliente' : 'Nuevo Registro'}</h2>
-                                <button onClick={closeModal} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-full transition-all"><X size={20}/></button>
+                   <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-[#0a2540]/40 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-screen md:max-h-[90vh]">
+                            <div className="p-6 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
+                                <h2 className="text-xl font-bold text-[#0a2540]">{editingClient ? 'Editar Cliente' : 'Nuevo Cliente'}</h2>
+                                <button onClick={closeModal} className="p-2 hover:bg-[#f6f9fc] rounded-xl transition-all text-[#697386] border border-transparent hover:border-[#e3e8ee]"><X size={20}/></button>
                             </div>
-                            <div className="overflow-y-auto p-10 flex-1">
-                            <form onSubmit={handleAction} className="space-y-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nombre de la Empresa</label>
-                                    <input 
-                                        type="text" required value={formData.companyName}
-                                        className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                        onChange={(e) => setFormData({...formData, companyName: e.target.value})}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <input type="text" placeholder="NIF" value={formData.nif} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" onChange={(e) => setFormData({...formData, nif: e.target.value})} />
-                                    <input type="email" placeholder="Email de Facturación" value={formData.email} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none" onChange={(e) => setFormData({...formData, email: e.target.value})} />
-                                    <input type="text" placeholder="Teléfono" value={formData.phone} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none col-span-2" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Dirección Física (Exacta para GPS)</label>
-                                    <input type="text" required value={formData.address} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" onChange={(e) => setFormData({...formData, address: e.target.value})} />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <select value={formData.serviceType} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" onChange={(e) => setFormData({...formData, serviceType: e.target.value})} >
-                                        <option value="tienda">Tienda / Local</option>
-                                        <option value="oficina">Oficina Corporate</option>
-                                        <option value="restaurante">Restaurante / Hostelería</option>
-                                        <option value="hogar">Residencia Privada</option>
-                                    </select>
-                                    <select value={formData.frequency} className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold" onChange={(e) => setFormData({...formData, frequency: e.target.value})} >
-                                        <option value="mensual">Mensual</option>
-                                        <option value="quincenal">Quincenal</option>
-                                        <option value="semanal">Semanal</option>
-                                        <option value="puntual">Puntual</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Precio de Igualada / Base (€)</label>
-                                    <input type="number" required value={formData.basePrice} className="w-full px-5 py-4 bg-slate-900 text-white border border-slate-100 rounded-2xl outline-none font-black text-xl" onChange={(e) => setFormData({...formData, basePrice: e.target.value})} />
-                                </div>
-                                <button className="w-full bg-blue-600 text-white py-5 rounded-[25px] font-black mt-6 hover:bg-blue-700 shadow-xl shadow-blue-100 transition-all uppercase tracking-widest text-sm">
-                                    {editingClient ? 'Confirmar Cambios' : 'Registrar Cliente'}
-                                </button>
-                            </form>
+                            <div className="overflow-y-auto p-8 space-y-6">
+                                <form onSubmit={handleAction} className="space-y-6">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Nombre Comercial / Empresa</label>
+                                        <input 
+                                            type="text" required value={formData.companyName}
+                                            className="w-full px-4 py-3.5 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] text-[#0a2540] font-bold text-lg"
+                                            onChange={(e) => setFormData({...formData, companyName: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">CIF / NIF</label>
+                                            <input type="text" value={formData.nif} className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]" onChange={(e) => setFormData({...formData, nif: e.target.value})} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Teléfono</label>
+                                            <input type="text" value={formData.phone} className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]" onChange={(e) => setFormData({...formData, phone: e.target.value})} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Dirección Completa (Google Maps)</label>
+                                        <div className="relative">
+                                            <MapPin className="absolute left-3.5 top-3.5 text-[#aab7c4]" size={18} />
+                                            <input 
+                                                type="text" required value={formData.address}
+                                                className="w-full pl-11 pr-4 py-3.5 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                                onChange={(e) => setFormData({...formData, address: e.target.value})}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Tipo de Local</label>
+                                            <select value={formData.serviceType} className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540] appearance-none" onChange={(e) => setFormData({...formData, serviceType: e.target.value})} >
+                                                <option value="tienda">Local Comercial</option>
+                                                <option value="oficina">Oficina</option>
+                                                <option value="restaurante">Restaurante</option>
+                                                <option value="hogar">Residencial</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Frecuencia de Servicio</label>
+                                            <select value={formData.frequency} className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540] appearance-none" onChange={(e) => setFormData({...formData, frequency: e.target.value})} >
+                                                <option value="mensual">Mensual</option>
+                                                <option value="quincenal">Quincenal</option>
+                                                <option value="semanal">Semanal</option>
+                                                <option value="puntual">Puntual</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1 text-center block">Tarifa Mensual / Igualada (€)</label>
+                                        <input 
+                                            type="number" required value={formData.basePrice}
+                                            className="w-full px-4 py-6 bg-[#0a2540] text-white rounded-2xl outline-none font-bold text-4xl text-center shadow-xl shadow-indigo-100"
+                                            onChange={(e) => setFormData({...formData, basePrice: e.target.value})}
+                                        />
+                                    </div>
+                                    <button className="w-full bg-[#635bff] text-white py-5 rounded-2xl font-bold text-sm hover:bg-[#4f46e5] shadow-xl shadow-indigo-100 transition-all active:scale-95">
+                                        {editingClient ? 'Actualizar Cliente' : 'Registrar Cliente'}
+                                    </button>
+                                </form>
                             </div>
                         </motion.div>
                    </div>
                 )}
             </AnimatePresence>
 
-            {/* Modal de Historial */}
+            {/* History Modal */}
             <AnimatePresence>
                  {selectedClient && (
-                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
-                         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-[40px] w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-3xl">
-                             <div className="sticky top-0 bg-white z-10 p-10 border-b border-slate-50 flex items-center justify-between">
+                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-[#0a2540]/60 backdrop-blur-sm">
+                         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-2xl max-h-screen md:max-h-[85vh] overflow-hidden flex flex-col shadow-2xl border border-[#e3e8ee]">
+                             <div className="p-8 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
                                  <div className="flex items-center gap-5">
-                                     <div className="w-16 h-16 bg-blue-50 rounded-[20px] flex items-center justify-center text-blue-600 font-black text-2xl">
+                                     <div className="w-16 h-16 bg-indigo-50 text-[#635bff] rounded-2xl flex items-center justify-center font-bold text-2xl border border-indigo-100">
                                          {selectedClient.companyName.charAt(0)}
                                      </div>
                                      <div>
-                                         <h2 className="text-2xl font-black text-slate-900 leading-tight">{selectedClient.companyName}</h2>
-                                         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2">
-                                            <MapPin size={12} /> {selectedClient.address}
-                                         </p>
+                                         <h2 className="text-2xl font-bold text-[#0a2540]">{selectedClient.companyName}</h2>
+                                         <p className="text-sm text-[#697386] font-medium flex items-center gap-2"><MapPin size={14} /> {selectedClient.address}</p>
                                      </div>
                                  </div>
-                                 <button onClick={() => setSelectedClient(null)} className="p-3 bg-slate-100 hover:bg-slate-200 rounded-full transition-all"><X size={20}/></button>
+                                 <button onClick={() => setSelectedClient(null)} className="p-2.5 text-[#697386] hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all border border-transparent hover:border-rose-100"><X size={24}/></button>
                              </div>
 
-                             <div className="p-10 overflow-y-auto flex-1 space-y-6 bg-slate-50/30">
+                             <div className="p-8 overflow-y-auto flex-1 space-y-4 bg-[#f6f9fc]/50">
                                  {loadingDetails ? (
-                                    <div className="text-center py-20 animate-pulse font-bold text-slate-400 uppercase tracking-widest">Consultando registros...</div>
+                                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                        <RefreshCcw className="animate-spin text-[#635bff]" size={32} />
+                                        <p className="text-sm font-bold text-[#697386]">Cargando historial...</p>
+                                    </div>
                                  ) : clientAssignments.length > 0 ? (
                                     clientAssignments.flatMap(as => {
-                                        // Si hay logs, mostramos cada log como una entrada de historial única
                                         if (as.visitLogs && as.visitLogs.length > 0) {
                                             return as.visitLogs.map((log, lIdx) => ({
                                                 ...as,
@@ -343,7 +372,6 @@ const Clients = () => {
                                                 logId: `${as._id}-${lIdx}`
                                             }));
                                         }
-                                        // Si no hay logs (ej: servicios antiguos), mostramos la asignación base
                                         return [{
                                             ...as,
                                             displayDate: as.date,
@@ -352,31 +380,31 @@ const Clients = () => {
                                             logId: as._id
                                         }];
                                     })
-                                    .sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate)) // Más reciente primero
+                                    .sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate))
                                     .map((entry) => (
-                                        <div key={entry.logId} className="bg-white p-6 rounded-[30px] border border-slate-100 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${entry.status === 'completado' ? 'bg-green-100 text-green-600' : 'bg-blue-50 text-blue-600'}`}>
-                                                    <CheckCircle2 size={20} />
+                                        <div key={entry.logId} className="bg-white p-5 rounded-2xl border border-[#e3e8ee] flex items-center justify-between shadow-sm hover:shadow-lg hover:border-[#635bff] transition-all group">
+                                            <div className="flex items-center gap-5">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${entry.status === 'completado' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
+                                                    <CheckCircle2 size={24} />
                                                 </div>
                                                 <div>
-                                                    <p className="font-black text-slate-800 text-sm">
+                                                    <p className="font-bold text-[#0a2540] text-base capitalize">
                                                         {new Date(entry.displayDate).toLocaleDateString('es-ES', { month: 'long', day: 'numeric', year: 'numeric' })}
                                                     </p>
-                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{entry.displayWorker}</span>
-                                                        {entry.isVisit && <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-[8px] font-black uppercase">Visita</span>}
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                        <span className="text-[10px] font-bold text-[#697386] uppercase tracking-widest bg-[#f6f9fc] px-2 py-0.5 rounded-full border border-[#e3e8ee]">{entry.displayWorker}</span>
+                                                        {entry.isVisit && <span className="text-[10px] bg-indigo-50 text-[#635bff] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest border border-indigo-100">VISITA EXTRA</span>}
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-black text-slate-900 text-md">{entry.price}€</p>
+                                                <p className="font-bold text-[#0a2540] text-lg">{entry.price}€</p>
                                                 <button 
                                                     onClick={async (e) => {
                                                         const btn = e.target;
                                                         const prevText = btn.innerText;
                                                         try {
-                                                            btn.innerText = 'Cargando...';
+                                                            btn.innerText = 'GENERANDO...';
                                                             const response = await axios.get(`https://glassy.es/api/assignments/${entry._id}/invoice`, {
                                                                 headers: { Authorization: `Bearer ${token}` },
                                                                 responseType: 'blob'
@@ -384,20 +412,23 @@ const Clients = () => {
                                                             const url = window.URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}));
                                                             window.open(url, '_blank');
                                                         } catch (err) {
-                                                            alert('Error al generar PDF o la configuración de empresa está incompleta.');
+                                                            alert('Error al generar PDF.');
                                                         } finally {
                                                             btn.innerText = prevText;
                                                         }
                                                     }}
-                                                    className="text-[9px] text-blue-600 font-extrabold hover:underline uppercase tracking-widest"
+                                                    className="text-[10px] text-[#635bff] font-bold hover:text-[#0a2540] transition-colors uppercase tracking-widest flex items-center gap-1.5 justify-end"
                                                 >
-                                                    Ver Factura
+                                                    <FileText size={14} /> Factura PDF
                                                 </button>
                                             </div>
                                         </div>
                                     ))
                                  ) : (
-                                    <div className="text-center py-20 opacity-30 italic">Sin servicios registrados.</div>
+                                    <div className="text-center py-20 opacity-30 flex flex-col items-center">
+                                        <History size={48} className="mb-4" />
+                                        <p className="text-sm font-bold uppercase">Sin registros de servicio.</p>
+                                    </div>
                                  )}
                              </div>
                          </motion.div>
@@ -409,9 +440,9 @@ const Clients = () => {
                 isOpen={deleteModal.isOpen}
                 onClose={() => setDeleteModal({ isOpen: false, clientId: null })}
                 onConfirm={confirmDeleteClient}
-                title="¿Eliminar a este cliente?"
-                message="Esta acción archivará al cliente y todo su historial de servicios ya no estará disponible en tu panel. ¿Estás seguro de continuar?"
-                confirmText="Sí, Eliminar Cliente"
+                title="¿Eliminar cliente?"
+                message="Esta acción no se puede deshacer. Se archivará el historial y las rutas pendientes."
+                confirmText="Eliminar permanentemente"
                 loading={isDeleting}
             />
 

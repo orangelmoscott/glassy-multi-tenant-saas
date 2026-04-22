@@ -3,12 +3,11 @@ import axios from 'axios';
 import { 
   FileText, Download, Filter, Search, 
   TrendingUp, CreditCard, Calendar, CheckCircle,
-  AlertCircle, ChevronRight, Send
+  AlertCircle, ChevronRight, Send, Trash2, RefreshCcw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
 import ConfirmModal from '../components/ConfirmModal';
-import { Trash2 } from 'lucide-react';
 
 const Billing = () => {
     const [assignments, setAssignments] = useState([]);
@@ -104,156 +103,148 @@ const Billing = () => {
     const totalInvoiced = filteredAssignments.reduce((acc, curr) => acc + (curr.price || 0) + (curr.extraServices?.reduce((sum, extra) => sum + extra.price, 0) || 0), 0);
 
     return (
-        <>
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header - Sticky */}
-                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-8">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
-                            <FileText className="text-blue-600" size={32} /> Facturación y Finanzas
-                        </h1>
-                        <p className="text-slate-500 mt-1 font-medium italic">Historial de servicios completados y facturas generadas.</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Facturación</h1>
+                        <p className="text-sm text-[#697386] mt-1">Liquidaciones de servicios y control de ingresos.</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-[#e3e8ee] shadow-sm">
+                            <Calendar className="text-[#697386]" size={16} />
+                            <select 
+                                className="bg-transparent outline-none font-bold text-[#0a2540] text-xs uppercase cursor-pointer"
+                                value={filterMonth}
+                                onChange={(e) => setFilterMonth(parseInt(e.target.value))}
+                            >
+                                {Array.from({length: 12}, (_, i) => (
+                                    <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
+                                ))}
+                            </select>
+                            <select 
+                                className="bg-transparent outline-none font-bold text-[#0a2540] text-xs cursor-pointer border-l border-[#e3e8ee] pl-2"
+                                value={filterYear}
+                                onChange={(e) => setFilterYear(parseInt(e.target.value))}
+                            >
+                                <option value={2025}>2025</option>
+                                <option value={2026}>2026</option>
+                            </select>
+                        </div>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-2.5 text-[#697386]" size={16} />
+                            <input 
+                                type="text" placeholder="Cliente..." 
+                                className="pl-9 pr-4 py-2 bg-white border border-[#e3e8ee] rounded-lg outline-none focus:border-[#635bff] text-sm shadow-sm w-full md:w-40"
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Billing Stats */}
-                <div className="grid md:grid-cols-3 gap-6">
-                    <div className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-sm flex items-center gap-6">
-                        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                            <TrendingUp size={32} />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="stripe-card p-6 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center border border-indigo-100">
+                            <TrendingUp size={24} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Facturado</p>
-                            <p className="text-3xl font-black text-slate-900">{totalInvoiced.toFixed(2)}€</p>
+                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-wider">Total Facturado</p>
+                            <p className="text-2xl font-bold text-[#0a2540]">{totalInvoiced.toFixed(2)}€</p>
                         </div>
                     </div>
-                    <div className="bg-white p-8 rounded-[35px] border border-slate-100 shadow-sm flex items-center gap-6">
-                        <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-green-600">
-                            <CheckCircle size={32} />
+                    <div className="stripe-card p-6 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+                            <CheckCircle size={24} />
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Servicios Validados</p>
-                            <p className="text-3xl font-black text-slate-900">{filteredAssignments.length}</p>
+                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-wider">Servicios Mes</p>
+                            <p className="text-2xl font-bold text-[#0a2540]">{filteredAssignments.length}</p>
                         </div>
                     </div>
-                    <div className="bg-slate-900 p-8 rounded-[35px] text-white flex items-center gap-6 overflow-hidden relative">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/20 rounded-full blur-2xl"></div>
-                        <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-blue-400">
-                            <CreditCard size={32} />
+                    <div className="stripe-card p-6 bg-[#0a2540] text-white flex items-center gap-4 overflow-hidden relative border-none shadow-none">
+                        <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-indigo-400">
+                            <CreditCard size={24} />
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Plan Pro Activo</p>
-                            <p className="text-xl font-bold">Liquidación Mensual</p>
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-bold text-white/60 uppercase tracking-wider">Facturación Activa</p>
+                            <p className="text-lg font-bold">Liquidación Pro</p>
                         </div>
+                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-indigo-500/10 rounded-full blur-xl"></div>
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl overflow-hidden">
-                    <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row items-center justify-between bg-slate-50/50 gap-4 sticky top-[100px] z-[30] backdrop-blur-sm">
-                        <h2 className="font-bold text-slate-800 flex items-center gap-2">
-                             Historial de Liquidaciones
-                        </h2>
-                        
-                        <div className="flex flex-col md:flex-row gap-3 items-center w-full md:w-auto">
-                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                                <Calendar size={14} className="text-blue-500" />
-                                <select 
-                                    className="bg-transparent outline-none font-bold text-slate-700 text-sm p-1 cursor-pointer"
-                                    value={filterMonth}
-                                    onChange={(e) => setFilterMonth(parseInt(e.target.value))}
-                                >
-                                    {Array.from({length: 12}, (_, i) => (
-                                        <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
-                                    ))}
-                                </select>
-                                <select 
-                                    className="bg-transparent outline-none font-bold text-slate-700 text-sm p-1 cursor-pointer border-l pl-2"
-                                    value={filterYear}
-                                    onChange={(e) => setFilterYear(parseInt(e.target.value))}
-                                >
-                                    <option value={2025}>2025</option>
-                                    <option value={2026}>2026</option>
-                                </select>
-                            </div>
-
-                            <div className="relative w-full md:w-auto">
-                                <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
-                                <input 
-                                    type="text" placeholder="Buscar por cliente..." 
-                                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-sm shadow-sm"
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
+                {/* Main Table Container */}
+                <div className="stripe-card overflow-hidden bg-white border border-[#e3e8ee]">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/50 text-slate-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-                                    <th className="px-8 py-5">Nº Factura</th>
-                                    <th className="px-8 py-5">Cliente</th>
-                                    <th className="px-8 py-5">Fecha Servicio</th>
-                                    <th className="px-8 py-5 text-right">Importe (con IVA)</th>
-                                    <th className="px-8 py-5 text-right">Acciones</th>
+                                <tr className="bg-[#fcfdfe] text-[#697386] text-[10px] font-bold uppercase tracking-wider border-b border-[#e3e8ee]">
+                                    <th className="px-6 py-4">ID Factura</th>
+                                    <th className="px-6 py-4">Cliente / Dirección</th>
+                                    <th className="px-6 py-4">Fecha</th>
+                                    <th className="px-6 py-4 text-right">Total (con IVA)</th>
+                                    <th className="px-6 py-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
+                            <tbody className="divide-y divide-[#f6f9fc]">
                                 {loading ? (
-                                    [1,2,3].map(i => <tr key={i} className="animate-pulse"><td colSpan="5" className="px-8 py-6 h-16 bg-slate-50/50"></td></tr>)
+                                    [1,2,3].map(i => <tr key={i} className="animate-pulse"><td colSpan="5" className="px-6 py-8 h-16 bg-[#fcfdfe]"></td></tr>)
                                 ) : filteredAssignments.length > 0 ? (
                                     filteredAssignments.map((as) => (
-                                        <tr key={as._id} className="hover:bg-slate-50/80 transition-all group">
-                                            <td className="px-8 py-6">
-                                                <span className="text-xs font-bold font-mono text-slate-400">#GL-{as._id.toString().slice(-6).toUpperCase()}</span>
+                                        <tr key={as._id} className="hover:bg-[#fcfdfe] transition-all group">
+                                            <td className="px-6 py-4">
+                                                <span className="text-xs font-bold text-[#697386]">#{as._id.toString().slice(-6).toUpperCase()}</span>
                                             </td>
-                                            <td className="px-8 py-6">
+                                            <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-slate-800">{as.clientId?.companyName}</span>
-                                                    <span className="text-[10px] text-slate-400 font-medium">{as.clientId?.address}</span>
+                                                    <span className="font-bold text-[#0a2540] text-sm">{as.clientId?.companyName}</span>
+                                                    <span className="text-[10px] text-[#697386] font-medium truncate max-w-xs">{as.clientId?.address}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                                                    <Calendar size={14} className="text-slate-300" /> {new Date(as.completedAt || as.date).toLocaleDateString()}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2 text-xs text-[#0a2540] font-semibold">
+                                                    <Calendar size={14} className="text-[#697386]" /> {new Date(as.completedAt || as.date).toLocaleDateString()}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-right font-black text-slate-900">
+                                            <td className="px-6 py-4 text-right font-bold text-[#0a2540]">
                                                 {((as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)) * 1.21).toFixed(2)}€
                                             </td>
-                                            <td className="px-8 py-6 text-right flex items-center justify-end gap-2">
-                                                <button 
-                                                    onClick={() => handleDownloadPDF(as._id)}
-                                                    className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                                    title="Descargar Factura PDF"
-                                                >
-                                                    <Download size={14} /> PDF
-                                                </button>
-                                                <button 
-                                                    onClick={() => setEmailModal({ isOpen: true, invoiceId: as._id })}
-                                                    className="inline-flex items-center gap-2 bg-green-50 text-green-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-green-600 hover:text-white transition-all shadow-sm"
-                                                    title="Enviar Factura por Email"
-                                                >
-                                                    <Send size={14} /> Email
-                                                </button>
-                                                <button 
-                                                    onClick={() => setDeleteModal({ isOpen: true, invoiceId: as._id })}
-                                                    className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                                                    title="Eliminar Factura"
-                                                >
-                                                    <Trash2 size={14} /> 
-                                                </button>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button 
+                                                        onClick={() => handleDownloadPDF(as._id)}
+                                                        className="p-2 text-[#635bff] hover:bg-indigo-50 rounded-lg transition-all"
+                                                        title="PDF"
+                                                    >
+                                                        <Download size={18} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setEmailModal({ isOpen: true, invoiceId: as._id })}
+                                                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                                                        title="Email"
+                                                    >
+                                                        <Send size={18} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setDeleteModal({ isOpen: true, invoiceId: as._id })}
+                                                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                                        title="Borrar"
+                                                    >
+                                                        <Trash2 size={18} /> 
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="px-8 py-20 text-center">
-                                            <div className="opacity-20 flex flex-col items-center">
-                                                <AlertCircle size={48} className="mb-4" />
-                                                <p className="font-bold">No hay facturas disponibles. Completa rutas primero.</p>
+                                        <td colSpan="5" className="px-6 py-24 text-center">
+                                            <div className="flex flex-col items-center opacity-30">
+                                                <FileText size={48} className="mb-4" />
+                                                <p className="text-sm font-bold">No hay servicios liquidados este mes.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -263,15 +254,14 @@ const Billing = () => {
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
 
             <ConfirmModal 
                 isOpen={emailModal.isOpen}
                 onClose={() => setEmailModal({ isOpen: false, invoiceId: null })}
                 onConfirm={confirmEmailInvoice}
-                title="¿Enviar Factura por Email?"
-                message="Se enviará un correo automáticamente al cliente con el desglose del servicio y copia en formato PDF incrustada."
-                confirmText="Sí, Enviar Factura"
+                title="Enviar Factura"
+                message="Se enviará una copia PDF al email del cliente."
+                confirmText="Enviar ahora"
                 loading={isProcessing}
             />
 
@@ -279,12 +269,12 @@ const Billing = () => {
                 isOpen={deleteModal.isOpen}
                 onClose={() => setDeleteModal({ isOpen: false, invoiceId: null })}
                 onConfirm={confirmDeleteInvoice}
-                title="¿Eliminar definitivamente esta factura?"
-                message="Esta acción archivará constancia de la prestación de este servicio afectando a los ingresos mensuales reportados. Este paso no se puede deshacer."
-                confirmText="Sí, Eliminar Factura"
+                title="¿Eliminar factura?"
+                message="Esta acción no se puede deshacer."
+                confirmText="Eliminar"
                 loading={isProcessing}
             />
-        </>
+        </DashboardLayout>
     );
 };
 

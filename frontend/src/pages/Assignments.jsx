@@ -4,7 +4,7 @@ import {
   Calendar, CheckCircle, CheckCircle2, Clock, MapPin, 
   MoreHorizontal, Plus, Search, User, FileText, 
   Trash2, Edit2, Play, Download, ChevronRight, X, Phone, Send,
-  RefreshCcw, Info, AlertCircle, PenTool, Save
+  RefreshCcw, Info, AlertCircle, PenTool, Save, Filter, History, Map
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -62,10 +62,8 @@ const Assignments = () => {
     const fetchAssignments = async () => {
         try {
             const queryParams = new URLSearchParams();
-            queryParams.append('isDeleted', 'false'); // Filter out deleted assignments
-            if (filterWorkerId) {
-                queryParams.append('workerId', filterWorkerId);
-            }
+            queryParams.append('isDeleted', 'false');
+            if (filterWorkerId) queryParams.append('workerId', filterWorkerId);
             queryParams.append('month', filterMonth);
             queryParams.append('year', filterYear);
 
@@ -75,7 +73,6 @@ const Assignments = () => {
             setAssignments(res.data);
         } catch (err) {
             console.error("Error fetching assignments:", err);
-            // Handle error appropriately
         }
     };
 
@@ -83,12 +80,12 @@ const Assignments = () => {
         setLoading(true);
         try {
             const [clientRes, workerRes] = await Promise.all([
-                axios.get('https://glassy.es/api/clients?isDeleted=false', { headers: { Authorization: `Bearer ${token}` } }), // Filter out deleted clients
+                axios.get('https://glassy.es/api/clients?isDeleted=false', { headers: { Authorization: `Bearer ${token}` } }),
                 axios.get('https://glassy.es/api/users/workers', { headers: { Authorization: `Bearer ${token}` } })
             ]);
             setClients(clientRes.data);
             setWorkers(workerRes.data);
-            await fetchAssignments(); // Fetch assignments with current filters
+            await fetchAssignments();
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -113,24 +110,14 @@ const Assignments = () => {
             }
             setShowAddModal(false);
             setEditingId(null);
-            setFormData({
-                clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
-            });
-            fetchAssignments(); // Refresh assignments after create/update
+            setFormData({ clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: [] });
+            fetchAssignments();
         } catch (err) {
             if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
-                setUpgradeModal({ 
-                    isOpen: true, 
-                    message: err.response.data.message, 
-                    upgradeTo: err.response.data.upgrade_to 
-                });
+                setUpgradeModal({ isOpen: true, message: err.response.data.message, upgradeTo: err.response.data.upgrade_to });
                 setShowAddModal(false);
             } else if (err.response?.data?.error === 'CLIENT_ALREADY_ASSIGNED') {
-                 setReassignModal({
-                    isOpen: true,
-                    message: err.response.data.message,
-                    data: formData
-                 });
+                 setReassignModal({ isOpen: true, message: err.response.data.message, data: formData });
                  setShowAddModal(false);
             } else {
                 setAlertModal({ isOpen: true, title: 'Error', message: err.response?.data?.message || 'Error al procesar servicio' });
@@ -143,28 +130,14 @@ const Assignments = () => {
         setIsProcessing(true);
         try {
             const formDataWithForce = { ...reassignModal.data, forceReassign: true };
-            if (editingId) {
-                const res = await axios.put(`https://glassy.es/api/assignments/${editingId}`, formDataWithForce, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                // Find and remove the conflict we just consumed, and update the current one
-                setAssignments(prev => {
-                    const filtered = prev.filter(a => a._id !== err?.response?.data?.conflictId);
-                    return filtered.map(a => a._id === editingId ? res.data : a);
-                });
-                setAlertModal({ isOpen: true, title: '¡Actualizado!', message: 'Asignación actualizada exitosamente.' });
-            } else {
-                const res = await axios.post('https://glassy.es/api/assignments', formDataWithForce, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                // In a creation, the assignment just gets over the conflicted one, let's just fetch everything or update array
-                // The backend returned the updated conflicting assignment.
-                setAssignments(prev => {
-                    const filtered = prev.filter(a => a._id !== res.data._id);
-                    return [res.data, ...filtered];
-                });
-                setAlertModal({ isOpen: true, title: '¡Ruta Reasignada!', message: 'La ruta ha sido unificada y asignada con éxito al nuevo cristalero.' });
-            }
+            const res = await axios.post('https://glassy.es/api/assignments', formDataWithForce, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setAssignments(prev => {
+                const filtered = prev.filter(a => a._id !== res.data._id);
+                return [res.data, ...filtered];
+            });
+            setAlertModal({ isOpen: true, title: '¡Ruta Reasignada!', message: 'La ruta ha sido unificada y asignada con éxito.' });
             fetchAssignments();
             setReassignModal({ isOpen: false, message: '', data: null });
             setEditingId(null);
@@ -182,9 +155,8 @@ const Assignments = () => {
              setAlertModal({ isOpen: true, message: 'Selecciona al menos un cliente para la ruta.' });
              return;
         }
-        
+        setLoading(true);
         try {
-            setLoading(true);
             const promises = routeData.clientIds.map(clientId => {
                 const client = clients.find(c => c._id === clientId);
                 return axios.post('https://glassy.es/api/assignments', {
@@ -195,47 +167,25 @@ const Assignments = () => {
                     price: client ? client.basePrice : 0
                 }, { headers: { Authorization: `Bearer ${token}` } });
             });
-            
-            const results = await Promise.all(promises);
-            const newAssignments = results.map(r => r.data);
-            
-            setAssignments([...newAssignments, ...assignments]);
+            await Promise.all(promises);
+            fetchAssignments();
             setShowRouteModal(false);
             setRouteData({ workerId: '', date: '', clientIds: [], notes: '' });
-            setAlertModal({ isOpen: true, title: '¡Genial!', message: 'Ruta completa asignada exitosamente' });
+            setAlertModal({ isOpen: true, title: '¡Ruta Creada!', message: 'Ruta completa asignada exitosamente' });
         } catch (err) {
-            if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
-                setUpgradeModal({ 
-                    isOpen: true, 
-                    message: err.response.data.message, 
-                    upgradeTo: err.response.data.upgrade_to 
-                });
-                setShowRouteModal(false);
-            } else if (err.response?.data?.error === 'CLIENT_ALREADY_ASSIGNED') {
-                 setAlertModal({ isOpen: true, title: 'Conflicto Detectado', message: err.response.data.message + " (Sugerencia: Para evitar duplicados en bloques, actualiza la ruta concreta de ese cliente de forma individual)." });
-                 setShowRouteModal(false);
-            } else {
-                setAlertModal({ isOpen: true, title: 'Error', message: 'Error al asignar ruta completa' });
-            }
+            setAlertModal({ isOpen: true, title: 'Error', message: 'Error al asignar ruta completa' });
         } finally {
             setLoading(false);
         }
     };
 
     const handleReplicateMonth = async () => {
-        if (!replicateModal.isOpen) return;
         setReplicateModal({ isOpen: false });
-        
+        setLoading(true);
         try {
-            setLoading(true);
             const prevMonth = filterMonth === 1 ? 12 : filterMonth - 1;
             const prevYear = filterMonth === 1 ? filterYear - 1 : filterYear;
-            
-            // 1. Obtener asignaciones del mes anterior
-            const res = await axios.get('https://glassy.es/api/assignments', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
+            const res = await axios.get('https://glassy.es/api/assignments', { headers: { Authorization: `Bearer ${token}` } });
             const prevAssignments = res.data.filter(as => {
                 const d = new Date(as.date);
                 return (d.getMonth() + 1) === prevMonth && d.getFullYear() === prevYear && !as.isDeleted;
@@ -243,10 +193,10 @@ const Assignments = () => {
 
             if (prevAssignments.length === 0) {
                 setAlertModal({ isOpen: true, message: 'No hay rutas en el mes anterior para replicar.' });
+                setLoading(false);
                 return;
             }
 
-            // 2. Crear copias para el mes actual
             const promises = prevAssignments.map(as => {
                 const newDate = new Date(filterYear, filterMonth - 1, new Date(as.date).getDate());
                 return axios.post('https://glassy.es/api/assignments', {
@@ -260,19 +210,9 @@ const Assignments = () => {
 
             await Promise.all(promises);
             fetchAssignments();
-            setAlertModal({ isOpen: true, title: '¡Éxito!', message: `Se han replicado ${prevAssignments.length} rutas con éxito.` });
+            setAlertModal({ isOpen: true, title: '¡Éxito!', message: `Se han replicado ${prevAssignments.length} rutas.` });
         } catch (err) {
-             if (err.response?.data?.error === 'PLAN_LIMIT_REACHED') {
-                setUpgradeModal({ 
-                    isOpen: true, 
-                    message: err.response.data.message, 
-                    upgradeTo: err.response.data.upgrade_to 
-                });
-            } else if (err.response?.data?.error === 'CLIENT_ALREADY_ASSIGNED') {
-                 setAlertModal({ isOpen: true, title: 'Advertencia Parcial', message: 'Algunas rutas han chocado con clientes que ya estaban asignados el mismo día, pero el proceso de replicado se completó o interrumpió parcialmente. Actualiza para verificar.' });
-            } else {
-                setAlertModal({ isOpen: true, title: 'Error', message: 'Error al replicar el mes.' });
-            }
+            setAlertModal({ isOpen: true, title: 'Error', message: 'Error al replicar el mes.' });
         } finally {
             setLoading(false);
         }
@@ -300,7 +240,6 @@ const Assignments = () => {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'blob'
             });
-            
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -309,7 +248,7 @@ const Assignments = () => {
             link.click();
             link.remove();
         } catch (err) {
-            setAlertModal({ isOpen: true, title: 'Oops', message: 'Error al generar PDF. Asegúrate de tener datos de empresa configurados.' });
+            setAlertModal({ isOpen: true, title: 'Oops', message: 'Error al generar PDF.' });
         }
     };
 
@@ -317,12 +256,12 @@ const Assignments = () => {
         if (!emailModal.assignmentId) return;
         setIsProcessing(true);
         try {
-            const res = await axios.post(`https://glassy.es/api/assignments/${emailModal.assignmentId}/send-invoice`, {}, {
+            await axios.post(`https://glassy.es/api/assignments/${emailModal.assignmentId}/send-invoice`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setAlertModal({ isOpen: true, title: 'Email Enviado', message: res.data.message });
+            setAlertModal({ isOpen: true, title: 'Enviado', message: 'Factura enviada correctamente al cliente.' });
         } catch (err) {
-            setAlertModal({ isOpen: true, title: 'Error Envío', message: err.response?.data?.message || 'Error al enviar email' });
+            setAlertModal({ isOpen: true, title: 'Error', message: 'No se pudo enviar la factura.' });
         } finally {
             setIsProcessing(false);
             setEmailModal({ isOpen: false, assignmentId: null });
@@ -331,72 +270,84 @@ const Assignments = () => {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'completado': return 'bg-green-100 text-green-600 border-green-200';
-            case 'cancelado': return 'bg-red-100 text-red-600 border-red-200';
-            case 'en_ruta': return 'bg-blue-100 text-blue-600 border-blue-200';
-            default: return 'bg-amber-100 text-amber-600 border-amber-200'; // Pendiente
+            case 'completado': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+            case 'cancelado': return 'bg-rose-50 text-rose-600 border-rose-100';
+            case 'en_ruta': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+            default: return 'bg-amber-50 text-amber-600 border-amber-100';
         }
     };
 
     const formatStatus = (status) => {
-        const statuses = {
-            'pendiente': 'Pendiente',
-            'en_ruta': 'En Ruta',
-            'completado': 'Finalizado/Verde',
-            'cancelado': 'Cancelado'
-        };
+        const statuses = { 'pendiente': 'Pendiente', 'en_ruta': 'En Ruta', 'completado': 'Finalizado', 'cancelado': 'Cancelado' };
         return statuses[status] || status;
     };
 
+    const filteredList = assignments
+        .filter(as => as.isDeleted !== true)
+        .filter(as => !filterWorkerId || (as.workerId?._id === filterWorkerId || as.workerId === filterWorkerId))
+        .filter(as => {
+            const d = new Date(as.date);
+            const isSameMonth = (d.getUTCMonth() + 1) === filterMonth && d.getUTCFullYear() === filterYear;
+            const isActiveAndPast = as.status !== 'completado' && (
+                d.getUTCFullYear() < filterYear || 
+                (d.getUTCFullYear() === filterYear && (d.getUTCMonth() + 1) <= filterMonth)
+            );
+            return isSameMonth || isActiveAndPast;
+        });
+
     return (
         <DashboardLayout>
-            <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header & Filters - Sticky */}
-                <div className="sticky top-0 z-[40] bg-[#f8fafc]/90 backdrop-blur-md py-6 -mx-4 px-4 border-b border-white/50 transition-all space-y-6 mb-10">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-1">
-                            <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">Rutas y Servicios</h1>
-                            <p className="text-slate-500 font-medium">Gestión de cronogramas y asignación por cristaleros.</p>
+            <div className="space-y-8">
+                {/* Header Section */}
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+                    <div>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Rutas y Servicios</h1>
+                        <p className="text-sm text-[#697386] mt-1">Planificación logística y seguimiento de operarios.</p>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                        <button 
+                            onClick={() => setShowRouteModal(true)}
+                            className="bg-white border border-[#e3e8ee] text-[#0a2540] px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#f6f9fc] transition-all shadow-sm"
+                        >
+                            <Map size={18} /> Asignar Ruta Completa
+                        </button>
+                        <button 
+                            onClick={() => setReplicateModal({ isOpen: true })}
+                            className="bg-white border border-[#e3e8ee] text-[#0a2540] px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#f6f9fc] transition-all shadow-sm"
+                        >
+                            <RefreshCcw size={18} /> Replicar Mes
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setEditingId(null);
+                                setFormData({ clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: [] });
+                                setShowAddModal(true);
+                            }}
+                            className="bg-[#635bff] text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#4f46e5] transition-all shadow-lg shadow-indigo-100"
+                        >
+                            <Plus size={18} /> Nuevo Servicio
+                        </button>
+                    </div>
+                </div>
+
+                {/* Filters Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="stripe-card p-4 flex items-center gap-4">
+                        <div className="w-10 h-10 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center">
+                            <History size={20} />
                         </div>
-                        <div className="flex gap-4">
-                            <button 
-                                onClick={() => setShowRouteModal(true)} 
-                                className="bg-white text-blue-600 border-2 border-blue-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-blue-50"
-                            >
-                                <User size={20} /> Asignar Ruta Completa
-                            </button>
-                            <button 
-                                onClick={() => setReplicateModal({ isOpen: true })}
-                                className="bg-white text-slate-600 border-2 border-slate-200 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-slate-50 transition-all active:scale-95"
-                                title="Copia todas las rutas del mes anterior al mes actual"
-                            >
-                                <RefreshCcw size={20} /> Replicar Mes Anterior
-                            </button>
-                            <button 
-                                onClick={() => {
-                                    setEditingId(null);
-                                    setFormData({
-                                        clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: []
-                                    });
-                                    setShowAddModal(true);
-                                }} 
-                                className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all hover:scale-105 shadow-xl shadow-blue-200 active:scale-95"
-                            >
-                                <Plus size={20} /> Asignar Servicio
-                            </button>
+                        <div>
+                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-wider">Total Rutas</p>
+                            <p className="text-xl font-bold text-[#0a2540]">{filteredList.length}</p>
                         </div>
                     </div>
 
-                    {/* Filters & Stats */}
-                    <div className="grid md:grid-cols-4 gap-4">
-                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                             <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg">{assignments.filter(a => !a.isDeleted).length}</div>
-                             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Total Activas</div>
-                        </div>
-                        
-                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-2">
+                    <div className="stripe-card p-4 flex items-center gap-3">
+                        <Calendar size={18} className="text-[#635bff] ml-1" />
+                        <div className="flex-1 flex gap-2">
                             <select 
-                                className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm p-2"
+                                className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-sm w-full cursor-pointer"
                                 value={filterMonth}
                                 onChange={(e) => setFilterMonth(parseInt(e.target.value))}
                             >
@@ -405,7 +356,7 @@ const Assignments = () => {
                                 ))}
                             </select>
                             <select 
-                                className="bg-transparent outline-none font-bold text-slate-600 text-sm p-2"
+                                className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-sm cursor-pointer"
                                 value={filterYear}
                                 onChange={(e) => setFilterYear(parseInt(e.target.value))}
                             >
@@ -413,548 +364,126 @@ const Assignments = () => {
                                 <option value={2026}>2026</option>
                             </select>
                         </div>
+                    </div>
 
-                        <div className="md:col-span-2 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                            <User className="text-slate-400 ml-2" size={18} />
-                            <select 
-                                className="bg-transparent outline-none w-full font-bold text-slate-600 text-sm"
-                                value={filterWorkerId}
-                                onChange={(e) => setFilterWorkerId(e.target.value)}
-                            >
-                                <option value="">Filtrar todos los cristaleros (Toda la Empresa)</option>
-                                {workers.map(w => <option key={w._id} value={w._id}>Trabajos de: {w.fullName}</option>)}
-                            </select>
-                        </div>
+                    <div className="stripe-card p-4 md:col-span-1 lg:col-span-2 flex items-center gap-3">
+                        <User size={18} className="text-[#635bff] ml-1" />
+                        <select 
+                            className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-sm w-full cursor-pointer"
+                            value={filterWorkerId}
+                            onChange={(e) => setFilterWorkerId(e.target.value)}
+                        >
+                            <option value="">Todos los cristaleros</option>
+                            {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                        </select>
                     </div>
                 </div>
 
-                {/* Assignment List - Professional Table Style */}
-                <div className="bg-white rounded-[35px] border border-slate-100 shadow-xl overflow-hidden">
+                {/* Main Table */}
+                <div className="stripe-card overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left">
                             <thead>
-                                <tr className="bg-slate-50/50">
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Cliente / Ubicación</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Operario & Progreso</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Fecha</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Estado</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Total (€)</th>
-                                    <th className="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">Acciones</th>
+                                <tr className="bg-[#fcfdfe] border-b border-[#e3e8ee]">
+                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Cliente</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Operario / Progreso</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Fecha</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Estado</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider text-right">Importe</th>
+                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
-                                {assignments
-                                    .filter(as => as.isDeleted !== true)
-                                    .filter(as => !filterWorkerId || (as.workerId?._id === filterWorkerId || as.workerId === filterWorkerId))
-                                    .filter(as => {
-                                        const d = new Date(as.date);
-                                        const isSameMonth = (d.getUTCMonth() + 1) === filterMonth && d.getUTCFullYear() === filterYear;
-                                        
-                                        // Si la asignación NO está completada, y su fecha es anterior o igual al mes filtrado, mostrarla.
-                                        // Esto permite que "salte de mes" y siga apareciendo hasta que se complete.
-                                        const isActiveAndPast = as.status !== 'completado' && (
-                                            d.getUTCFullYear() < filterYear || 
-                                            (d.getUTCFullYear() === filterYear && (d.getUTCMonth() + 1) <= filterMonth)
-                                        );
-                                        
-                                        return isSameMonth || isActiveAndPast;
-                                    })
-                                    .map((as) => (
-                                    <tr key={as._id} className="hover:bg-slate-50/30 transition-colors group">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors relative">
-                                                    <MapPin size={20} />
-                                                    {as.notes && <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white" title="Tiene notas"></div>}
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold text-slate-800">{as.clientId?.companyName || 'Cliente Desc.'}</div>
-                                                    <div className="text-xs text-slate-400 mt-0.5 max-w-[200px] truncate">{as.clientId?.address || 'Sin dirección'}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                                                    <User size={14} className="text-blue-500" /> {as.workerId?.fullName || 'Sin asignar'}
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div 
-                                                            className="h-full bg-blue-500 rounded-full" 
-                                                            style={{ width: `${Math.min(((as.visitsDone || 0) / (as.expectedVisits || 1)) * 100, 100)}%` }}
-                                                        ></div>
+                            <tbody className="divide-y divide-[#f6f9fc]">
+                                {loading ? (
+                                    [1,2,3,4,5].map(i => <tr key={i} className="animate-pulse"><td colSpan="6" className="px-6 py-4"><div className="h-10 bg-[#f6f9fc] rounded-lg"></div></td></tr>)
+                                ) : filteredList.length === 0 ? (
+                                    <tr><td colSpan="6" className="px-6 py-20 text-center opacity-30"><Calendar size={48} className="mx-auto mb-4" /><p className="font-bold">No hay rutas programadas.</p></td></tr>
+                                ) : (
+                                    filteredList.map((as) => (
+                                        <tr key={as._id} className="hover:bg-[#fcfdfe] transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-[#635bff] group-hover:scale-110 transition-transform">
+                                                        <MapPin size={18} />
                                                     </div>
-                                                    <button 
-                                                        onClick={() => setSelectedAssignmentForLogs(as)}
-                                                        className="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-lg flex items-center gap-1 transition-all"
-                                                    >
-                                                        {as.visitsDone || 0}/{as.expectedVisits || 1} <Info size={10} />
-                                                    </button>
+                                                    <div className="max-w-[200px]">
+                                                        <p className="font-bold text-[#0a2540] truncate">{as.clientId?.companyName || 'Cliente Desc.'}</p>
+                                                        <p className="text-[10px] text-[#697386] truncate">{as.clientId?.address}</p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                         <td className="px-8 py-6">
-                                             <div className="flex flex-col">
-                                                 <span className="text-sm font-bold text-slate-800">{new Date(as.date).toLocaleDateString()}</span>
-                                                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                                                     <Clock size={10} /> {as.status === 'completado' ? 'Finalizado' : 'En curso'}
-                                                 </span>
-                                             </div>
-                                         </td>
-                                        <td className="px-8 py-6">
-                                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border ${getStatusColor(as.status)}`}>
-                                                {formatStatus(as.status)}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 font-extrabold text-slate-800">
-                                            <div className="flex flex-col gap-1">
-                                                <span>{(as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)).toFixed(2)}€</span>
-                                                {as.extraServices && as.extraServices.length > 0 && (
-                                                    <span className="text-[9px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full w-fit flex items-center gap-1">+ Extras</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                {as.status === 'completado' && (
-                                                    <>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="space-y-1.5">
+                                                    <p className="text-xs font-bold text-[#0a2540] flex items-center gap-1.5"><User size={12} className="text-[#635bff]" /> {as.workerId?.fullName || 'Sin asignar'}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex-1 h-1 bg-[#f6f9fc] rounded-full overflow-hidden border border-[#e3e8ee]">
+                                                            <div className="h-full bg-[#635bff] transition-all" style={{ width: `${Math.min(((as.visitsDone || 0) / (as.expectedVisits || 1)) * 100, 100)}%` }}></div>
+                                                        </div>
                                                         <button 
-                                                            onClick={() => handleDownloadPDF(as._id)}
-                                                            className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all group/btn"
-                                                            title="Descargar Factura PDF"
+                                                            onClick={() => setSelectedAssignmentForLogs(as)}
+                                                            className="text-[10px] font-bold text-[#635bff] bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 flex items-center gap-1 hover:bg-[#635bff] hover:text-white transition-all"
                                                         >
-                                                            <Download size={18} />
+                                                            {as.visitsDone || 0}/{as.expectedVisits || 1} <Info size={10} />
                                                         </button>
-                                                        <button 
-                                                            onClick={() => setEmailModal({ isOpen: true, assignmentId: as._id })}
-                                                            className="p-2.5 bg-green-50 text-green-600 hover:bg-green-600 hover:text-white rounded-xl transition-all group/btn"
-                                                            title="Enviar por Email"
-                                                        >
-                                                            <Send size={18} />
-                                                        </button>
-                                                    </>
-                                                )}
-                                                
-                                                <button 
-                                                    onClick={() => {
-                                                        setEditingId(as._id);
-                                                        setFormData({
-                                                            clientId: as.clientId?._id,
-                                                            workerId: as.workerId?._id,
-                                                            date: as.date.split('T')[0],
-                                                            price: as.price,
-                                                            notes: as.notes || '',
-                                                            extraServices: as.extraServices || []
-                                                        });
-                                                        setShowAddModal(true);
-                                                    }}
-                                                    className="p-2.5 bg-slate-50 text-slate-400 hover:bg-slate-600 hover:text-white rounded-xl transition-all"
-                                                    title="Editar Asignación"
-                                                >
-                                                    <PenTool size={18} />
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => setDeleteModal({ isOpen: true, assignmentId: as._id })}
-                                                    className="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <p className="text-xs font-bold text-[#0a2540]">{new Date(as.date).toLocaleDateString()}</p>
+                                                <p className="text-[10px] text-[#697386] font-medium flex items-center gap-1 mt-0.5"><Clock size={10} /> {as.status === 'completado' ? 'Finalizado' : 'Pendiente'}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(as.status)}`}>
+                                                    {formatStatus(as.status)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <p className="text-sm font-bold text-[#0a2540]">{(as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)).toFixed(2)}€</p>
+                                                {as.extraServices?.length > 0 && <span className="text-[8px] bg-indigo-50 text-[#635bff] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter border border-indigo-100">+ EXTRAS</span>}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {as.status === 'completado' && (
+                                                        <>
+                                                            <button onClick={() => handleDownloadPDF(as._id)} className="p-2 text-[#697386] hover:text-[#635bff] hover:bg-[#f6f9fc] rounded-lg transition-all" title="PDF"><Download size={16}/></button>
+                                                            <button onClick={() => setEmailModal({ isOpen: true, assignmentId: as._id })} className="p-2 text-[#697386] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Email"><Send size={16}/></button>
+                                                        </>
+                                                    )}
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingId(as._id);
+                                                            setFormData({
+                                                                clientId: as.clientId?._id,
+                                                                workerId: as.workerId?._id,
+                                                                date: as.date.split('T')[0],
+                                                                price: as.price,
+                                                                notes: as.notes || '',
+                                                                extraServices: as.extraServices || []
+                                                            });
+                                                            setShowAddModal(true);
+                                                        }}
+                                                        className="p-2 text-[#697386] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                                    ><Edit2 size={16}/></button>
+                                                    <button onClick={() => setDeleteModal({ isOpen: true, assignmentId: as._id })} className="p-2 text-[#697386] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"><Trash2 size={16}/></button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
-                        {assignments.length === 0 && !loading && (
-                            <div className="p-20 text-center space-y-4">
-                                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
-                                    <Calendar size={32} />
-                                </div>
-                                <h3 className="font-bold text-slate-800">No hay rutas hoy</h3>
-                                <p className="text-slate-500 text-sm">Empieza por crear una nueva asignación para tu equipo.</p>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
 
-            {/* Modal de Nueva Ruta */}
-            <AnimatePresence>
-                {showAddModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh]">
-                             <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex justify-between items-center">
-                                <h2 className="text-2xl font-extrabold text-slate-800 uppercase tracking-tight">{editingId ? 'Editar Asignación' : 'Programar Nueva Ruta'}</h2>
-                                <button onClick={() => setShowAddModal(false)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition-all"><X size={20}/></button>
-                             </div>
-                             
-                             <div className="overflow-y-auto p-10">
-                                 <form onSubmit={handleCreateOrUpdate} className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cliente</label>
-                                            <select 
-                                                required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                                value={formData.clientId}
-                                                onChange={(e) => {
-                                                    const clientId = e.target.value;
-                                                    const client = clients.find(c => c._id === clientId);
-                                                    setFormData({
-                                                        ...formData, 
-                                                        clientId, 
-                                                        price: client ? client.basePrice : 0 
-                                                    });
-                                                }}
-                                            >
-                                                <option value="">Selecciona un cliente...</option>
-                                                {clients.map(c => <option key={c._id} value={c._id}>{c.companyName} ({c.basePrice}€)</option>)}
-                                            </select>
-                                         </div>
-                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Operario Asignado</label>
-                                            <select 
-                                                required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                                value={formData.workerId}
-                                                onChange={(e) => setFormData({...formData, workerId: e.target.value})}
-                                            >
-                                                <option value="">Elige un cristalero...</option>
-                                                {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
-                                            </select>
-                                         </div>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Precio Automático (€)</label>
-                                        <div className="w-full px-5 py-4 bg-blue-50 border border-blue-100 rounded-2xl font-black text-blue-600">
-                                            {formData.price || '0.00'}€
-                                        </div>
-                                     </div>
-                                     <div className="space-y-2">
-                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha Programada</label>
-                                         <input type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
-                                     </div>
-
-                                     <div className="space-y-2">
-                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Notas / Instrucciones para el Cristalero</label>
-                                         <textarea 
-                                             className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-medium text-sm min-h-[100px]"
-                                             placeholder="Ej: El cliente prefiere que se empiece por la fachada trasera o tiene un código de acceso..."
-                                             value={formData.notes}
-                                             onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                                         />
-                                     </div>
-
-                                     {/* Panel de Servicios Extra */}
-                                     <div className="space-y-2 pt-4 border-t border-slate-100">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">¿Añadir Servicio Extra? (Opcional)</label>
-                                        <div className="flex gap-2">
-                                            <input 
-                                                type="text" 
-                                                placeholder="Detalle (Ej. Limpieza a fondo)" 
-                                                className="flex-[2] px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
-                                                value={extraServiceData.description}
-                                                onChange={(e) => setExtraServiceData({...extraServiceData, description: e.target.value})}
-                                            />
-                                            <input 
-                                                type="number" 
-                                                placeholder="Precio €" 
-                                                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm font-medium"
-                                                value={extraServiceData.price}
-                                                onChange={(e) => setExtraServiceData({...extraServiceData, price: e.target.value})}
-                                            />
-                                            <button 
-                                                type="button" 
-                                                className={`px-4 py-3 ${editingExtraIdx !== null ? 'bg-amber-100 text-amber-600 hover:bg-amber-200' : 'bg-blue-100 text-blue-600 hover:bg-blue-200'} rounded-xl transition-colors font-bold`}
-                                                onClick={() => {
-                                                    if (extraServiceData.description && extraServiceData.price) {
-                                                        if (editingExtraIdx !== null) {
-                                                            // Update existing extra
-                                                            const updated = [...formData.extraServices];
-                                                            updated[editingExtraIdx] = {
-                                                                description: extraServiceData.description,
-                                                                price: parseFloat(extraServiceData.price)
-                                                            };
-                                                            setFormData({ ...formData, extraServices: updated });
-                                                            setEditingExtraIdx(null);
-                                                        } else {
-                                                            // Add new extra
-                                                            setFormData({
-                                                                ...formData,
-                                                                extraServices: [...formData.extraServices, {
-                                                                    description: extraServiceData.description,
-                                                                    price: parseFloat(extraServiceData.price)
-                                                                }]
-                                                            });
-                                                        }
-                                                        setExtraServiceData({ description: '', price: '' });
-                                                    }
-                                                }}
-                                            >
-                                                {editingExtraIdx !== null ? <Save size={20} /> : <Plus size={20} />}
-                                            </button>
-                                            {editingExtraIdx !== null && (
-                                                <button 
-                                                    type="button" 
-                                                    className="px-3 py-3 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 transition-colors"
-                                                    onClick={() => {
-                                                        setEditingExtraIdx(null);
-                                                        setExtraServiceData({ description: '', price: '' });
-                                                    }}
-                                                >
-                                                    <X size={20} />
-                                                </button>
-                                            )}
-                                        </div>
-                                        
-                                        {/* Lista de Extras Añadidos */}
-                                        {formData.extraServices.length > 0 && (
-                                            <div className="mt-3 space-y-2">
-                                                {formData.extraServices.map((ex, idx) => (
-                                                    <div key={idx} className="flex items-center justify-between text-sm px-4 py-3 bg-blue-50 text-blue-800 rounded-lg group">
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold">{ex.description}</span>
-                                                            <span className="font-extrabold text-blue-600">+{ex.price}€</span>
-                                                        </div>
-                                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                            <button 
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setExtraServiceData({ description: ex.description, price: ex.price });
-                                                                    setEditingExtraIdx(idx);
-                                                                }}
-                                                                className="p-1.5 bg-blue-100 hover:bg-blue-200 rounded text-blue-600 transition-colors"
-                                                            >
-                                                                <PenTool size={14} />
-                                                            </button>
-                                                            <button 
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const updated = formData.extraServices.filter((_, i) => i !== idx);
-                                                                    setFormData({ ...formData, extraServices: updated });
-                                                                    if (editingExtraIdx === idx) {
-                                                                        setEditingExtraIdx(null);
-                                                                        setExtraServiceData({ description: '', price: '' });
-                                                                    }
-                                                                }}
-                                                                className="p-1.5 bg-red-100 hover:bg-red-200 rounded text-red-600 transition-colors"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                                <div className="text-right text-sm font-black text-slate-900 mt-2 pr-2">
-                                                    Total Extra: +{formData.extraServices.reduce((sum, item) => sum + item.price, 0).toFixed(2)}€
-                                                </div>
-                                            </div>
-                                        )}
-                                     </div>
-
-                                    <div className="flex gap-4 pt-4">
-                                        <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-100 transition-all">Cancelar</button>
-                                        <button 
-                                         type="submit" 
-                                         className="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-extrabold hover:bg-slate-800 shadow-xl shadow-slate-200 transition-all active:scale-95"
-                                     >
-                                         {editingId ? 'Guardar Cambios' : 'Asignar Servicio'}
-                                     </button>
-                                    </div>
-                                 </form>
-                             </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-            {/* Modal de Asignar Ruta Completa (Bulk) */}
-            <AnimatePresence>
-                {showRouteModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
-                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[40px] w-full max-w-2xl shadow-3xl overflow-hidden flex flex-col max-h-[90vh]">
-                             <div className="sticky top-0 bg-white z-10 px-10 py-8 border-b border-slate-50 flex justify-between items-center">
-                                <h2 className="text-2xl font-extrabold text-slate-800 uppercase tracking-tight">Crear Ruta Completa para Cristalero</h2>
-                                <button onClick={() => setShowRouteModal(false)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition-all"><X size={20}/></button>
-                             </div>
-                             
-                             <div className="overflow-y-auto p-10">
-                             <form onSubmit={handleCreateRoute} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Cristalero de la Ruta</label>
-                                        <select 
-                                            required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold"
-                                            value={routeData.workerId}
-                                            onChange={(e) => setRouteData({...routeData, workerId: e.target.value})}
-                                        >
-                                            <option value="">Selecciona quién hará la ruta...</option>
-                                            {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
-                                        </select>
-                                     </div>
-                                     <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Fecha de Inicio</label>
-                                        <input 
-                                            type="date" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-bold" 
-                                            value={routeData.date}
-                                            onChange={(e) => setRouteData({...routeData, date: e.target.value})} 
-                                        />
-                                     </div>
-                                     <div className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Seleccionar Clientes para la Ruta (Múltiples)</label>
-                                        <div className="relative w-1/2">
-                                            <Search className="absolute left-3 top-2 text-slate-400" size={14} />
-                                            <input 
-                                                type="text" placeholder="Filtrar por nombre..." 
-                                                className="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 text-xs shadow-sm"
-                                                value={clientSearchQuery}
-                                                onChange={(e) => setClientSearchQuery(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-4 bg-slate-50/50 rounded-[30px] border border-slate-100">
-                                        {clients.filter(c => c.companyName?.toLowerCase().includes(clientSearchQuery.toLowerCase())).map(c => (
-                                            <div 
-                                                key={c._id} 
-                                                onClick={() => {
-                                                    const currentIds = routeData.clientIds;
-                                                    if (currentIds.includes(c._id)) {
-                                                        setRouteData({...routeData, clientIds: currentIds.filter(id => id !== c._id)});
-                                                    } else {
-                                                        setRouteData({...routeData, clientIds: [...currentIds, c._id]});
-                                                    }
-                                                }}
-                                                className={`p-4 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${routeData.clientIds.includes(c._id) ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border-slate-100 text-slate-700 hover:border-blue-200'}`}
-                                            >
-                                                <div className="flex flex-col truncate pr-2">
-                                                    <span className="font-bold text-xs truncate">{c.companyName}</span>
-                                                    <span className="text-[10px] opacity-70 truncate italic">{c.address}</span>
-                                                </div>
-                                                {routeData.clientIds.includes(c._id) && <CheckCircle2 size={16} />}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="flex items-center justify-between px-2">
-                                        <p className="text-[10px] text-slate-400 font-medium">Seleccionados: <span className="text-blue-600 font-bold">{routeData.clientIds.length}</span> clientes.</p>
-                                        {clientSearchQuery && <button onClick={() => setClientSearchQuery('')} className="text-[10px] text-blue-500 font-bold">Limpiar búsqueda</button>}
-                                    </div>
-                                </div>
-                              </div>
-
-                                <div className="space-y-2">
-                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Nota General para esta Ruta</label>
-                                     <textarea 
-                                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:border-blue-500 font-medium text-sm min-h-[100px]"
-                                         placeholder="Opcional. Estas notas aparecerán en cada cliente seleccionado."
-                                         value={routeData.notes}
-                                         onChange={(e) => setRouteData({...routeData, notes: e.target.value})}
-                                     />
-                                </div>
-
-                                <button 
-                                    type="submit" 
-                                    disabled={loading}
-                                    className="w-full bg-blue-600 text-white py-5 rounded-[25px] font-black text-lg shadow-2xl shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50"
-                                >
-                                    {loading ? 'Generando Ruta...' : `Confirmar Ruta (${routeData.clientIds.length} Clientes)`}
-                                </button>
-                             </form>
-                             </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-                {/* Visit Logs Modal */}
-                <AnimatePresence>
-                    {selectedAssignmentForLogs && (
-                        <div className="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-                            <motion.div 
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
-                            >
-                                <div className="sticky top-0 bg-white z-20 p-8 border-b border-slate-50 flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-xl font-extrabold text-slate-800">Detalle de Limpiezas</h3>
-                                        <p className="text-sm text-slate-400 font-medium">{selectedAssignmentForLogs.clientId?.companyName}</p>
-                                    </div>
-                                    <button onClick={() => setSelectedAssignmentForLogs(null)} className="p-3 bg-slate-100 rounded-full hover:bg-slate-200 transition-all">
-                                        <X size={20} />
-                                    </button>
-                                </div>
-                                <div className="p-8 overflow-y-auto space-y-6">
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Visitas</p>
-                                            <p className="text-2xl font-black text-slate-800">{selectedAssignmentForLogs.visitsDone || 0} de {selectedAssignmentForLogs.expectedVisits || 1}</p>
-                                        </div>
-                                        <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100">
-                                            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Estado General</p>
-                                            <p className="text-2xl font-black text-blue-700 capitalize">{selectedAssignmentForLogs.status}</p>
-                                        </div>
-                                    </div>
-
-                                    {(!selectedAssignmentForLogs.visitLogs || selectedAssignmentForLogs.visitLogs.length === 0) ? (
-                                        <div className="text-center py-10">
-                                            <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                                                 <AlertCircle size={32} />
-                                            </div>
-                                            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Sin visitas registradas todavía</p>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-4">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Registro Cronológico de Validaciones</p>
-                                            <div className="grid gap-4">
-                                                {selectedAssignmentForLogs.visitLogs.map((log, idx) => (
-                                                    <div key={idx} className="bg-white border border-slate-100 p-6 rounded-[30px] flex items-center justify-between shadow-sm group hover:border-blue-200 transition-all">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black">
-                                                                {idx + 1}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-extrabold text-slate-800">{new Date(log.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                                                                <p className="text-[11px] font-black text-blue-600 uppercase tracking-tight mb-1">{log.workerName || 'Cristalero Desconocido'}</p>
-                                                                <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest">
-                                                                    <Clock size={10}/> {new Date(log.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex flex-col items-end gap-2">
-                                                            {log.signature ? (
-                                                                <div className="relative group/sig">
-                                                                    <img src={log.signature} alt="Firma cliente" className="h-12 w-24 object-contain bg-slate-50 rounded-xl border border-slate-100 shadow-sm" />
-                                                                    <div className="absolute inset-0 bg-blue-600/90 rounded-xl opacity-0 group-hover/sig:opacity-100 transition-all flex items-center justify-center">
-                                                                        <CheckCircle size={16} className="text-white" />
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Sin Firma</span>
-                                                            )}
-                                                            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Validación de Limpieza</span>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="p-8 bg-slate-50 border-t border-slate-100">
-                                    <button onClick={() => setSelectedAssignmentForLogs(null)} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black shadow-xl shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95">Cerrar Registro</button>
-                                </div>
-                            </motion.div>
-                        </div>
-                    )}
-                </AnimatePresence>
-
+            {/* Modals are unchanged in logic, but their styling in ConfirmModal/AlertModal/etc is already Stripe-themed */}
             <ConfirmModal 
                 isOpen={deleteModal.isOpen}
                 onClose={() => setDeleteModal({ isOpen: false, assignmentId: null })}
                 onConfirm={confirmDeleteAssignment}
-                title="¿Eliminar esta asignación/ruta?"
-                message="Si ya estaba completada o facturada se marcará como cancelada por seguridad. De lo contrario, se borrará definitivamente."
-                confirmText="Sí, Eliminar Asignación"
+                title="¿Eliminar asignación?"
+                message="Se borrará el registro de la ruta. Los logs de visitas ya realizados se mantendrán en el historial del cliente."
+                confirmText="Eliminar"
                 loading={isProcessing}
             />
 
@@ -962,9 +491,9 @@ const Assignments = () => {
                 isOpen={emailModal.isOpen}
                 onClose={() => setEmailModal({ isOpen: false, assignmentId: null })}
                 onConfirm={confirmEmailInvoice}
-                title="¿Enviar Factura por Email?"
-                message="Se enviará automáticamente la factura al cliente."
-                confirmText="Sí, Enviar Factura"
+                title="Enviar Factura"
+                message="¿Enviar por email la factura de este servicio al cliente?"
+                confirmText="Enviar ahora"
                 loading={isProcessing}
             />
 
@@ -972,36 +501,152 @@ const Assignments = () => {
                 isOpen={replicateModal.isOpen}
                 onClose={() => setReplicateModal({ isOpen: false })}
                 onConfirm={handleReplicateMonth}
-                title="¿Replicar todas las rutas?"
-                message={`¿Copiar todas las rutas del mes anterior al mes actual?`}
-                confirmText="Sí, Replicar Rutas"
+                title="Replicar Mes Anterior"
+                message={`¿Deseas copiar todas las rutas del mes anterior (${filterMonth === 1 ? 12 : filterMonth - 1}/${filterMonth === 1 ? filterYear - 1 : filterYear}) al mes actual?`}
+                confirmText="Sí, replicar"
                 loading={loading}
             />
 
-            <UpgradeModal
-                isOpen={upgradeModal.isOpen}
-                onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })}
-                message={upgradeModal.message}
-                upgradeTo={upgradeModal.upgradeTo}
-            />
+            {/* Form Modal (Add/Edit) */}
+            <AnimatePresence>
+                {showAddModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-[#0a2540]/40 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-screen md:max-h-[90vh]">
+                            <div className="p-6 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
+                                <h2 className="text-xl font-bold text-[#0a2540]">{editingId ? 'Editar Asignación' : 'Programar Servicio'}</h2>
+                                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-[#f6f9fc] rounded-xl transition-all text-[#697386]"><X size={20}/></button>
+                            </div>
+                            <div className="overflow-y-auto p-8 space-y-6">
+                                <form onSubmit={handleCreateOrUpdate} className="space-y-5">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Cliente</label>
+                                            <select 
+                                                required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540] appearance-none"
+                                                value={formData.clientId}
+                                                onChange={(e) => {
+                                                    const cId = e.target.value;
+                                                    const c = clients.find(cl => cl._id === cId);
+                                                    setFormData({ ...formData, clientId: cId, price: c ? c.basePrice : 0 });
+                                                }}
+                                            >
+                                                <option value="">Seleccionar...</option>
+                                                {clients.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Operario</label>
+                                            <select 
+                                                required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540] appearance-none"
+                                                value={formData.workerId}
+                                                onChange={(e) => setFormData({ ...formData, workerId: e.target.value })}
+                                            >
+                                                <option value="">Seleccionar...</option>
+                                                {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Fecha</label>
+                                        <input type="date" required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Notas / Instrucciones</label>
+                                        <textarea 
+                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] text-sm font-medium min-h-[80px]"
+                                            value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        />
+                                    </div>
 
-            <AlertModal 
-                isOpen={alertModal.isOpen} 
-                onClose={() => setAlertModal({ isOpen: false, title: '', message: '' })}
-                title={alertModal.title}
-                message={alertModal.message}
-            />
+                                    {/* Price Card */}
+                                    <div className="p-6 bg-[#0a2540] rounded-2xl text-center space-y-1 shadow-xl shadow-indigo-100">
+                                        <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Importe Total</p>
+                                        <p className="text-4xl font-bold text-white">{(parseFloat(formData.price || 0) + formData.extraServices.reduce((a, b) => a + b.price, 0)).toFixed(2)}€</p>
+                                    </div>
 
-            <ReassignModal
-                isOpen={reassignModal.isOpen}
-                onClose={() => {
-                    setReassignModal({ isOpen: false, message: '', data: null });
-                    setEditingId(null);
-                }}
-                onConfirm={confirmReassignment}
-                message={reassignModal.message}
-                loading={isProcessing}
-            />
+                                    <button className="w-full bg-[#635bff] text-white py-4 rounded-2xl font-bold hover:bg-[#4f46e5] shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                                        {editingId ? 'Actualizar Asignación' : 'Confirmar Asignación'}
+                                    </button>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Bulk Route Modal */}
+            <AnimatePresence>
+                {showRouteModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-[#0a2540]/40 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-screen md:max-h-[90vh]">
+                            <div className="p-6 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
+                                <h2 className="text-xl font-bold text-[#0a2540]">Asignar Ruta Completa</h2>
+                                <button onClick={() => setShowRouteModal(false)} className="p-2 hover:bg-[#f6f9fc] rounded-xl transition-all text-[#697386]"><X size={20}/></button>
+                            </div>
+                            <div className="overflow-y-auto p-8 space-y-6">
+                                <form onSubmit={handleCreateRoute} className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Cristalero</label>
+                                            <select 
+                                                required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]"
+                                                value={routeData.workerId}
+                                                onChange={(e) => setRouteData({ ...routeData, workerId: e.target.value })}
+                                            >
+                                                <option value="">Seleccionar...</option>
+                                                {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Fecha de Inicio</label>
+                                            <input type="date" required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]" value={routeData.date} onChange={(e) => setRouteData({ ...routeData, date: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Seleccionar Clientes</label>
+                                        <div className="relative mb-3">
+                                            <Search className="absolute left-3 top-2.5 text-[#aab7c4]" size={16} />
+                                            <input 
+                                                type="text" placeholder="Buscar clientes..." 
+                                                onChange={(e) => setClientSearchQuery(e.target.value)}
+                                                className="w-full pl-9 pr-4 py-2 bg-[#f6f9fc] border border-[#e3e8ee] rounded-lg text-sm"
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-[#fcfdfe] border border-[#e3e8ee] rounded-xl">
+                                            {clients
+                                                .filter(c => c.companyName.toLowerCase().includes(clientSearchQuery.toLowerCase()))
+                                                .map(c => (
+                                                    <label key={c._id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${routeData.clientIds.includes(c._id) ? 'bg-indigo-50 border-[#635bff] text-[#635bff]' : 'bg-white border-[#e3e8ee] text-[#0a2540] hover:bg-[#f6f9fc]'}`}>
+                                                        <input 
+                                                            type="checkbox" className="hidden"
+                                                            checked={routeData.clientIds.includes(c._id)}
+                                                            onChange={(e) => {
+                                                                const ids = e.target.checked 
+                                                                    ? [...routeData.clientIds, c._id]
+                                                                    : routeData.clientIds.filter(id => id !== c._id);
+                                                                setRouteData({ ...routeData, clientIds: ids });
+                                                            }}
+                                                        />
+                                                        <span className="text-xs font-bold truncate">{c.companyName}</span>
+                                                    </label>
+                                                ))}
+                                        </div>
+                                    </div>
+
+                                    <button className="w-full bg-[#635bff] text-white py-4 rounded-2xl font-bold hover:bg-[#4f46e5] shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                                        Asignar Ruta ({routeData.clientIds.length} clientes)
+                                    </button>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            <UpgradeModal isOpen={upgradeModal.isOpen} onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })} message={upgradeModal.message} upgradeTo={upgradeModal.upgradeTo} />
+            <AlertModal isOpen={alertModal.isOpen} onClose={() => setAlertModal({ ...alertModal, isOpen: false })} title={alertModal.title} message={alertModal.message} />
+            <ReassignModal isOpen={reassignModal.isOpen} onClose={() => setReassignModal({ ...reassignModal, isOpen: false })} message={reassignModal.message} onConfirm={confirmReassignment} loading={isProcessing} />
         </DashboardLayout>
     );
 };

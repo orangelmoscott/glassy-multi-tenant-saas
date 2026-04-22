@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Users, Calendar, BarChart3, Settings, 
   LogOut, LayoutDashboard, Menu, X, 
-  CreditCard, HardHat, FileText, MapPin, Sparkles, Receipt, Briefcase
+  CreditCard, HardHat, FileText, MapPin, Sparkles, Receipt, Briefcase, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,7 +23,6 @@ const DashboardLayout = ({ children }) => {
             const pendingSessionId = localStorage.getItem('stripe_pending_session');
             if (isOwner && !user.planActivo && pendingSessionId) {
                 try {
-                    console.log("Detectada sesión de Stripe pendiente. Intentando sincronizar...");
                     const res = await axios.post(
                         'https://glassy.es/api/tenant/sync-subscription', 
                         { sessionId: pendingSessionId },
@@ -32,7 +31,6 @@ const DashboardLayout = ({ children }) => {
                     
                     if (res.data.tenant && res.data.tenant.planActivo) {
                         const updatedTenant = res.data.tenant;
-                        // Actualizar localStorage
                         const newUser = { 
                             ...user, 
                             plan: updatedTenant.planId, 
@@ -42,7 +40,6 @@ const DashboardLayout = ({ children }) => {
                         };
                         localStorage.setItem('glassy_user', JSON.stringify(newUser));
                         localStorage.removeItem('stripe_pending_session');
-                        // Recargar para aplicar cambios globales
                         window.location.reload();
                     }
                 } catch (err) {
@@ -54,12 +51,6 @@ const DashboardLayout = ({ children }) => {
         checkPendingSession();
     }, [isOwner, user.planActivo, user.token]);
 
-    useEffect(() => {
-        if (isOwner && !user.planActivo && user.trialDaysLeft <= 0) {
-            console.log("Trial expired notice triggered");
-        }
-    }, [isOwner, user.planActivo, user.trialDaysLeft]);
-
     const menuItems = [
         { icon: LayoutDashboard, label: 'Resumen', path: '/app/dashboard', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'basico', 'autonomo'] },
         { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['owner', 'admin'] },
@@ -68,7 +59,7 @@ const DashboardLayout = ({ children }) => {
         { icon: MapPin, label: 'Mis Rutas', path: '/app/my-routes', roles: ['worker', 'cristalero'] },
         { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['owner', 'admin'], restrictedPlans: ['starter'] },
         { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['owner', 'admin'], restrictedPlans: ['starter', 'basico', 'autonomo'] },
-        { icon: Settings, label: 'Mi Empresa', path: '/app/settings', roles: ['owner', 'admin'] },
+        { icon: Settings, label: 'Configuración', path: '/app/settings', roles: ['owner', 'admin'] },
     ];
 
     const handleLogout = () => {
@@ -85,105 +76,102 @@ const DashboardLayout = ({ children }) => {
     });
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans overflow-x-hidden">
+        <div className="min-h-screen bg-[#f6f9fc] flex flex-col md:flex-row font-sans selection:bg-indigo-100 overflow-x-hidden">
             {/* Mobile Header */}
-            <header className="md:hidden bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-[60] shadow-sm">
-                <div className="flex items-center gap-3">
-                    <img src="/favicon.png" alt="Glassy Icon" className="w-8 h-8 object-contain" />
-                    <span className="font-extrabold text-slate-900 tracking-tight">Glassy</span>
+            <header className="md:hidden bg-white border-b border-[#e3e8ee] px-6 py-4 flex items-center justify-between sticky top-0 z-[60]">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#635bff] to-[#4f46e5] flex items-center justify-center text-white font-black text-lg">G</div>
+                    <span className="font-bold text-[#0a2540] tracking-tight">Glassy</span>
                 </div>
                 <button 
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
-                  className="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                  className="p-2 text-[#425466] hover:bg-[#f6f9fc] rounded-lg transition-all"
                 >
                     {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
             </header>
 
-            {/* Sidebar (Desktop) & Menu (Mobile Overlay) */}
+            {/* Sidebar */}
             <AnimatePresence>
                 {(isMobileMenuOpen || !window.matchMedia('(max-width: 768px)').matches) && (
                     <motion.aside 
                         initial={{ x: -300 }}
                         animate={{ x: 0 }}
                         exit={{ x: -300 }}
-                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                         className={`
-                            fixed md:sticky top-0 left-0 z-50 h-[100dvh] w-72 bg-white border-r border-slate-100 p-8 flex flex-col shadow-2xl md:shadow-none
+                            fixed md:sticky top-0 left-0 z-50 h-[100dvh] w-64 bg-white border-r border-[#e3e8ee] flex flex-col shadow-xl md:shadow-none
                             ${isMobileMenuOpen ? 'flex' : 'hidden md:flex'}
                         `}
                     >
-                        <div className="hidden md:flex items-center gap-3 mb-10 overflow-hidden px-2">
-                             <img src="/favicon.png" alt="Glassy Icon" className="h-10 w-10 object-contain" />
-                             <span className="text-2xl font-black text-slate-900 tracking-tighter italic">Glassy</span>
+                        {/* Logo */}
+                        <div className="p-7 mb-2 flex items-center gap-3">
+                             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#635bff] to-[#4f46e5] flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-100">G</div>
+                             <span className="text-xl font-bold text-[#0a2540] tracking-tight">Glassy</span>
                         </div>
 
-                        <nav className="flex-1 space-y-2">
+                        {/* Navigation */}
+                        <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
                             {filteredMenu.map((item) => (
                                 <Link 
                                     key={item.path} 
                                     to={item.path}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className={`
-                                        flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all duration-300
+                                        flex items-center justify-between px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-150 group
                                         ${location.pathname === item.path 
-                                            ? 'bg-blue-600 text-white shadow-xl shadow-blue-100' 
-                                            : 'text-slate-400 hover:bg-slate-50 hover:text-slate-900'}
+                                            ? 'bg-white text-[#635bff] shadow-sm border border-[#e3e8ee]' 
+                                            : 'text-[#425466] hover:text-[#0a2540] hover:bg-[#f6f9fc]'}
                                     `}
                                 >
-                                    <item.icon size={22} strokeWidth={2.5} />
-                                    <span>{item.label}</span>
+                                    <div className="flex items-center gap-3">
+                                        <item.icon size={18} className={`${location.pathname === item.path ? 'text-[#635bff]' : 'text-[#697386] group-hover:text-[#0a2540]'}`} />
+                                        <span>{item.label}</span>
+                                    </div>
+                                    {location.pathname === item.path && <ChevronRight size={14} className="text-[#635bff]" />}
                                 </Link>
                             ))}
                         </nav>
 
-                        <div className="pt-8 border-t border-slate-50 space-y-4">
-                            <div className="bg-slate-50 p-4 rounded-2xl flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 font-bold border border-slate-100 uppercase shadow-sm">
+                        {/* Footer Sidebar */}
+                        <div className="p-4 border-t border-[#e3e8ee] bg-[#fcfdfe]">
+                            {isOwner && !user.planActivo && (
+                                <div className="mb-4 p-3 rounded-xl bg-[#635bff] text-white shadow-lg shadow-indigo-100 relative overflow-hidden group cursor-pointer" onClick={() => navigate('/app/settings')}>
+                                    <div className="relative z-10">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">
+                                            <Sparkles size={10} /> Trial Period
+                                        </div>
+                                        <p className="text-xs font-bold">{user.trialDaysLeft} días restantes</p>
+                                    </div>
+                                    <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-40 transition-opacity">
+                                        <ArrowRight size={32} />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-3 px-2 mb-4">
+                                <div className="w-8 h-8 bg-indigo-50 text-[#635bff] rounded-lg flex items-center justify-center font-bold text-xs border border-indigo-100 uppercase">
                                     {user.username?.charAt(0)}
                                 </div>
                                 <div className="overflow-hidden">
-                                    <p className="text-sm font-bold text-slate-900 truncate">{user.username}</p>
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{user.role}</p>
+                                    <p className="text-xs font-bold text-[#0a2540] truncate">{user.username}</p>
+                                    <p className="text-[10px] text-[#697386] font-bold uppercase tracking-tight">{user.role}</p>
                                 </div>
                             </div>
+                            
                             <button 
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-red-400 hover:bg-red-50 hover:text-red-500 transition-all"
+                                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg font-semibold text-xs text-[#697386] hover:bg-red-50 hover:text-red-600 transition-all"
                             >
-                                <LogOut size={22} strokeWidth={2.5} />
-                                <span>Salir del Sistema</span>
+                                <LogOut size={16} />
+                                <span>Cerrar sesión</span>
                             </button>
                         </div>
-                        
-                        {isOwner && !user.planActivo && (
-                            <div className={`mt-6 p-4 rounded-2xl border shadow-sm transition-colors ${user.trialDaysLeft <= 0 ? 'bg-red-50 border-red-200' : 'bg-gradient-to-tr from-amber-50 to-orange-50 border-amber-100/50'}`}>
-                                <div className={`flex items-center gap-2 mb-2 font-extrabold text-[10px] uppercase tracking-tighter ${user.trialDaysLeft <= 0 ? 'text-red-700' : 'text-amber-700'}`}>
-                                    <Sparkles size={14} className={user.trialDaysLeft > 0 ? "animate-pulse" : ""} /> {user.trialDaysLeft <= 0 ? 'PERIODO EXPIRADO' : 'Periodo de Prueba'}
-                                </div>
-                                <p className="text-sm font-bold text-slate-900 leading-tight">
-                                    {user.trialDaysLeft <= 0 ? (
-                                        <span className="text-red-600 font-extrabold">Renovación Necesaria</span>
-                                    ) : (
-                                        <>Te quedan <span className="text-amber-600 font-black">{user.trialDaysLeft} días</span></>
-                                    )}
-                                </p>
-                                <p className="text-[10px] text-slate-400 mt-1 font-medium">
-                                    {user.trialDaysLeft <= 0 ? 'Suscríbete ahora para seguir operando tu negocio.' : 'Actualiza a un plan PRO antes de que expire.'}
-                                </p>
-                                <button 
-                                    onClick={() => navigate('/app/settings')}
-                                    className={`w-full mt-3 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all active:scale-95 ${user.trialDaysLeft <= 0 ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-slate-800 border-slate-200 hover:bg-slate-50'}`}
-                                >
-                                    Ver Planes y Precios
-                                </button>
-                            </div>
-                        )}
                     </motion.aside>
                 )}
             </AnimatePresence>
 
-            {/* Backdrop Overlay for Mobile Menu */}
+            {/* Backdrop Overlay */}
             <AnimatePresence>
               {isMobileMenuOpen && (
                   <motion.div 
@@ -191,48 +179,45 @@ const DashboardLayout = ({ children }) => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={() => setIsMobileMenuOpen(false)} 
-                    className="md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"
+                    className="md:hidden fixed inset-0 bg-[#0a2540]/30 backdrop-blur-sm z-40"
                   />
               )}
             </AnimatePresence>
 
             {/* Main Content Area */}
-            {/* Main Content Area */}
-            <main className="flex-1 p-4 md:p-12 overflow-y-auto w-full">
-                <div className="max-w-6xl mx-auto w-full">
+            <main className="flex-1 p-4 md:p-10 lg:p-12 overflow-y-auto w-full relative">
+                <div className="max-w-6xl mx-auto w-full animate-fade-up">
                     {children}
                 </div>
             </main>
 
-            {/* Trial Expiry Overlay - SOLO si está en starter Y no ha pagado Y no está en settings */}
+            {/* Trial Expiry Overlay */}
             {isOwner && !user.planActivo && (user.trialDaysLeft ?? 1) <= 0 && location.pathname !== '/app/settings' && (
-                <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+                <div className="fixed inset-0 bg-[#0a2540]/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
                     <motion.div 
-                        initial={{ scale: 0.9, opacity: 0 }}
+                        initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="bg-white rounded-[40px] p-10 max-w-lg w-full text-center shadow-2xl"
+                        className="bg-white rounded-2xl p-10 max-w-md w-full text-center shadow-2xl border border-[#e3e8ee]"
                     >
-                        <div className="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center text-red-600 mx-auto mb-8">
-                            <Sparkles size={40} />
+                        <div className="w-16 h-16 bg-indigo-50 text-[#635bff] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                            <CreditCard size={32} />
                         </div>
-                        <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Acceso Restringido</h2>
-                        <p className="text-slate-500 font-medium mb-10 leading-relaxed">
-                            Tu periodo de prueba de <span className="text-slate-900 font-bold">7 días</span> ha llegado a su fin. 
-                            Para continuar gestionando tus clientes y operarios, necesitas activar una suscripción profesional.
+                        <h2 className="text-2xl font-bold text-[#0a2540] mb-3">Tu prueba ha expirado</h2>
+                        <p className="text-sm text-[#697386] mb-8 leading-relaxed">
+                            Esperamos que Glassy haya ayudado a tu negocio estos últimos 7 días. Activa un plan profesional para seguir operando sin interrupciones.
                         </p>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <button 
                                 onClick={() => navigate('/app/settings')}
-                                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-extrabold shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                className="w-full bg-[#635bff] text-white py-4 rounded-xl font-bold text-sm shadow-lg shadow-indigo-100 hover:bg-[#4f46e5] transition-all flex items-center justify-center gap-2"
                             >
-                                <CreditCard size={22} />
-                                Activar Suscripción Profesional
+                                Ver Planes y Activar
                             </button>
                             <button 
                                 onClick={handleLogout}
-                                className="w-full text-slate-400 py-2 font-bold text-sm hover:text-slate-600 transition-all"
+                                className="w-full text-[#697386] py-2 font-semibold text-xs hover:text-[#0a2540] transition-all"
                             >
-                                Cerrar Sesión
+                                Salir del sistema
                             </button>
                         </div>
                     </motion.div>

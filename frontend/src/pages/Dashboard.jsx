@@ -4,7 +4,7 @@ import {
   BarChart3, Users, HardHat, Calendar, 
   TrendingUp, ArrowUpRight, CheckCircle, Clock,
   DollarSign, Sparkles, RefreshCcw, Briefcase, 
-  LayoutDashboard, FileText
+  LayoutDashboard, FileText, ChevronRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -39,7 +39,7 @@ const Dashboard = () => {
         return (
             <DashboardLayout>
                 <div className="flex items-center justify-center min-h-[60vh]">
-                     <div className="animate-spin text-blue-600">
+                     <div className="animate-spin text-[#635bff]">
                         <RefreshCcw size={40} />
                      </div>
                 </div>
@@ -49,175 +49,184 @@ const Dashboard = () => {
 
     const cards = [
         { 
-            label: 'Facturación Mensual', 
+            label: 'Ingresos Mensuales', 
             value: `${stats?.totalRevenue?.toFixed(2) || 0}€`, 
             icon: DollarSign, 
-            color: 'text-blue-600', 
-            bg: 'bg-blue-50',
-            subtitle: 'Bruto acumulado este mes'
+            color: 'text-[#635bff]', 
+            bg: 'bg-indigo-50',
+            subtitle: 'Bruto acumulado'
         },
         { 
             label: 'Gastos Totales', 
             value: `${stats?.totalExpenses?.toFixed(2) || 0}€`, 
             icon: FileText, 
-            color: 'text-red-500', 
-            bg: 'bg-red-50',
-            subtitle: 'Costes operativos registrados'
+            color: 'text-rose-500', 
+            bg: 'bg-rose-50',
+            subtitle: 'Costes operativos'
         },
         { 
-            label: 'Beneficio Estimado', 
+            label: 'Beneficio Neto', 
             value: `${((stats?.totalRevenue || 0) - (stats?.totalExpenses || 0)).toFixed(2)}€`, 
             icon: TrendingUp, 
             color: 'text-emerald-600', 
             bg: 'bg-emerald-50',
-            subtitle: 'Neto antes de impuestos'
+            subtitle: 'Antes de impuestos'
         },
         { 
-            label: 'Rutas Finalizadas', 
+            label: 'Servicios', 
             value: stats?.completedAssignments || 0, 
             icon: CheckCircle, 
-            color: 'text-purple-600', 
-            bg: 'bg-purple-50',
+            color: 'text-amber-600', 
+            bg: 'bg-amber-50',
             subtitle: `De ${stats?.totalAssignments || 0} totales`
         }
     ];
 
     return (
         <DashboardLayout>
-            <div className="space-y-10 pb-10">
+            <div className="space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-4 uppercase">
-                            <LayoutDashboard className="text-blue-600" size={32} /> Resumen Ejecutivo
-                        </h1>
-                        <p className="text-slate-500 mt-2 font-medium italic">Monitoriza el rendimiento de {user.companyName} en tiempo real.</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Resumen Ejecutivo</h1>
+                        <p className="text-sm text-[#697386] mt-1">Control de rendimiento para {user.companyName}.</p>
                     </div>
-                    <div className="bg-white px-4 py-2 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-                        <Calendar className="text-blue-500" size={20} />
-                        <div className="flex items-center gap-2">
-                             <select 
-                                 value={month} 
-                                 onChange={(e) => setMonth(parseInt(e.target.value))}
-                                 className="outline-none font-bold text-slate-700 bg-transparent cursor-pointer uppercase text-sm"
-                             >
-                                 {['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'].map((m, i) => (
-                                     <option key={i} value={i}>{m}</option>
-                                 ))}
-                             </select>
-                             <select 
-                                 value={year} 
-                                 onChange={(e) => setYear(parseInt(e.target.value))}
-                                 className="outline-none font-bold text-slate-700 bg-transparent cursor-pointer text-sm"
-                             >
-                                 {[2024, 2025, 2026, 2027].map(y => (
-                                     <option key={y} value={y}>{y}</option>
-                                 ))}
-                             </select>
-                        </div>
+                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-[#e3e8ee] shadow-sm">
+                        <Calendar className="text-[#697386]" size={16} />
+                        <select 
+                            value={month} 
+                            onChange={(e) => setMonth(parseInt(e.target.value))}
+                            className="outline-none font-bold text-[#0a2540] bg-transparent cursor-pointer text-xs uppercase tracking-tight"
+                        >
+                            {['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'].map((m, i) => (
+                                <option key={i} value={i}>{m}</option>
+                            ))}
+                        </select>
+                        <select 
+                            value={year} 
+                            onChange={(e) => setYear(parseInt(e.target.value))}
+                            className="outline-none font-bold text-[#0a2540] bg-transparent cursor-pointer text-xs"
+                        >
+                            {[2024, 2025, 2026, 2027].map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {cards.map((card, idx) => (
                         <motion.div 
                             key={idx}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.1 }}
-                            className="bg-white p-8 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 relative overflow-hidden group"
+                            transition={{ delay: idx * 0.05 }}
+                            className="stripe-card p-6"
                         >
-                            <div className={`w-14 h-14 ${card.bg} ${card.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
-                                <card.icon size={28} />
+                            <div className="flex items-center justify-between mb-4">
+                                <div className={`w-10 h-10 ${card.bg} ${card.color} rounded-lg flex items-center justify-center`}>
+                                    <card.icon size={20} />
+                                </div>
+                                <span className="text-[10px] font-bold text-[#697386] uppercase tracking-wider">{card.subtitle}</span>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">{card.label}</p>
-                                <h3 className="text-3xl font-black text-slate-900">{card.value}</h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pt-2">{card.subtitle}</p>
+                                <p className="text-xs font-bold text-[#697386] uppercase tracking-wider">{card.label}</p>
+                                <h3 className="text-2xl font-bold text-[#0a2540]">{card.value}</h3>
                             </div>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Breakdown Section */}
-                <div className="grid md:grid-cols-12 gap-8">
+                <div className="grid lg:grid-cols-12 gap-8">
                     {/* Revenue Breakdown */}
-                    <div className="md:col-span-12 lg:col-span-7 bg-slate-900 rounded-[50px] p-10 text-white shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl"></div>
-                        <div className="relative z-10 space-y-8">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-2xl font-black flex items-center gap-3"><TrendingUp className="text-blue-400" /> Distribución de Ingresos</h2>
-                                <span className="bg-white/10 px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase">Mes Actual</span>
-                            </div>
+                    <div className="lg:col-span-8 stripe-card p-8 bg-white overflow-hidden relative">
+                        <div className="flex items-center justify-between mb-10">
+                            <h2 className="text-lg font-bold text-[#0a2540] flex items-center gap-2">
+                                <TrendingUp className="text-[#635bff]" size={20} />
+                                Distribución de Ingresos
+                            </h2>
+                            <div className="text-[10px] font-bold text-[#635bff] bg-indigo-50 px-2 py-1 rounded">ESTADÍSTICAS DEL MES</div>
+                        </div>
 
-                            <div className="grid grid-cols-2 gap-10">
-                                <div className="space-y-2">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Base de Servicios</p>
-                                    <h4 className="text-4xl font-black">{(stats?.baseRevenue || 0).toFixed(2)}€</h4>
-                                    <div className="w-full h-2 bg-white/5 rounded-full mt-4">
-                                        <div 
-                                            className="h-full bg-blue-400 rounded-full shadow-lg shadow-blue-500/50" 
-                                            style={{ width: `${(stats?.baseRevenue / (stats?.totalRevenue || 1)) * 100}%` }}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Servicios Extras</p>
-                                    <h4 className="text-4xl font-black text-blue-400">+{(stats?.extraRevenue || 0).toFixed(2)}€</h4>
-                                    <div className="w-full h-2 bg-white/5 rounded-full mt-4">
-                                        <div 
-                                            className="h-full bg-emerald-400 rounded-full shadow-lg shadow-emerald-500/50" 
-                                            style={{ width: `${(stats?.extraRevenue / (stats?.totalRevenue || 1)) * 100}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white/5 p-6 rounded-3xl border border-white/5 flex items-center gap-5">
-                                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400">
-                                    <Sparkles size={24} />
-                                </div>
+                        <div className="grid sm:grid-cols-2 gap-12">
+                            <div className="space-y-4">
                                 <div>
-                                    <p className="text-sm font-bold leading-tight">Los trabajos extra representan el <span className="text-blue-400 font-black">{((stats?.extraRevenue / (stats?.totalRevenue || 1)) * 100).toFixed(1)}%</span> de tus ingresos totales este mes.</p>
+                                    <p className="text-xs font-bold text-[#697386] uppercase tracking-wider mb-1">Ingresos Base</p>
+                                    <h4 className="text-3xl font-bold text-[#0a2540]">{(stats?.baseRevenue || 0).toFixed(2)}€</h4>
                                 </div>
+                                <div className="w-full h-1.5 bg-[#f6f9fc] rounded-full">
+                                    <div 
+                                        className="h-full bg-[#635bff] rounded-full" 
+                                        style={{ width: `${(stats?.baseRevenue / (stats?.totalRevenue || 1)) * 100}%` }}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-[#697386] font-medium">Contratos y servicios recurrentes activos.</p>
                             </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-xs font-bold text-[#697386] uppercase tracking-wider mb-1">Ingresos Extras</p>
+                                    <h4 className="text-3xl font-bold text-[#00d4ff]">{(stats?.extraRevenue || 0).toFixed(2)}€</h4>
+                                </div>
+                                <div className="w-full h-1.5 bg-[#f6f9fc] rounded-full">
+                                    <div 
+                                        className="h-full bg-[#00d4ff] rounded-full" 
+                                        style={{ width: `${(stats?.extraRevenue / (stats?.totalRevenue || 1)) * 100}%` }}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-[#697386] font-medium">Trabajos adicionales fuera de contrato.</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 bg-[#f6f9fc] border border-[#e3e8ee] p-4 rounded-xl flex items-center gap-4">
+                            <div className="w-10 h-10 bg-white rounded-lg border border-[#e3e8ee] flex items-center justify-center text-[#635bff] shadow-sm">
+                                <Sparkles size={18} />
+                            </div>
+                            <p className="text-xs text-[#425466] font-semibold leading-relaxed">
+                                Los servicios extra representan el <span className="text-[#0a2540] font-bold">{((stats?.extraRevenue / (stats?.totalRevenue || 1)) * 100).toFixed(1)}%</span> de la facturación. Considera promocionar estos servicios.
+                            </p>
                         </div>
                     </div>
 
-                    {/* Top Workers Leaderboard */}
-                    <div className="md:col-span-12 lg:col-span-5 bg-white rounded-[50px] p-10 border border-slate-100 shadow-xl flex flex-col justify-between">
-                        <div className="space-y-6">
-                             <h2 className="text-xl font-extrabold text-slate-800 flex items-center gap-3">
-                                 <Users className="text-blue-500" /> Rendimiento de Operarios
-                             </h2>
-                             
-                             <div className="space-y-4">
-                                 {stats?.topWorkers?.map((worker, i) => (
-                                     <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
-                                         <div className="flex items-center gap-3">
-                                             <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center text-xs font-black">
-                                                 #{i + 1}
-                                             </div>
-                                             <p className="font-bold text-slate-700 text-sm">{worker.name || 'Operario'}</p>
-                                         </div>
-                                         <div className="text-right">
-                                             <p className="text-xs font-black text-slate-900">{worker.count} servicios</p>
-                                             <p className="text-[9px] text-emerald-600 font-bold uppercase">+{worker.extra.toFixed(2)}€ extras</p>
-                                         </div>
-                                     </div>
-                                 ))}
-                                 {(!stats?.topWorkers || stats.topWorkers.length === 0) && (
-                                     <p className="text-center text-slate-400 text-xs italic py-10">Esperando datos de servicios completados...</p>
-                                 )}
-                             </div>
+                    {/* Top Workers */}
+                    <div className="lg:col-span-4 stripe-card p-8 bg-white">
+                        <h2 className="text-lg font-bold text-[#0a2540] flex items-center gap-2 mb-8">
+                            <Users className="text-[#635bff]" size={20} />
+                            Equipo de Campo
+                        </h2>
+
+                        <div className="space-y-4">
+                            {stats?.topWorkers?.map((worker, i) => (
+                                <div key={i} className="flex items-center justify-between p-3 border border-[#f6f9fc] bg-[#fcfdfe] rounded-xl group hover:bg-white hover:border-[#e3e8ee] transition-all cursor-default">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-7 h-7 bg-indigo-50 text-[#635bff] rounded-lg flex items-center justify-center text-[10px] font-bold">
+                                            #{i + 1}
+                                        </div>
+                                        <span className="text-xs font-bold text-[#0a2540]">{worker.name || 'Operario'}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[11px] font-bold text-[#0a2540]">{worker.count} serv.</p>
+                                        <p className="text-[9px] text-emerald-600 font-bold">+{worker.extra.toFixed(0)}€ extra</p>
+                                    </div>
+                                </div>
+                            ))}
+                            {(!stats?.topWorkers || stats.topWorkers.length === 0) && (
+                                <div className="text-center py-10">
+                                    <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                        <Clock size={20} />
+                                    </div>
+                                    <p className="text-[10px] text-[#697386] font-medium italic">Sin datos este mes</p>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="pt-8 border-t border-slate-50">
-                             <button className="w-full py-5 bg-slate-50 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-blue-600 hover:text-white transition-all shadow-sm">
-                                 Gestionar Equipo de Campo
-                             </button>
-                        </div>
+                        <button 
+                            onClick={() => window.location.href = '/app/workers'}
+                            className="w-full mt-8 flex items-center justify-center gap-2 py-3 rounded-lg border border-[#e3e8ee] text-[11px] font-bold text-[#697386] hover:bg-[#f6f9fc] hover:text-[#0a2540] transition-all uppercase tracking-wider"
+                        >
+                            Ver equipo completo
+                        </button>
                     </div>
                 </div>
             </div>
