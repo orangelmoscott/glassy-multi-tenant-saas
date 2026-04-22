@@ -3,42 +3,58 @@
 @tailwind utilities;
 
 :root {
-  --primary: #0ea5e9;
-  --secondary: #0c4a6e;
-  --bg-gradient: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  /* Stripe-inspired palette */
+  --stripe-purple: #635bff;
+  --stripe-purple-dark: #4f46e5;
+  --stripe-purple-light: #7c74ff;
+  --stripe-blue: #0073e6;
+  --stripe-cyan: #00d4ff;
+  --stripe-dark: #0a2540;
+  --stripe-mid: #425466;
+  --stripe-light: #f6f9fc;
+  --stripe-white: #ffffff;
+  --stripe-border: #e3e8ee;
+  --stripe-text: #1a1f36;
+  --stripe-muted: #697386;
+
+  --font-figtree: 'Figtree', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 @layer base {
   body {
-    @apply antialiased text-slate-900 bg-[#f0f9ff];
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    @apply antialiased text-slate-900 bg-white;
+    font-family: var(--font-figtree);
   }
 }
 
 @layer components {
-  .btn-glassy {
-    @apply px-6 py-2.5 rounded-full font-medium transition-all duration-300 active:scale-95 shadow-lg flex items-center gap-2;
+  .btn-stripe-primary {
+    @apply inline-flex items-center gap-2 bg-[#635bff] text-white font-bold text-sm px-6 py-3 rounded-lg transition-all duration-200 hover:bg-[#4f46e5] hover:-translate-y-0.5 hover:shadow-lg active:scale-95;
   }
   
-  .btn-primary {
-    @apply btn-glassy bg-gradient-to-r from-blue-600 to-cyan-500 text-white hover:shadow-blue-200/50 hover:-translate-y-0.5;
+  .btn-stripe-ghost {
+    @apply inline-flex items-center gap-2 bg-transparent text-[#425466] border border-[#e3e8ee] font-semibold text-sm px-4 py-2.5 rounded-lg transition-all duration-150 hover:bg-[#f6f9fc] hover:text-[#0a2540] hover:border-[#c0c8d8];
   }
-  
-  .glass-card {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl transition-all duration-500 hover:shadow-2xl;
+
+  .stripe-card {
+    @apply bg-white border border-[#e3e8ee] rounded-2xl transition-all duration-300 hover:border-[#c0c8d8] hover:shadow-2xl hover:shadow-slate-200/50 hover:-translate-y-1;
+  }
+
+  .text-gradient-stripe {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#635bff] to-[#00d4ff];
   }
 }
 
-/* Custom styles for animations */
-.glow-effect {
-  @apply relative overflow-hidden;
+/* Animations matching marketing */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.glow-effect::after {
-  content: '';
-  @apply absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 transition-all duration-1000;
+.animate-fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.glow-effect:hover::after {
-  @apply left-full;
-}
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
