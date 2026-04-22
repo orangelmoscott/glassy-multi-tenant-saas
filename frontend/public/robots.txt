@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /api/
+
+# Ensure AI bots can crawl for GEO (Generative Engine Optimization)
+User-agent: Googlebot
+Allow: /
+User-agent: Bingbot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+
+Sitemap: https://glassy.es/sitemap.xml

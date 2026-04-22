@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Principal Landing Page -->
+  <url>
+    <loc>https://glassy.es/</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- Página de registro -->
+  <url>
+    <loc>https://glassy.es/register</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Página de login -->
+  <url>
+    <loc>https://glassy.es/login</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- SEO Programático: Países Europeos -->
+  <url><loc>https://glassy.es/software-empresas-limpieza-inglaterra</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-italia</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-francia</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-portugal</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-alemania</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-holanda</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-suiza</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- SEO Programático: Principales Provincias de España -->
+  <url><loc>https://glassy.es/software-empresas-limpieza-madrid</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-barcelona</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-valencia</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-sevilla</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-zaragoza</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-malaga</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-murcia</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-palma-de-mallorca</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-las-palmas</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-bilbao</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-alicante</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-cordoba</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-valladolid</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-vigo</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://glassy.es/software-empresas-limpieza-gijon</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+</urlset>

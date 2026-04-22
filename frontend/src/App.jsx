@@ -4,6 +4,7 @@ import axios from 'axios';
 
 // Pages
 import LandingPage from './pages/LandingPage';
+import CityLandingTemplate from './pages/CityLandingTemplate';
 import RegisterCompany from './pages/RegisterCompany';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -118,6 +119,7 @@ function App() {
             <Routes>
                 {/* Rutas Públicas */}
                 <Route path="/" element={<LandingPage />} />
+                <Route path="/software-empresas-limpieza-:ciudad" element={<CityLandingTemplate />} />
                 <Route path="/register" element={<RegisterCompany />} />
                 <Route path="/login" element={<Login />} />
                 

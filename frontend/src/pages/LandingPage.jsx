@@ -14,7 +14,7 @@ const LandingPage = () => {
       <nav className="fixed top-0 w-full z-50 bg-white/30 backdrop-blur-lg border-b border-white/20">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/favicon.png" alt="Glassy Icon" className="h-10 w-10 object-contain" />
+            <img src="/favicon.png" alt="Glassy - Software de Gestión para Empresas de Limpieza de Cristales" className="h-10 w-10 object-contain" />
             <span className="text-2xl font-bold tracking-tight text-slate-800">Glassy</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-slate-600 font-medium">
@@ -209,7 +209,7 @@ const LandingPage = () => {
       <footer className="bg-slate-900 text-white py-20">
         <div className="container mx-auto px-6 border-t border-slate-800 pt-10 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="flex items-center gap-3">
-                <img src="/favicon.png" alt="Glassy Icon" className="h-8 w-8 object-contain grayscale brightness-200" />
+                <img src="/favicon.png" alt="Logo de Glassy - Software de Limpieza" className="h-8 w-8 object-contain grayscale brightness-200" />
                 <span className="text-xl font-bold tracking-tight">Glassy</span>
             </div>
             <div className="text-slate-500 text-sm">
