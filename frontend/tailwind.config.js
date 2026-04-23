@@ -7,6 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        stripe: {
+          purple: '#635bff',
+          dark: '#0a2540',
+          mid: '#425466',
+          light: '#f6f9fc',
+          muted: '#697386',
+          border: '#e3e8ee'
+        },
         glassy: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -20,8 +28,12 @@ export default {
           900: '#0c4a6e',
         }
       },
-      backdropBlur: {
-        xs: '2px',
+      fontFamily: {
+        sans: ['Figtree', 'Inter', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        'stripe': '0 50px 100px -20px rgba(50, 50, 93, 0.25), 0 30px 60px -30px rgba(0, 0, 0, 0.3)',
+        'stripe-sm': '0 2px 5px -1px rgba(50, 50, 93, 0.25), 0 1px 3px -1px rgba(0, 0, 0, 0.3)',
       }
     },
   },
