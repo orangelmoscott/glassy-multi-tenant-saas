@@ -4,7 +4,8 @@ import {
   Calendar, CheckCircle, CheckCircle2, Clock, MapPin, 
   MoreHorizontal, Plus, Search, User, FileText, 
   Trash2, Edit2, Play, Download, ChevronRight, X, Phone, Send,
-  RefreshCcw, Info, AlertCircle, PenTool, Save, Filter, History, Map
+  RefreshCcw, Info, AlertCircle, PenTool, Save, Filter, History, Map,
+  Sparkles, Layers, ListChecks, Navigation
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../components/DashboardLayout';
@@ -297,26 +298,30 @@ const Assignments = () => {
 
     return (
         <DashboardLayout>
-            <div className="space-y-8">
-                {/* Header Section */}
+            <div className="space-y-8 pb-12">
+                {/* ─── Header Section ─── */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-                    <div>
-                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Rutas y Servicios</h1>
-                        <p className="text-sm text-[#697386] mt-1">Planificación logística y seguimiento de operarios.</p>
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-[#635bff]">
+                            <Navigation size={16} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Operaciones</span>
+                        </div>
+                        <h1 className="text-4xl font-bold text-[#0a2540] tracking-tight">Rutas y Servicios</h1>
+                        <p className="text-sm text-[#697386] font-medium">Planificación logística y seguimiento en tiempo real.</p>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                         <button 
                             onClick={() => setShowRouteModal(true)}
-                            className="bg-white border border-[#e3e8ee] text-[#0a2540] px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#f6f9fc] transition-all shadow-sm"
+                            className="bg-white border border-[#e3e8ee] text-[#0a2540] px-5 py-3 rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-[#f6f9fc] hover:border-[#635bff]/30 transition-all shadow-sm uppercase tracking-wider"
                         >
-                            <Map size={18} /> Asignar Ruta Completa
+                            <Layers size={16} className="text-[#635bff]" /> Asignar Ruta Completa
                         </button>
                         <button 
                             onClick={() => setReplicateModal({ isOpen: true })}
-                            className="bg-white border border-[#e3e8ee] text-[#0a2540] px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#f6f9fc] transition-all shadow-sm"
+                            className="bg-white border border-[#e3e8ee] text-[#0a2540] px-5 py-3 rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-[#f6f9fc] hover:border-[#635bff]/30 transition-all shadow-sm uppercase tracking-wider"
                         >
-                            <RefreshCcw size={18} /> Replicar Mes
+                            <RefreshCcw size={16} className="text-[#635bff]" /> Replicar Mes
                         </button>
                         <button 
                             onClick={() => {
@@ -324,30 +329,30 @@ const Assignments = () => {
                                 setFormData({ clientId: '', workerId: '', date: '', price: 0, notes: '', extraServices: [] });
                                 setShowAddModal(true);
                             }}
-                            className="bg-[#635bff] text-white px-5 py-2.5 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-[#4f46e5] transition-all shadow-lg shadow-indigo-100"
+                            className="bg-[#635bff] text-white px-5 py-3 rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-[#0a2540] transition-all shadow-lg shadow-indigo-100 uppercase tracking-widest"
                         >
                             <Plus size={18} /> Nuevo Servicio
                         </button>
                     </div>
                 </div>
 
-                {/* Filters Row */}
+                {/* ─── Control Bar ─── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="stripe-card p-4 flex items-center gap-4">
-                        <div className="w-10 h-10 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center">
-                            <History size={20} />
+                    <div className="stripe-card p-4 flex items-center gap-4 bg-white">
+                        <div className="w-12 h-12 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center border border-indigo-100">
+                            <ListChecks size={22} />
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-wider">Total Rutas</p>
-                            <p className="text-xl font-bold text-[#0a2540]">{filteredList.length}</p>
+                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-widest">Total Rutas</p>
+                            <p className="text-2xl font-bold text-[#0a2540] tracking-tighter">{filteredList.length}</p>
                         </div>
                     </div>
 
-                    <div className="stripe-card p-4 flex items-center gap-3">
+                    <div className="stripe-card p-4 flex items-center gap-3 bg-white">
                         <Calendar size={18} className="text-[#635bff] ml-1" />
                         <div className="flex-1 flex gap-2">
                             <select 
-                                className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-sm w-full cursor-pointer"
+                                className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-xs uppercase cursor-pointer"
                                 value={filterMonth}
                                 onChange={(e) => setFilterMonth(parseInt(e.target.value))}
                             >
@@ -355,8 +360,9 @@ const Assignments = () => {
                                     <option key={i+1} value={i+1}>{new Date(2024, i).toLocaleString('es-ES', {month: 'long'})}</option>
                                 ))}
                             </select>
+                            <div className="w-px h-4 bg-[#e3e8ee]"></div>
                             <select 
-                                className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-sm cursor-pointer"
+                                className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-xs cursor-pointer"
                                 value={filterYear}
                                 onChange={(e) => setFilterYear(parseInt(e.target.value))}
                             >
@@ -366,87 +372,123 @@ const Assignments = () => {
                         </div>
                     </div>
 
-                    <div className="stripe-card p-4 md:col-span-1 lg:col-span-2 flex items-center gap-3">
+                    <div className="stripe-card p-4 md:col-span-1 lg:col-span-2 flex items-center gap-4 bg-white">
                         <User size={18} className="text-[#635bff] ml-1" />
                         <select 
-                            className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-sm w-full cursor-pointer"
+                            className="bg-transparent border-none outline-none font-bold text-[#0a2540] text-xs uppercase tracking-widest w-full cursor-pointer"
                             value={filterWorkerId}
                             onChange={(e) => setFilterWorkerId(e.target.value)}
                         >
-                            <option value="">Todos los cristaleros</option>
+                            <option value="">Todos los operarios</option>
                             {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
                         </select>
                     </div>
                 </div>
 
-                {/* Main Table */}
-                <div className="stripe-card overflow-hidden">
+                {/* ─── Main Table ─── */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="stripe-card overflow-hidden bg-white"
+                >
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-[#fcfdfe] border-b border-[#e3e8ee]">
-                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Cliente</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Operario / Progreso</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Fecha</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider">Estado</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider text-right">Importe</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-[#697386] uppercase tracking-wider text-right">Acciones</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-[#697386] uppercase tracking-widest">Cliente</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-[#697386] uppercase tracking-widest">Operario & Progreso</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-[#697386] uppercase tracking-widest">Planificación</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-[#697386] uppercase tracking-widest">Estado</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-[#697386] uppercase tracking-widest text-right">Importe</th>
+                                    <th className="px-8 py-5 text-[10px] font-bold text-[#697386] uppercase tracking-widest text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#f6f9fc]">
                                 {loading ? (
-                                    [1,2,3,4,5].map(i => <tr key={i} className="animate-pulse"><td colSpan="6" className="px-6 py-4"><div className="h-10 bg-[#f6f9fc] rounded-lg"></div></td></tr>)
+                                    [1,2,3,4,5].map(i => <tr key={i} className="animate-pulse"><td colSpan="6" className="px-8 py-6"><div className="h-12 bg-[#f6f9fc] rounded-xl"></div></td></tr>)
                                 ) : filteredList.length === 0 ? (
-                                    <tr><td colSpan="6" className="px-6 py-20 text-center opacity-30"><Calendar size={48} className="mx-auto mb-4" /><p className="font-bold">No hay rutas programadas.</p></td></tr>
+                                    <tr>
+                                        <td colSpan="6" className="px-8 py-32 text-center">
+                                            <div className="flex flex-col items-center opacity-20">
+                                                <Calendar size={64} className="mb-6 text-[#635bff]" />
+                                                <p className="text-lg font-bold text-[#0a2540]">No hay rutas programadas</p>
+                                                <p className="text-sm font-medium">Empieza asignando servicios a tus operarios.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 ) : (
-                                    filteredList.map((as) => (
-                                        <tr key={as._id} className="hover:bg-[#fcfdfe] transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-[#635bff] group-hover:scale-110 transition-transform">
-                                                        <MapPin size={18} />
+                                    filteredList.map((as, idx) => (
+                                        <motion.tr 
+                                            key={as._id} 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: idx * 0.03 }}
+                                            className="hover:bg-[#fcfdfe] transition-colors group border-transparent border-l-4 hover:border-l-[#635bff]"
+                                        >
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-[#635bff] group-hover:scale-110 transition-transform shadow-sm border border-indigo-100">
+                                                        <MapPin size={20} />
                                                     </div>
-                                                    <div className="max-w-[200px]">
-                                                        <p className="font-bold text-[#0a2540] truncate">{as.clientId?.companyName || 'Cliente Desc.'}</p>
-                                                        <p className="text-[10px] text-[#697386] truncate">{as.clientId?.address}</p>
+                                                    <div className="max-w-[250px]">
+                                                        <p className="font-bold text-[#0a2540] text-sm truncate">{as.clientId?.companyName || 'Cliente Desc.'}</p>
+                                                        <p className="text-[10px] text-[#697386] font-medium truncate mt-0.5">{as.clientId?.address}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="space-y-1.5">
-                                                    <p className="text-xs font-bold text-[#0a2540] flex items-center gap-1.5"><User size={12} className="text-[#635bff]" /> {as.workerId?.fullName || 'Sin asignar'}</p>
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="flex-1 h-1 bg-[#f6f9fc] rounded-full overflow-hidden border border-[#e3e8ee]">
-                                                            <div className="h-full bg-[#635bff] transition-all" style={{ width: `${Math.min(((as.visitsDone || 0) / (as.expectedVisits || 1)) * 100, 100)}%` }}></div>
+                                            <td className="px-8 py-6">
+                                                <div className="space-y-2">
+                                                    <p className="text-xs font-bold text-[#0a2540] flex items-center gap-2">
+                                                        <User size={14} className="text-[#635bff]" /> 
+                                                        {as.workerId?.fullName || 'Sin asignar'}
+                                                    </p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex-1 h-1.5 bg-[#f6f9fc] rounded-full overflow-hidden border border-[#e3e8ee] relative">
+                                                            <motion.div 
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${Math.min(((as.visitsDone || 0) / (as.expectedVisits || 1)) * 100, 100)}%` }}
+                                                                className="h-full bg-gradient-to-r from-[#635bff] to-[#4f46e5] rounded-full" 
+                                                            />
                                                         </div>
                                                         <button 
                                                             onClick={() => setSelectedAssignmentForLogs(as)}
-                                                            className="text-[10px] font-bold text-[#635bff] bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 flex items-center gap-1 hover:bg-[#635bff] hover:text-white transition-all"
+                                                            className="text-[9px] font-bold text-[#635bff] bg-white px-2 py-1 rounded-lg border border-indigo-100 flex items-center gap-1.5 hover:bg-[#635bff] hover:text-white transition-all shadow-sm"
                                                         >
                                                             {as.visitsDone || 0}/{as.expectedVisits || 1} <Info size={10} />
                                                         </button>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-xs font-bold text-[#0a2540]">{new Date(as.date).toLocaleDateString()}</p>
-                                                <p className="text-[10px] text-[#697386] font-medium flex items-center gap-1 mt-0.5"><Clock size={10} /> {as.status === 'completado' ? 'Finalizado' : 'Pendiente'}</p>
+                                            <td className="px-8 py-6">
+                                                <p className="text-xs font-bold text-[#0a2540] tracking-tight">{new Date(as.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                                                <div className="flex items-center gap-1.5 mt-1">
+                                                    {as.status === 'completado' ? (
+                                                        <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-tighter bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Finalizado</span>
+                                                    ) : (
+                                                        <span className="text-[9px] font-bold text-amber-600 uppercase tracking-tighter bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100 italic">Programado</span>
+                                                    )}
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(as.status)}`}>
+                                            <td className="px-8 py-6">
+                                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm ${getStatusColor(as.status)}`}>
                                                     {formatStatus(as.status)}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <p className="text-sm font-bold text-[#0a2540]">{(as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)).toFixed(2)}€</p>
-                                                {as.extraServices?.length > 0 && <span className="text-[8px] bg-indigo-50 text-[#635bff] px-1.5 py-0.5 rounded font-bold uppercase tracking-tighter border border-indigo-100">+ EXTRAS</span>}
+                                            <td className="px-8 py-6 text-right">
+                                                <p className="text-base font-bold text-[#0a2540] tracking-tighter">{(as.price + (as.extraServices ? as.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0)).toFixed(2)}€</p>
+                                                {as.extraServices?.length > 0 && (
+                                                    <div className="flex items-center justify-end gap-1 mt-1">
+                                                        <Sparkles size={10} className="text-[#635bff]" />
+                                                        <span className="text-[8px] font-bold text-[#635bff] uppercase tracking-widest">Incluye Extras</span>
+                                                    </div>
+                                                )}
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
+                                            <td className="px-8 py-6 text-right">
+                                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     {as.status === 'completado' && (
                                                         <>
-                                                            <button onClick={() => handleDownloadPDF(as._id)} className="p-2 text-[#697386] hover:text-[#635bff] hover:bg-[#f6f9fc] rounded-lg transition-all" title="PDF"><Download size={16}/></button>
-                                                            <button onClick={() => setEmailModal({ isOpen: true, assignmentId: as._id })} className="p-2 text-[#697386] hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Email"><Send size={16}/></button>
+                                                            <button onClick={() => handleDownloadPDF(as._id)} className="p-2.5 text-[#697386] hover:text-[#635bff] hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-[#e3e8ee]" title="PDF"><Download size={18}/></button>
+                                                            <button onClick={() => setEmailModal({ isOpen: true, assignmentId: as._id })} className="p-2.5 text-[#697386] hover:text-emerald-600 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-[#e3e8ee]" title="Email"><Send size={18}/></button>
                                                         </>
                                                     )}
                                                     <button 
@@ -462,21 +504,21 @@ const Assignments = () => {
                                                             });
                                                             setShowAddModal(true);
                                                         }}
-                                                        className="p-2 text-[#697386] hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                                    ><Edit2 size={16}/></button>
-                                                    <button onClick={() => setDeleteModal({ isOpen: true, assignmentId: as._id })} className="p-2 text-[#697386] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"><Trash2 size={16}/></button>
+                                                        className="p-2.5 text-[#697386] hover:text-indigo-600 hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-[#e3e8ee]"
+                                                    ><Edit2 size={18}/></button>
+                                                    <button onClick={() => setDeleteModal({ isOpen: true, assignmentId: as._id })} className="p-2.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-rose-100"><Trash2 size={18}/></button>
                                                 </div>
                                             </td>
-                                        </tr>
+                                        </motion.tr>
                                     ))
                                 )}
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </motion.div>
             </div>
 
-            {/* Modals are unchanged in logic, but their styling in ConfirmModal/AlertModal/etc is already Stripe-themed */}
+            {/* Modals styles improved in separate components or generic modal system */}
             <ConfirmModal 
                 isOpen={deleteModal.isOpen}
                 onClose={() => setDeleteModal({ isOpen: false, assignmentId: null })}
@@ -510,132 +552,103 @@ const Assignments = () => {
             {/* Form Modal (Add/Edit) */}
             <AnimatePresence>
                 {showAddModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-[#0a2540]/40 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-screen md:max-h-[90vh]">
-                            <div className="p-6 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
-                                <h2 className="text-xl font-bold text-[#0a2540]">{editingId ? 'Editar Asignación' : 'Programar Servicio'}</h2>
-                                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-[#f6f9fc] rounded-xl transition-all text-[#697386]"><X size={20}/></button>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6 bg-[#0a2540]/40 backdrop-blur-md">
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+                            animate={{ scale: 1, opacity: 1, y: 0 }} 
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="bg-white rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]"
+                        >
+                            <div className="p-8 border-b border-[#e3e8ee] flex items-center justify-between bg-white relative">
+                                <div className="space-y-1">
+                                    <h2 className="text-2xl font-bold text-[#0a2540] tracking-tight">{editingId ? 'Editar Asignación' : 'Nuevo Servicio'}</h2>
+                                    <p className="text-xs text-[#697386] font-medium">Configura los detalles del trabajo logístico.</p>
+                                </div>
+                                <button onClick={() => setShowAddModal(false)} className="p-3 hover:bg-[#f6f9fc] rounded-2xl transition-all text-[#697386] border border-transparent hover:border-[#e3e8ee]"><X size={24}/></button>
                             </div>
-                            <div className="overflow-y-auto p-8 space-y-6">
-                                <form onSubmit={handleCreateOrUpdate} className="space-y-5">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Cliente</label>
-                                            <select 
-                                                required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540] appearance-none"
-                                                value={formData.clientId}
-                                                onChange={(e) => {
-                                                    const cId = e.target.value;
-                                                    const c = clients.find(cl => cl._id === cId);
-                                                    setFormData({ ...formData, clientId: cId, price: c ? c.basePrice : 0 });
-                                                }}
-                                            >
-                                                <option value="">Seleccionar...</option>
-                                                {clients.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
-                                            </select>
+                            
+                            <div className="overflow-y-auto p-10 space-y-8">
+                                <form onSubmit={handleCreateOrUpdate} className="space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Cliente Receptor</label>
+                                            <div className="relative">
+                                                <select 
+                                                    required className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] focus:bg-white font-bold text-[#0a2540] appearance-none transition-all"
+                                                    value={formData.clientId}
+                                                    onChange={(e) => {
+                                                        const cId = e.target.value;
+                                                        const c = clients.find(cl => cl._id === cId);
+                                                        setFormData({ ...formData, clientId: cId, price: c ? c.basePrice : 0 });
+                                                    }}
+                                                >
+                                                    <option value="">Seleccionar...</option>
+                                                    {clients.map(c => <option key={c._id} value={c._id}>{c.companyName}</option>)}
+                                                </select>
+                                                <div className="absolute right-5 top-5 pointer-events-none text-[#697386]">
+                                                    <ChevronRight size={18} className="rotate-90" />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Operario</label>
-                                            <select 
-                                                required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540] appearance-none"
-                                                value={formData.workerId}
-                                                onChange={(e) => setFormData({ ...formData, workerId: e.target.value })}
-                                            >
-                                                <option value="">Seleccionar...</option>
-                                                {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
-                                            </select>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Operario Asignado</label>
+                                            <div className="relative">
+                                                <select 
+                                                    required className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] focus:bg-white font-bold text-[#0a2540] appearance-none transition-all"
+                                                    value={formData.workerId}
+                                                    onChange={(e) => setFormData({ ...formData, workerId: e.target.value })}
+                                                >
+                                                    <option value="">Seleccionar...</option>
+                                                    {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
+                                                </select>
+                                                <div className="absolute right-5 top-5 pointer-events-none text-[#697386]">
+                                                    <ChevronRight size={18} className="rotate-90" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Fecha</label>
-                                        <input type="date" required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Fecha Programada</label>
+                                            <input 
+                                                type="date" required 
+                                                className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] focus:bg-white font-bold text-[#0a2540] transition-all" 
+                                                value={formData.date} 
+                                                onChange={(e) => setFormData({ ...formData, date: e.target.value })} 
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Importe Base (€)</label>
+                                            <input 
+                                                type="number" step="0.01" required 
+                                                className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] focus:bg-white font-bold text-[#0a2540] transition-all" 
+                                                value={formData.price} 
+                                                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })} 
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Notas / Instrucciones</label>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Notas e Instrucciones</label>
                                         <textarea 
-                                            className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] text-sm font-medium min-h-[80px]"
+                                            className="w-full px-6 py-5 bg-[#f6f9fc] border border-[#e3e8ee] rounded-3xl outline-none focus:border-[#635bff] focus:bg-white text-sm font-medium min-h-[120px] transition-all resize-none"
+                                            placeholder="Detalles específicos para el operario..."
                                             value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                         />
                                     </div>
 
-                                    {/* Price Card */}
-                                    <div className="p-6 bg-[#0a2540] rounded-2xl text-center space-y-1 shadow-xl shadow-indigo-100">
-                                        <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">Importe Total</p>
-                                        <p className="text-4xl font-bold text-white">{(parseFloat(formData.price || 0) + formData.extraServices.reduce((a, b) => a + b.price, 0)).toFixed(2)}€</p>
+                                    <div className="p-8 bg-gradient-to-br from-[#0a2540] to-[#1a3b5a] rounded-3xl text-center space-y-2 shadow-2xl relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
+                                            <Sparkles size={100} className="text-white" />
+                                        </div>
+                                        <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest relative z-10">Total Estimado (Sin IVA)</p>
+                                        <p className="text-5xl font-bold text-white tracking-tighter relative z-10">{(parseFloat(formData.price || 0) + formData.extraServices.reduce((a, b) => a + b.price, 0)).toFixed(2)}€</p>
                                     </div>
 
-                                    <button className="w-full bg-[#635bff] text-white py-4 rounded-2xl font-bold hover:bg-[#4f46e5] shadow-lg shadow-indigo-100 transition-all active:scale-95">
-                                        {editingId ? 'Actualizar Asignación' : 'Confirmar Asignación'}
-                                    </button>
-                                </form>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Bulk Route Modal */}
-            <AnimatePresence>
-                {showRouteModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-4 bg-[#0a2540]/40 backdrop-blur-sm">
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-screen md:max-h-[90vh]">
-                            <div className="p-6 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
-                                <h2 className="text-xl font-bold text-[#0a2540]">Asignar Ruta Completa</h2>
-                                <button onClick={() => setShowRouteModal(false)} className="p-2 hover:bg-[#f6f9fc] rounded-xl transition-all text-[#697386]"><X size={20}/></button>
-                            </div>
-                            <div className="overflow-y-auto p-8 space-y-6">
-                                <form onSubmit={handleCreateRoute} className="space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Cristalero</label>
-                                            <select 
-                                                required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]"
-                                                value={routeData.workerId}
-                                                onChange={(e) => setRouteData({ ...routeData, workerId: e.target.value })}
-                                            >
-                                                <option value="">Seleccionar...</option>
-                                                {workers.map(w => <option key={w._id} value={w._id}>{w.fullName}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Fecha de Inicio</label>
-                                            <input type="date" required className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]" value={routeData.date} onChange={(e) => setRouteData({ ...routeData, date: e.target.value })} />
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Seleccionar Clientes</label>
-                                        <div className="relative mb-3">
-                                            <Search className="absolute left-3 top-2.5 text-[#aab7c4]" size={16} />
-                                            <input 
-                                                type="text" placeholder="Buscar clientes..." 
-                                                onChange={(e) => setClientSearchQuery(e.target.value)}
-                                                className="w-full pl-9 pr-4 py-2 bg-[#f6f9fc] border border-[#e3e8ee] rounded-lg text-sm"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto p-2 bg-[#fcfdfe] border border-[#e3e8ee] rounded-xl">
-                                            {clients
-                                                .filter(c => c.companyName.toLowerCase().includes(clientSearchQuery.toLowerCase()))
-                                                .map(c => (
-                                                    <label key={c._id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${routeData.clientIds.includes(c._id) ? 'bg-indigo-50 border-[#635bff] text-[#635bff]' : 'bg-white border-[#e3e8ee] text-[#0a2540] hover:bg-[#f6f9fc]'}`}>
-                                                        <input 
-                                                            type="checkbox" className="hidden"
-                                                            checked={routeData.clientIds.includes(c._id)}
-                                                            onChange={(e) => {
-                                                                const ids = e.target.checked 
-                                                                    ? [...routeData.clientIds, c._id]
-                                                                    : routeData.clientIds.filter(id => id !== c._id);
-                                                                setRouteData({ ...routeData, clientIds: ids });
-                                                            }}
-                                                        />
-                                                        <span className="text-xs font-bold truncate">{c.companyName}</span>
-                                                    </label>
-                                                ))}
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full bg-[#635bff] text-white py-4 rounded-2xl font-bold hover:bg-[#4f46e5] shadow-lg shadow-indigo-100 transition-all active:scale-95">
-                                        Asignar Ruta ({routeData.clientIds.length} clientes)
+                                    <button className="w-full bg-[#635bff] text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-[#0a2540] shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] flex items-center justify-center gap-3">
+                                        {editingId ? 'Actualizar Registro' : 'Confirmar y Guardar'}
+                                        <ChevronRight size={18} />
                                     </button>
                                 </form>
                             </div>

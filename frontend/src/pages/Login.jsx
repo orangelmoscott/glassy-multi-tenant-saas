@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building, AlertTriangle, User, Zap } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
@@ -103,71 +103,79 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#f6f9fc] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-sans">
-            {/* Background Decorations */}
+        <div className="min-h-screen bg-[#f6f9fc] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-['Figtree'] selection:bg-indigo-100 selection:text-indigo-900">
+            {/* ─── Background Decorations ─── */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-                <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-200/30 rounded-full blur-[120px]"></div>
-                <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-blue-100/40 rounded-full blur-[120px]"></div>
+                <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse"></div>
+                <div className="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-blue-400/10 rounded-full blur-[120px]"></div>
             </div>
 
             <motion.div 
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-[440px] relative z-10"
+                className="w-full max-w-[480px] relative z-10"
             >
-                <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-[0_15px_35px_rgba(50,50,93,0.1),0_5px_15px_rgba(0,0,0,0.07)] border border-[#e3e8ee]">
-                    <div className="flex flex-col items-center mb-10">
-                        <Link to="/" className="mb-6">
-                            <div className="w-12 h-12 bg-[#635bff] rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 transform transition hover:scale-105 active:scale-95">
-                                <span className="text-white font-bold text-2xl tracking-tighter">G</span>
+                <div className="bg-white p-10 sm:p-14 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-[#e3e8ee]">
+                    <div className="flex flex-col items-center mb-12">
+                        <Link to="/" className="mb-8">
+                            <div className="w-14 h-14 bg-[#635bff] rounded-[20px] flex items-center justify-center shadow-xl shadow-indigo-500/20 transform transition-all hover:scale-110 active:scale-95 group">
+                                <span className="text-white font-bold text-3xl tracking-tighter group-hover:rotate-12 transition-transform">G</span>
                             </div>
                         </Link>
-                        <h1 className="text-2xl font-bold text-[#0a2540] tracking-tight">Accede a tu cuenta</h1>
-                        <p className="text-[#697386] text-sm mt-2 font-medium">Gestión profesional de limpieza de cristales</p>
+                        <h1 className="text-3xl font-bold text-[#0a2540] tracking-tight">Bienvenido de nuevo</h1>
+                        <p className="text-[#697386] text-sm mt-3 font-medium text-center">Accede al panel de control de tu empresa</p>
                     </div>
 
-                    {sessionExpired && (
-                        <div className="mb-6 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-center gap-3">
-                            <AlertTriangle size={18} className="text-amber-500" />
-                            <p className="text-xs text-amber-800 font-semibold leading-tight">Sesión expirada. Por favor, identifícate de nuevo.</p>
-                        </div>
-                    )}
+                    <AnimatePresence mode='wait'>
+                        {sessionExpired && (
+                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mb-8 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-center gap-3">
+                                <AlertTriangle size={18} className="text-amber-500 shrink-0" />
+                                <p className="text-xs text-amber-800 font-bold leading-tight uppercase tracking-wider">Tu sesión ha expirado</p>
+                            </motion.div>
+                        )}
 
-                    {error && (
-                        <div className="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3">
-                            <AlertTriangle size={18} className="text-rose-500" />
-                            <p className="text-xs text-rose-800 font-semibold">{error}</p>
-                        </div>
-                    )}
+                        {error && (
+                            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="mb-8 p-4 bg-rose-50 border border-rose-100 rounded-2xl flex items-center gap-4">
+                                <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600 shrink-0">
+                                    <AlertTriangle size={20} />
+                                </div>
+                                <p className="text-xs text-rose-800 font-bold">{error}</p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider ml-1">Usuario</label>
-                            <div className="relative">
-                                <Mail className="absolute left-4 top-3.5 text-[#aab7c4]" size={18} />
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-[0.2em] ml-1">Identificador de Usuario</label>
+                            <div className="relative group">
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#aab7c4] group-focus-within:text-[#635bff] transition-colors">
+                                    <User size={20} />
+                                </div>
                                 <input 
-                                    type="text" name="username" placeholder="Tu usuario" required
-                                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] focus:shadow-[0_0_0_1px_#635bff] transition-all font-semibold text-[#0a2540]"
+                                    type="text" name="username" placeholder="usuario_admin" required
+                                    className="w-full pl-14 pr-6 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-[20px] outline-none focus:border-[#635bff] focus:bg-white transition-all font-bold text-[#0a2540] placeholder:text-[#aab7c4] placeholder:font-medium"
                                     onChange={handleChange}
                                 />
                             </div>
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                             <div className="flex justify-between items-center px-1">
-                                <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Contraseña</label>
+                                <label className="text-[10px] font-bold text-[#697386] uppercase tracking-[0.2em]">Contraseña Secreta</label>
                                 <button 
                                     type="button" onClick={() => setShowForgotModal(true)}
-                                    className="text-xs font-bold text-[#635bff] hover:text-[#0a2540] transition-colors"
+                                    className="text-[10px] font-bold text-[#635bff] hover:text-[#0a2540] transition-colors uppercase tracking-widest"
                                 >
                                     ¿Olvidaste la clave?
                                 </button>
                             </div>
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-3.5 text-[#aab7c4]" size={18} />
+                            <div className="relative group">
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#aab7c4] group-focus-within:text-[#635bff] transition-colors">
+                                    <Lock size={20} />
+                                </div>
                                 <input 
                                     type="password" name="password" placeholder="••••••••" required
-                                    className="w-full pl-11 pr-4 py-3 bg-white border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] focus:shadow-[0_0_0_1px_#635bff] transition-all"
+                                    className="w-full pl-14 pr-6 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-[20px] outline-none focus:border-[#635bff] focus:bg-white transition-all font-bold text-[#0a2540]"
                                     onChange={handleChange}
                                 />
                             </div>
@@ -175,23 +183,32 @@ const Login = () => {
 
                         <button 
                             disabled={loading}
-                            className="w-full bg-[#635bff] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#0a2540] transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                            className="w-full bg-[#635bff] text-white py-5 rounded-[22px] font-bold text-sm flex items-center justify-center gap-3 hover:bg-[#0a2540] transition-all shadow-2xl shadow-indigo-200 disabled:opacity-50 active:scale-[0.98] mt-4"
                         >
-                            {loading ? 'Iniciando sesión...' : 'Entrar al Panel'}
-                            {!loading && <ArrowRight size={18} />}
+                            {loading ? (
+                                <div className="flex items-center gap-2">
+                                    <RefreshCcw size={18} className="animate-spin" />
+                                    <span>Verificando...</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <span>Entrar al Dashboard</span>
+                                    <ArrowRight size={20} />
+                                </>
+                            )}
                         </button>
                     </form>
 
-                    <div className="mt-8 pt-8 border-t border-[#f6f9fc] flex flex-col items-center gap-4">
+                    <div className="mt-12 pt-8 border-t border-[#f6f9fc] flex flex-col items-center gap-4">
                         <p className="text-sm text-[#697386] font-medium">
-                            ¿Aún no tienes cuenta? <Link to="/register" className="text-[#635bff] font-bold hover:underline">Regístrate</Link>
+                            ¿Aún no eres cliente? <Link to="/register" className="text-[#635bff] font-bold hover:underline">Crea tu empresa ahora</Link>
                         </p>
                     </div>
                 </div>
 
-                <div className="mt-8 text-center">
-                    <Link to="/" className="text-sm text-[#697386] font-bold hover:text-[#0a2540] transition-colors inline-flex items-center gap-2">
-                        ← Volver a la página principal
+                <div className="mt-10 text-center">
+                    <Link to="/" className="text-xs text-[#aab7c4] font-bold hover:text-[#635bff] transition-colors inline-flex items-center gap-2 uppercase tracking-widest">
+                        <ChevronLeft size={16} /> Volver a la página principal
                     </Link>
                 </div>
             </motion.div>
@@ -199,51 +216,52 @@ const Login = () => {
             {/* Recovery Modal */}
             <AnimatePresence>
                 {showForgotModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a2540]/40 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a2540]/40 backdrop-blur-md">
                         <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 relative"
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-white w-full max-w-md rounded-[32px] shadow-2xl p-10 relative"
                         >
                             <button 
                                 onClick={() => setShowForgotModal(false)}
-                                className="absolute top-6 right-6 p-2 rounded-lg hover:bg-[#f6f9fc] transition-colors"
+                                className="absolute top-8 right-8 p-2 rounded-xl hover:bg-[#f6f9fc] transition-colors text-[#aab7c4] hover:text-[#0a2540]"
                             >
-                                <X size={20} className="text-[#697386]" />
+                                <X size={24} />
                             </button>
 
-                            <div className="flex flex-col items-center mb-8">
-                                <div className="w-12 h-12 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center mb-4">
-                                    <ShieldCheck size={24} />
+                            <div className="flex flex-col items-center mb-10">
+                                <div className="w-16 h-16 bg-indigo-50 text-[#635bff] rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                                    <ShieldCheck size={32} />
                                 </div>
-                                <h2 className="text-xl font-bold text-[#0a2540]">Recuperar acceso</h2>
-                                <p className="text-sm text-[#697386] mt-2 font-medium text-center">Te enviaremos un código de seguridad para restablecer tu contraseña.</p>
+                                <h2 className="text-2xl font-bold text-[#0a2540] tracking-tight">Recuperar acceso</h2>
+                                <p className="text-sm text-[#697386] mt-3 font-medium text-center leading-relaxed px-4">Introduce tus datos para que podamos validar tu identidad y enviar un código OTP.</p>
                             </div>
 
                             {recoveryStatus && (
-                                <div className={`mb-6 p-4 rounded-xl text-xs font-bold flex items-center gap-2 ${recoveryStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                                    {recoveryStatus.type === 'success' ? <ShieldCheck size={16} /> : <AlertTriangle size={16} />}
+                                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`mb-8 p-4 rounded-2xl text-xs font-bold flex items-center gap-3 ${recoveryStatus.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
+                                    {recoveryStatus.type === 'success' ? <Zap size={18} /> : <AlertTriangle size={18} />}
                                     {recoveryStatus.text}
-                                </div>
+                                </motion.div>
                             )}
 
-                            <form onSubmit={handleForgotPassword} className="space-y-4">
+                            <form onSubmit={handleForgotPassword} className="space-y-6">
                                 {recoveryStep === 1 ? (
                                     <>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Nombre de Empresa</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Nombre Comercial</label>
                                             <input 
                                                 type="text" placeholder="Ej: Glassy S.L." required
-                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                                className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]"
                                                 onChange={(e) => setRecoveryCompanyName(e.target.value)}
                                                 value={recoveryCompanyName}
                                             />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Email registrado</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Email de Registro</label>
                                             <input 
                                                 type="email" placeholder="admin@empresa.com" required
-                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-semibold text-[#0a2540]"
+                                                className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] font-bold text-[#0a2540]"
                                                 onChange={(e) => setRecoveryEmail(e.target.value)}
                                                 value={recoveryEmail}
                                             />
@@ -251,21 +269,21 @@ const Login = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Código (OTP)</label>
+                                        <div className="space-y-2 text-center">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest mb-3 block">Introduce el código OTP</label>
                                             <input 
-                                                type="text" placeholder="123456" required
+                                                type="text" placeholder="000000" required
                                                 maxLength={6}
-                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff] font-black text-xl tracking-[0.5em] text-center"
+                                                className="w-full px-4 py-5 bg-[#f6f9fc] border border-[#e3e8ee] rounded-[24px] outline-none focus:border-[#635bff] font-black text-3xl tracking-[0.4em] text-center text-[#0a2540]"
                                                 onChange={(e) => setRecoveryCode(e.target.value)}
                                                 value={recoveryCode}
                                             />
                                         </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-bold text-[#697386] uppercase tracking-wider">Nueva clave</label>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-[#697386] uppercase tracking-widest ml-1">Nueva Clave de Acceso</label>
                                             <input 
                                                 type="password" placeholder="••••••••" required
-                                                className="w-full px-4 py-3 bg-[#f6f9fc] border border-[#e3e8ee] rounded-xl outline-none focus:border-[#635bff]"
+                                                className="w-full px-5 py-4 bg-[#f6f9fc] border border-[#e3e8ee] rounded-2xl outline-none focus:border-[#635bff] font-bold"
                                                 onChange={(e) => setNewPassword(e.target.value)}
                                                 value={newPassword}
                                             />
@@ -275,9 +293,9 @@ const Login = () => {
 
                                 <button 
                                     disabled={recoveryLoading}
-                                    className="w-full bg-[#0a2540] text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#635bff] transition-all disabled:opacity-50"
+                                    className="w-full bg-[#0a2540] text-white py-4.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-[#635bff] transition-all disabled:opacity-50 shadow-xl shadow-indigo-100"
                                 >
-                                    {recoveryLoading ? 'Cargando...' : (recoveryStep === 1 ? 'Enviar código' : 'Cambiar contraseña')}
+                                    {recoveryLoading ? <RefreshCcw className="animate-spin" size={18} /> : (recoveryStep === 1 ? 'Enviar código de seguridad' : 'Restablecer mi contraseña')}
                                     {!recoveryLoading && <ChevronRight size={18} />}
                                 </button>
                             </form>
