@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Calendar, Settings, 
   LogOut, Menu, X, ChevronRight, Bell, Search,
   CreditCard, Shield, Sparkles, Smartphone, BarChart3,
-  Globe
+  Globe, Receipt, FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -18,13 +18,15 @@ const DashboardLayout = ({ children }) => {
   const plan = user.plan || 'starter';
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Panel', path: '/app/dashboard', roles: ['admin'] },
-    { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['admin'] },
-    { icon: Calendar, label: 'Asignaciones', path: '/app/assignments', roles: ['admin'] },
-    { icon: Smartphone, label: 'Mis Rutas', path: '/app/my-routes', roles: ['admin', 'cristalero'] },
-    { icon: Users, label: 'Operarios', path: '/app/workers', roles: ['admin'], minPlan: 'pro' },
-    { icon: BarChart3, label: 'Estadísticas', path: '/app/stats', roles: ['admin'], minPlan: 'pro' },
-    { icon: Settings, label: 'Ajustes', path: '/app/settings', roles: ['admin'] },
+    { icon: LayoutDashboard, label: 'Panel', path: '/app/dashboard', roles: ['admin', 'owner'], minPlan: 'pro' },
+    { icon: Users, label: 'Clientes', path: '/app/clients', roles: ['admin', 'owner'] },
+    { icon: Calendar, label: 'Rutas', path: '/app/assignments', roles: ['admin', 'owner'] },
+    { icon: Smartphone, label: 'Mis Rutas', path: '/app/my-routes', roles: ['admin', 'owner', 'cristalero'] },
+    { icon: Users, label: 'Operarios', path: '/app/workers', roles: ['admin', 'owner'] },
+    { icon: FileText, label: 'Facturación', path: '/app/billing', roles: ['admin', 'owner'], minPlan: 'basico' },
+    { icon: Receipt, label: 'Gastos', path: '/app/expenses', roles: ['admin', 'owner'], minPlan: 'pro' },
+    { icon: BarChart3, label: 'Estadísticas', path: '/app/stats', roles: ['admin', 'owner'], minPlan: 'pro' },
+    { icon: Settings, label: 'Ajustes', path: '/app/settings', roles: ['admin', 'owner'] },
   ];
 
   const filteredMenu = menuItems.filter(item => {
@@ -32,8 +34,9 @@ const DashboardLayout = ({ children }) => {
     if (!hasRole) return false;
     
     // Plan restrictions
-    if (item.minPlan === 'pro' && plan === 'starter') return false;
-    if (item.minPlan === 'business' && (plan === 'starter' || plan === 'pro')) return false;
+    if (item.minPlan === 'pro' && (plan === 'starter' || plan === 'basico')) return false;
+    if (item.minPlan === 'basico' && plan === 'starter') return false;
+    if (item.minPlan === 'business' && (plan === 'starter' || plan === 'pro' || plan === 'basico')) return false;
     
     return true;
   });
