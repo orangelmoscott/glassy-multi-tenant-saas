@@ -109,7 +109,10 @@ const DashboardLayout = ({ children }) => {
               <p className="text-[10px] text-white/70 font-medium leading-relaxed">
                 Desbloquea estadísticas avanzadas y gestión de operarios.
               </p>
-              <button className="w-full py-2 bg-white text-[#0a2540] rounded-lg text-xs font-bold hover:bg-indigo-50 transition-colors">
+              <button 
+                onClick={() => navigate('/app/settings')}
+                className="w-full py-2 bg-white text-[#0a2540] rounded-lg text-xs font-bold hover:bg-indigo-50 transition-colors"
+              >
                 Mejorar Plan
               </button>
             </div>
