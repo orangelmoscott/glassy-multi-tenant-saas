@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building, AlertTriangle, User, Zap } from 'lucide-react';
+import { Mail, Lock, ArrowRight, ShieldCheck, Sparkles, X, ChevronRight, Building, AlertTriangle, User, Zap, ChevronLeft, RefreshCcw } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
