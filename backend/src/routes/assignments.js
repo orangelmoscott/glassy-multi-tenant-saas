@@ -400,7 +400,8 @@ router.patch('/:id/complete', authenticate, checkTrialStatus, async (req, res) =
                 signature, 
                 date: new Date(),
                 workerId: req.user.userId,
-                workerName: req.user.fullName || req.user.username // Por si no hay fullName
+                workerName: req.user.fullName || req.user.username,
+                notes: notes || ''
             });
         }
 

@@ -26,7 +26,8 @@ const assignmentSchema = new mongoose.Schema({
         signature: String,
         date: { type: Date, default: Date.now },
         workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        workerName: String
+        workerName: String,
+        notes: String
     }],
     
     // SaaS Multi-tenancy

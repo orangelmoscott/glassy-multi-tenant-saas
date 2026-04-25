@@ -393,6 +393,7 @@ const Clients = () => {
                                                ...as,
                                                displayDate: log.date,
                                                displayWorker: log.workerName || 'Equipo Glassy',
+                                               logNotes: log.notes,
                                                isVisit: true,
                                                logId: `${as._id}-${lIdx}`
                                            }));
@@ -422,12 +423,12 @@ const Clients = () => {
                                                             <span className="text-[10px] font-bold text-[#697386] uppercase tracking-widest bg-[#f6f9fc] px-2.5 py-1 rounded-lg border border-[#e3e8ee]">{entry.displayWorker}</span>
                                                             {entry.isVisit && <span className="text-[10px] bg-indigo-50 text-[#635bff] px-2.5 py-1 rounded-lg font-bold uppercase tracking-widest border border-indigo-100">VISITA EXTRA</span>}
                                                         </div>
-                                                        {entry.notes && (
+                                                        {(entry.notes || entry.logNotes) && (
                                                             <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden group/note">
                                                                 <div className="absolute top-0 left-0 w-1 h-full bg-[#635bff]"></div>
                                                                 <p className="text-[9px] font-bold text-[#635bff] uppercase tracking-widest mb-1 opacity-80">Motivo del servicio:</p>
                                                                 <p className="text-xs text-[#0a2540] font-medium italic leading-relaxed">
-                                                                    "{entry.notes}"
+                                                                    "{entry.logNotes || entry.notes}"
                                                                 </p>
                                                             </div>
                                                         )}

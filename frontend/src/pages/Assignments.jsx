@@ -657,6 +657,84 @@ const Assignments = () => {
                 )}
             </AnimatePresence>
 
+            <AnimatePresence>
+                {selectedAssignmentForLogs && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-0 md:p-6 bg-[#0a2540]/60 backdrop-blur-md">
+                        <motion.div 
+                            initial={{ y: 50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 50, opacity: 0 }}
+                            className="bg-white rounded-[32px] w-full max-w-2xl h-full md:h-[80vh] shadow-2xl overflow-hidden flex flex-col"
+                        >
+                            <div className="p-8 border-b border-[#e3e8ee] flex items-center justify-between bg-[#fcfdfe]">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-indigo-50 text-[#635bff] rounded-xl flex items-center justify-center border border-indigo-100">
+                                        <History size={24} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-[#0a2540]">Registros de Visitas</h2>
+                                        <p className="text-sm text-[#697386] font-medium italic">{selectedAssignmentForLogs.clientId?.companyName}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedAssignmentForLogs(null)} className="p-2.5 text-[#697386] hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all border border-[#e3e8ee] bg-white shadow-sm"><X size={24}/></button>
+                            </div>
+
+                            <div className="p-8 overflow-y-auto flex-1 space-y-4 bg-[#f6f9fc]/30">
+                                {selectedAssignmentForLogs.visitLogs && selectedAssignmentForLogs.visitLogs.length > 0 ? (
+                                    selectedAssignmentForLogs.visitLogs.map((log, idx) => (
+                                        <div key={idx} className="bg-white p-6 rounded-2xl border border-[#e3e8ee] shadow-sm hover:shadow-md transition-all">
+                                            <div className="flex flex-col md:flex-row justify-between gap-6">
+                                                <div className="space-y-4 flex-1">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-100">
+                                                            <CheckCircle2 size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-[#0a2540]">Visita #{idx + 1}</p>
+                                                            <p className="text-[10px] font-bold text-[#697386] uppercase tracking-widest">Realizada el {new Date(log.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="bg-[#f6f9fc] p-3 rounded-xl border border-[#e3e8ee]">
+                                                        <p className="text-[9px] font-bold text-[#635bff] uppercase tracking-widest mb-1">Operario:</p>
+                                                        <p className="text-xs font-bold text-[#0a2540]">{log.workerName || 'Equipo Glassy'}</p>
+                                                    </div>
+                                                </div>
+
+                                                {log.signature && (
+                                                    <div className="w-full md:w-48 space-y-2">
+                                                        <p className="text-[9px] font-bold text-[#697386] uppercase tracking-widest text-center">Firma del Cliente</p>
+                                                        <div className="bg-white border border-[#e3e8ee] rounded-xl p-2 shadow-inner h-24 flex items-center justify-center">
+                                                            <img src={log.signature} alt="Firma" className="max-h-full max-w-full object-contain" />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-24 opacity-30 flex flex-col items-center">
+                                        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                                            <Info size={40} />
+                                        </div>
+                                        <p className="text-sm font-bold uppercase tracking-widest">No hay firmas registradas aún.</p>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="p-6 bg-white border-top border-[#e3e8ee] flex justify-end">
+                                <button 
+                                    onClick={() => setSelectedAssignmentForLogs(null)}
+                                    className="px-6 py-3 bg-[#635bff] text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-[#0a2540] transition-all"
+                                >
+                                    Cerrar Ventana
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             <UpgradeModal isOpen={upgradeModal.isOpen} onClose={() => setUpgradeModal({ ...upgradeModal, isOpen: false })} message={upgradeModal.message} upgradeTo={upgradeModal.upgradeTo} />
             <AlertModal isOpen={alertModal.isOpen} onClose={() => setAlertModal({ ...alertModal, isOpen: false })} title={alertModal.title} message={alertModal.message} />
             <ReassignModal isOpen={reassignModal.isOpen} onClose={() => setReassignModal({ ...reassignModal, isOpen: false })} message={reassignModal.message} onConfirm={confirmReassignment} loading={isProcessing} />
