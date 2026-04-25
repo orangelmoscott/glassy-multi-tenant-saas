@@ -367,7 +367,14 @@ const Clients = () => {
                                     </div>
                                     <div>
                                         <h2 className="text-2xl font-bold text-[#0a2540]">{selectedClient.companyName}</h2>
-                                        <p className="text-sm text-[#697386] font-medium flex items-center gap-2"><MapPin size={14} className="text-[#635bff]" /> {selectedClient.address}</p>
+                                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                                            <p className="text-sm text-[#697386] font-medium flex items-center gap-1.5"><MapPin size={14} className="text-[#635bff]" /> {selectedClient.address}</p>
+                                            {selectedClient.serviceType && (
+                                                <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wider border border-blue-200">
+                                                    {selectedClient.serviceType}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <button onClick={() => setSelectedClient(null)} className="p-2.5 text-[#697386] hover:bg-rose-50 hover:text-rose-600 rounded-xl transition-all border border-[#e3e8ee] bg-white shadow-sm"><X size={24}/></button>
@@ -385,7 +392,7 @@ const Clients = () => {
                                            return as.visitLogs.map((log, lIdx) => ({
                                                ...as,
                                                displayDate: log.date,
-                                               displayWorker: log.workerName || 'Staff',
+                                               displayWorker: log.workerName || 'Equipo Glassy',
                                                isVisit: true,
                                                logId: `${as._id}-${lIdx}`
                                            }));
@@ -393,55 +400,76 @@ const Clients = () => {
                                        return [{
                                            ...as,
                                            displayDate: as.date,
-                                           displayWorker: as.workerId?.fullName || 'Personal',
+                                           displayWorker: as.workerId?.fullName || 'Equipo Glassy',
                                            isVisit: false,
                                            logId: as._id
                                        }];
                                    })
                                    .sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate))
-                                   .map((entry) => (
-                                       <div key={entry.logId} className="bg-white p-6 rounded-2xl border border-[#e3e8ee] flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
-                                           <div className="flex items-center gap-5">
-                                               <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${entry.status === 'completado' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
-                                                   <CheckCircle2 size={24} />
-                                               </div>
-                                               <div>
-                                                   <p className="font-bold text-[#0a2540] text-base">
-                                                       {new Date(entry.displayDate).toLocaleDateString('es-ES', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                                   </p>
-                                                   <div className="flex items-center gap-3 mt-1">
-                                                       <span className="text-[10px] font-bold text-[#697386] uppercase tracking-widest bg-[#f6f9fc] px-2.5 py-1 rounded-lg border border-[#e3e8ee]">{entry.displayWorker}</span>
-                                                       {entry.isVisit && <span className="text-[10px] bg-indigo-50 text-[#635bff] px-2.5 py-1 rounded-lg font-bold uppercase tracking-widest border border-indigo-100">VISITA EXTRA</span>}
-                                                   </div>
-                                               </div>
-                                           </div>
-                                           <div className="text-right">
-                                               <p className="font-bold text-[#0a2540] text-lg mb-1">{entry.price}€</p>
-                                               <button 
-                                                   onClick={async (e) => {
-                                                       const btn = e.currentTarget;
-                                                       const prevContent = btn.innerHTML;
-                                                       try {
-                                                           btn.innerText = 'GENERANDO...';
-                                                           const response = await axios.get(`https://glassy.es/api/assignments/${entry._id}/invoice`, {
-                                                               headers: { Authorization: `Bearer ${token}` },
-                                                               responseType: 'blob'
-                                                           });
-                                                           const url = window.URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}));
-                                                           window.open(url, '_blank');
-                                                       } catch (err) {
-                                                           alert('Error al generar PDF.');
-                                                       } finally {
-                                                           btn.innerHTML = prevContent;
-                                                       }
-                                                   }}
-                                                   className="text-[10px] text-[#635bff] font-bold hover:text-[#0a2540] transition-colors uppercase tracking-widest flex items-center gap-1.5 justify-end"
-                                               >
-                                                   <FileText size={14} /> Factura PDF
-                                               </button>
-                                           </div>
-                                       </div>
-                                   ))
+                                   .map((entry) => {
+                                        const totalPrice = (entry.price || 0) + (entry.extraServices ? entry.extraServices.reduce((acc, curr) => acc + curr.price, 0) : 0);
+                                        return (
+                                            <div key={entry.logId} className="bg-white p-6 rounded-2xl border border-[#e3e8ee] flex flex-col md:flex-row items-start md:items-center justify-between shadow-sm hover:shadow-md transition-all group gap-4">
+                                                <div className="flex items-center gap-5">
+                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${entry.status === 'completado' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
+                                                        <CheckCircle2 size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-[#0a2540] text-base">
+                                                            {new Date(entry.displayDate).toLocaleDateString('es-ES', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                        <div className="flex flex-wrap items-center gap-3 mt-1">
+                                                            <span className="text-[10px] font-bold text-[#697386] uppercase tracking-widest bg-[#f6f9fc] px-2.5 py-1 rounded-lg border border-[#e3e8ee]">{entry.displayWorker}</span>
+                                                            {entry.isVisit && <span className="text-[10px] bg-indigo-50 text-[#635bff] px-2.5 py-1 rounded-lg font-bold uppercase tracking-widest border border-indigo-100">VISITA EXTRA</span>}
+                                                        </div>
+                                                        {entry.notes && (
+                                                            <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 relative overflow-hidden group/note">
+                                                                <div className="absolute top-0 left-0 w-1 h-full bg-[#635bff]"></div>
+                                                                <p className="text-[9px] font-bold text-[#635bff] uppercase tracking-widest mb-1 opacity-80">Motivo del servicio:</p>
+                                                                <p className="text-xs text-[#0a2540] font-medium italic leading-relaxed">
+                                                                    "{entry.notes}"
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        {entry.extraServices?.length > 0 && (
+                                                            <div className="flex flex-wrap gap-1.5 mt-2">
+                                                                {entry.extraServices.map((ex, i) => (
+                                                                    <span key={i} className="text-[9px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md font-bold border border-emerald-100 uppercase tracking-tighter">
+                                                                        + {ex.description}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right w-full md:w-auto flex flex-row md:flex-col justify-between items-center md:items-end gap-2 md:gap-1">
+                                                    <p className="font-bold text-[#0a2540] text-lg">{totalPrice.toFixed(2)}€</p>
+                                                    <button 
+                                                        onClick={async (e) => {
+                                                            const btn = e.currentTarget;
+                                                            const prevContent = btn.innerHTML;
+                                                            try {
+                                                                btn.innerText = 'GENERANDO...';
+                                                                const response = await axios.get(`https://glassy.es/api/assignments/${entry._id}/invoice`, {
+                                                                    headers: { Authorization: `Bearer ${token}` },
+                                                                    responseType: 'blob'
+                                                                });
+                                                                const url = window.URL.createObjectURL(new Blob([response.data], {type: 'application/pdf'}));
+                                                                window.open(url, '_blank');
+                                                            } catch (err) {
+                                                                alert('Error al generar PDF.');
+                                                            } finally {
+                                                                btn.innerHTML = prevContent;
+                                                            }
+                                                        }}
+                                                        className="text-[10px] text-[#635bff] font-bold hover:text-[#0a2540] transition-colors uppercase tracking-widest flex items-center gap-1.5 justify-end bg-white border border-[#e3e8ee] md:border-none px-3 py-2 md:p-0 rounded-lg md:rounded-none shadow-sm md:shadow-none"
+                                                    >
+                                                        <FileText size={14} /> Factura PDF
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                   })
                                 ) : (
                                    <div className="text-center py-24 opacity-30 flex flex-col items-center">
                                        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">

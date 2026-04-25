@@ -185,6 +185,26 @@ router.post('/:id/send-invoice', authenticate, async (req, res) => {
         res.status(500).send({ message: 'Error al enviar la factura por email.' });
     }
 });
+/**
+ * GET | Obtener historial de un cliente específico
+ */
+router.get('/client/:clientId', authenticate, async (req, res) => {
+    try {
+        const assignments = await Assignment.find({ 
+            clientId: req.params.clientId,
+            tenantId: req.user.tenantId
+            // Removed isDeleted filter because billed assignments are marked as isDeleted: true for archiving
+        })
+            .populate('workerId', 'fullName username')
+            .populate('clientId') // Populate client details just in case
+            .sort({ date: -1 });
+        res.send(assignments);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Error al obtener historial del cliente' });
+    }
+});
+
 router.get('/', authenticate, async (req, res) => {
     try {
         const assignments = await Assignment.find({ 
